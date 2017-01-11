@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
+    </head>
+
+    <body>
+        <input type="hidden" id="wateringBackendUrl" value="@routes.WateringController.getAllStates()">
+        <input type="hidden" id="bcSensorReading" value="@routes.BigClownController.getSensorReading("")">
+        <div id="reactView"></div>
+    </body>
+    <script src="@routes.Assets.versioned("compiled/bundle.js")" ></script>
+</html>

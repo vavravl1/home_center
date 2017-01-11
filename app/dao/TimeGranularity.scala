@@ -1,0 +1,30 @@
+package dao
+
+import java.sql.Timestamp
+import java.time.Clock
+import java.time.temporal.ChronoUnit.{DAYS, MINUTES}
+
+import scalikejdbc._
+
+/**
+  * Represents granularity by which the data should be returned
+  */
+sealed abstract class TimeGranularity
+
+object TimeGranularity {
+  def parse(str: String): TimeGranularity = str match {
+    case "ByMinute" => ByMinute
+    case "ByHour" => ByHour
+    case _ => ByHour
+  }
+
+  def toExtractAndTime(by: TimeGranularity = ByHour)(implicit clock: Clock) = {
+    by match {
+      case ByMinute => (sqls"MINUTE", new Timestamp(clock.instant().minus(30, MINUTES).toEpochMilli))
+      case ByHour => (sqls"HOUR", new Timestamp(clock.instant().minus(1, DAYS).toEpochMilli))
+    }
+  }
+}
+
+object ByMinute extends TimeGranularity
+object ByHour extends TimeGranularity
