@@ -40,7 +40,7 @@ class BcMeasureDao(_clock: Clock) {
       val (extractTime, lastMeasureTimestamp) = TimeGranularity.toExtractAndTime(by)
 
       sql"""
-           SELECT MAX(measure_timestamp) AS ts, AVG(value) AS avg, MIN(value) as min, MAX(value) as max, unit, sensor
+           SELECT MAX(measure_timestamp) AS ts, ROUND(AVG(value), 2) AS avg, ROUND(MIN(value), 2) as min, ROUND(MAX(value), 2) as max, unit, sensor
            FROM bc_measure
            WHERE phenomenon = ${phenomenon}
            AND measure_timestamp > ${lastMeasureTimestamp}
