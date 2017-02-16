@@ -1,6 +1,6 @@
 package mqtt
 
-import java.util.concurrent.TimeUnit
+import scala.concurrent.duration._
 
 import akka.actor.ActorSystem
 import config.HomeControllerConfiguration
@@ -21,8 +21,8 @@ class MqttConnector(
                      val mqttListener: MqttDispatchingListener,
                      val actorSystem: ActorSystem
                    ) extends JsonSender {
-  private var mqttClient: Option[MqttClient] = connect()
-  actorSystem.scheduler.scheduleOnce(FiniteDuration(2L, TimeUnit.SECONDS), reconnect)
+  private var mqttClient: Option[MqttClient] = None
+  actorSystem.scheduler.scheduleOnce(0 seconds, reconnect)
 
   def reconnect():Runnable = {
     new Runnable {
@@ -31,13 +31,13 @@ class MqttConnector(
           case Some(_) => Logger.info("Mqtt client has connected")
           case None =>
             mqttClient = connect()
-            actorSystem.scheduler.scheduleOnce(FiniteDuration(2L, TimeUnit.SECONDS), reconnect)
+            actorSystem.scheduler.scheduleOnce(2 seconds, reconnect)
         }
       }
     }
   }
 
-  def connect(): Option[MqttClient] = try {
+  private def connect(): Option[MqttClient] = try {
     val mqttClient = new MqttClient(configuration.mqttBrokerUrl, configuration.mqttClientId, new MemoryPersistence)
     val connOpts = new MqttConnectOptions()
     connOpts.setAutomaticReconnect(true)
