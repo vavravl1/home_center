@@ -23,12 +23,11 @@ class HomeCenterLayout extends React.Component {
     };
 
     changeTimeGranularity(sensorName, value) {
-        console.log("Setting " + sensorName + " to " + value);
         this.setState(update(this.state, {[sensorName]:{timeGranularity: {$set: value}}}));
     };
 
     tick = () => {
-        var t = this;
+        let t = this;
         let wateringUrl = document.getElementById('wateringBackendUrl').value;
         let bcSensorReading = document.getElementById('bcSensorReading').value;
 

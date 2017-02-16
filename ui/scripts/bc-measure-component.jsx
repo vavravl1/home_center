@@ -6,19 +6,54 @@ import ButtonToolbar from "react-bootstrap/lib/ButtonToolbar";
 import Button from "react-bootstrap/lib/Button";
 
 class BcMeasureComponent extends React.Component {
+    isTimGranularityByDay = function() {
+        return this.props.activeTimeGranularity === 'ByDay'
+    };
+
     valueChartData = function () {
-        let measures = this.props.measure.map(t => t.value);
+        let average = this.props.measure.map(t => t.average);
+        let min = this.props.measure.map(t => t.min);
+        let max = this.props.measure.map(t => t.max);
         let dates = this.props.measure
             .map(t => t.measureTimestamp)
-            .map(t => moment(t).add(1, 'minute').startOf('minute').format("HH:mm"));
+            .map(t => {
+                if(this.isTimGranularityByDay()) {
+                    return moment(t).startOf('day').format("DD/MM")
+                } else {
+                    return moment(t).add(1, 'minute').startOf('minute').format("HH:mm")
+                }
+            });
+
+        let datasets = [];
+        if(this.isTimGranularityByDay()) {
+            datasets = [{
+                label: 'Average',
+                backgroundColor: 'rgba(240, 247, 254, 0.5)',
+                borderColor: 'rgb(0, 0, 0)',
+                data: average,
+            }, {
+                label: 'Min',
+                backgroundColor: 'rgba(240, 247, 254, 0.5)',
+                borderColor: 'rgb(0, 0, 255)',
+                data: min,
+            }, {
+                label: 'Max',
+                backgroundColor: 'rgba(240, 247, 254, 0.5)',
+                borderColor: 'rgb(255, 0, 0)',
+                data: max,
+            }]
+        } else {
+            datasets =  [{
+                label: 'Average',
+                backgroundColor: 'rgba(240, 247, 254, 0.5)',
+                borderColor: 'rgb(0, 0, 0)',
+                data: average,
+            }]
+        }
 
         return {
             labels: dates,
-            datasets: [{
-                    backgroundColor: 'rgb(240, 247, 254)',
-                    borderColor: 'rgb(0, 0, 0)',
-                    data: measures,
-            }]
+            datasets: datasets
         };
     };
 
@@ -33,7 +68,7 @@ class BcMeasureComponent extends React.Component {
                 }]
             },
             legend: {
-                display: false
+                display: this.isTimGranularityByDay()
             }
         };
     };
@@ -60,10 +95,17 @@ class BcMeasureComponent extends React.Component {
                     </tr>
                     </tbody>
                 </table>
-                <Line data={this.valueChartData()} options={this.humidityChartOptions()} />
+                <Line data={this.valueChartData()} options={this.humidityChartOptions()} key={JSON.stringify(this.humidityChartOptions())}/>
                 <ButtonToolbar className="pull-right">
-                    <Button bsSize="xsmall" bsStyle={this.props.activeTimeGranularity === 'ByMinute' ? "primary" : "default"} onClick={this.handleTimeGranularity.bind(this, "ByMinute")}>By Minute</Button>
-                    <Button bsSize="xsmall" bsStyle={this.props.activeTimeGranularity === 'ByHour' ? "primary" : "default"} onClick={this.handleTimeGranularity.bind(this, "ByHour")}>By Hour</Button>
+                    <Button bsSize="xsmall"
+                            bsStyle={this.props.activeTimeGranularity === 'ByMinute' ? "primary" : "default"}
+                            onClick={this.handleTimeGranularity.bind(this, "ByMinute")}>By Minute</Button>
+                    <Button bsSize="xsmall"
+                            bsStyle={this.props.activeTimeGranularity === 'ByHour' ? "primary" : "default"}
+                            onClick={this.handleTimeGranularity.bind(this, "ByHour")}>By Hour</Button>
+                    <Button bsSize="xsmall"
+                            bsStyle={this.props.activeTimeGranularity === 'ByDay' ? "primary" : "default"}
+                            onClick={this.handleTimeGranularity.bind(this, "ByDay")}>By Day</Button>
                 </ButtonToolbar>
             </div>
         } else {

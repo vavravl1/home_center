@@ -10,6 +10,7 @@ import scalikejdbc._
   * Represents measured value from any bc sensor
   *
   * @param sensor           type of the sensor that measured this value
+  * @param phenomenon       of the measured value
   * @param measureTimestamp when the measure happened
   * @param value            value of the measure
   * @param unit             unit of the measure
@@ -26,14 +27,40 @@ object BcMeasure extends SQLSyntaxSupport[BcMeasure] {
   implicit val writes: Writes[BcMeasure] = Json.writes[BcMeasure]
 }
 
+/**
+  * Represents aggregated measures over a given period of time.
+  *
+  * @param sensor           type of the sensor that measured this value
+  * @param phenomenon       of the measured value
+  * @param measureTimestamp when the measure happened
+  * @param min              minimum value in the given period of time
+  * @param max              maximum value in the given period of time
+  * @param average          average value in the given period of time
+  * @param unit             unit of the measure
+  */
+case class AggregatedBcMeasure(
+                                sensor: String,
+                                phenomenon: String,
+                                measureTimestamp: Instant,
+                                min: Double,
+                                max: Double,
+                                average: Double,
+                                unit: String
+                              )
+
+object AggregatedBcMeasure extends SQLSyntaxSupport[AggregatedBcMeasure] {
+  implicit val writes: Writes[AggregatedBcMeasure] = Json.writes[AggregatedBcMeasure]
+}
 
 /**
   * Represents message that is send by BigClown sensors
+  *
   * @param phenomenon which is measured, e.g. temperature
-  * @param value value of the measure, e.g 19.24
-  * @param unit unit of the measure, e.g. lux
+  * @param value      value of the measure, e.g 19.24
+  * @param unit       unit of the measure, e.g. lux
   */
-case class BcMessage(phenomenon: String, value: Double, unit:String)
+case class BcMessage(phenomenon: String, value: Double, unit: String)
+
 object BcMessage extends SQLSyntaxSupport[BcMeasure] {
   implicit val reads = new Reads[BcMessage] {
     override def reads(json: JsValue): JsResult[BcMessage] = {

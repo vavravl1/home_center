@@ -5,7 +5,7 @@ import java.time.temporal.ChronoUnit._
 import java.time.{Clock, Instant}
 
 import _root_.play.api.Logger
-import entities.bigclown.BcMeasure
+import entities.bigclown.{AggregatedBcMeasure, BcMeasure}
 import scalikejdbc._
 
 /**
@@ -35,24 +35,26 @@ class BcMeasureDao(_clock: Clock) {
     })
   }
 
-  def getSampledMeasures(phenomenon: String, by: TimeGranularity = ByHour): Seq[BcMeasure] = {
+  def getSampledMeasures(phenomenon: String, by: TimeGranularity = ByHour): Seq[AggregatedBcMeasure] = {
     DB.readOnly(implicit session => {
       val (extractTime, lastMeasureTimestamp) = TimeGranularity.toExtractAndTime(by)
 
       sql"""
-           SELECT MAX(measure_timestamp) AS ts, AVG(value) AS val, unit, sensor
+           SELECT MAX(measure_timestamp) AS ts, AVG(value) AS avg, MIN(value) as min, MAX(value) as max, unit, sensor
            FROM bc_measure
            WHERE phenomenon = ${phenomenon}
            AND measure_timestamp > ${lastMeasureTimestamp}
            GROUP BY EXTRACT(${extractTime} FROM measure_timestamp), unit, sensor
            ORDER BY MAX(measure_timestamp)
         """
-        .map(rs => BcMeasure(
-          rs.string("sensor"),
-          phenomenon,
-          Instant.ofEpochMilli(rs.timestamp("ts").millis),
-          rs.double("val"),
-          rs.string("unit")
+        .map(rs => AggregatedBcMeasure(
+          sensor = rs.string("sensor"),
+          phenomenon = phenomenon,
+          measureTimestamp = Instant.ofEpochMilli(rs.timestamp("ts").millis),
+          min = rs.double("min"),
+          max = rs.double("max"),
+          average = rs.double("avg"),
+          unit = rs.string("unit")
         )).toList().apply()
     })
   }
