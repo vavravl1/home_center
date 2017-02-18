@@ -47,7 +47,7 @@ class WateringDao(_clock: Clock) {
       case None => Seq.empty
       case Some(last) =>
         DB.readOnly(implicit session => {
-          val (extractTime, lastMeasureTimestamp) = TimeGranularity.toExtractAndTime(by)
+          val (extractTime, lastMeasureTimestamp) = by.toExtractAndTime
 
           sql"""
            SELECT MAX(timestamp) AS ts, AVG(actual_humidity) AS actual, BOOL_OR(watering_in_progress) AS wip

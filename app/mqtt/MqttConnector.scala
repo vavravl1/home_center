@@ -11,7 +11,6 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{Json, Writes}
 
 import scala.concurrent.Future
-import scala.concurrent.duration.FiniteDuration
 
 /**
   * Connector to the mqtt broker

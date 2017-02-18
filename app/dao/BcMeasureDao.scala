@@ -37,7 +37,7 @@ class BcMeasureDao(_clock: Clock) {
 
   def getSampledMeasures(phenomenon: String, by: TimeGranularity = ByHour): Seq[AggregatedBcMeasure] = {
     DB.readOnly(implicit session => {
-      val (extractTime, lastMeasureTimestamp) = TimeGranularity.toExtractAndTime(by)
+      val (extractTime, lastMeasureTimestamp) = by.toExtractAndTime
 
       sql"""
            SELECT MAX(measure_timestamp) AS ts, ROUND(AVG(value), 2) AS avg, ROUND(MIN(value), 2) as min, ROUND(MAX(value), 2) as max, unit, sensor
