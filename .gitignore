@@ -36,3 +36,4 @@ project/project/
 project/target/
 public/compiled/
 target/
+/deploy.sh

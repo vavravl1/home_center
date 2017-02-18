@@ -122,6 +122,9 @@ class WateringComponent extends React.Component {
                         <Button bsSize="xsmall"
                                 bsStyle={this.props.activeTimeGranularity === 'ByHour' ? "primary" : "default"}
                                 onClick={this.handleTimeGranularity.bind(this, "ByHour")}>By Hour</Button>
+                        <Button bsSize="xsmall"
+                                bsStyle={this.props.activeTimeGranularity === 'ByDay' ? "primary" : "default"}
+                                onClick={this.handleTimeGranularity.bind(this, "ByDay")}>By Day</Button>
                     </div>
                 </ButtonToolbar>
             </div>
