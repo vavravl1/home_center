@@ -1,7 +1,6 @@
 package loader
 
 import java.time.Clock
-import java.util.concurrent.TimeUnit
 
 import akka.actor.Props
 import com.softwaremill.macwire._
@@ -24,7 +23,7 @@ import router.Routes
 import scalikejdbc.config.DBs
 
 import scala.concurrent.Future
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration._
 
 
 /**
@@ -62,8 +61,8 @@ trait DaoConfig extends BuiltInComponents with ClockConfig {
   lazy val bcMeasureDao = wire[BcMeasureDao]
   def initDbAggregation():Unit = {
     actorSystem.scheduler.schedule(
-      FiniteDuration(10L, TimeUnit.SECONDS),
-      FiniteDuration(10L, TimeUnit.SECONDS),
+      10 second,
+      1 hour,
       new Runnable {
         override def run() = {
           bcMeasureDao.sensorAggregation()

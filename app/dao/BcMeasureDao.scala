@@ -61,7 +61,7 @@ class BcMeasureDao(_clock: Clock) {
 
   def sensorAggregation(): Unit = {
     DB.localTx(implicit session => {
-      val lastHour = clock.instant().truncatedTo(HOURS)
+      val lastHour = clock.instant().truncatedTo(HOURS).minus(1, HOURS)
       val lastHourTs = new Timestamp(lastHour.toEpochMilli)
       val aggregated =
         sql"""

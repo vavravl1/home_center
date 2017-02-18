@@ -47,7 +47,7 @@ class BcMeasureDaoTest extends WordSpec with Matchers with DbTest with MockFacto
       }
 
       "correctly groups the temperatures" in {
-        (clock.instant _).expects().returning(i.plus(130, MINUTES)).anyNumberOfTimes
+        (clock.instant _).expects().returning(i.plus(3, HOURS)).anyNumberOfTimes
         bcMeasureDao.sensorAggregation()
         bcMeasureDao.getSampledMeasures("temperature")(0).average shouldBe 15
         bcMeasureDao.getSampledMeasures("temperature")(0).measureTimestamp shouldBe i.plus(30, MINUTES)
