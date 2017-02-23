@@ -2,9 +2,12 @@ package loader
 
 import java.time.Clock
 
+import scala.language.postfixOps
+
 import akka.actor.Props
 import com.softwaremill.macwire._
 import config.HomeControllerConfiguration
+import controllers.SignInController
 import controllers.{Assets, BigClownController, HomeController, WateringController}
 import dao.{BcMeasureDao, WateringDao}
 import filters.StatsActor.Ping
@@ -100,14 +103,26 @@ trait FiltersConfig extends BuiltInComponents {
   lazy val statsActor = actorSystem.actorOf(Props(wire[StatsActor]), StatsActor.name)
 }
 
-trait AppComponents extends BuiltInComponents with MqttConfig with FiltersConfig with SqlH2Config {
-  lazy val assets: Assets = wire[Assets]
-  lazy val prefix: String = "/"
-  lazy val router: Router = wire[Routes]
-
+trait Controllers extends BuiltInComponents with SqlH2Config with SilhouetteAppModule with MqttConfig {
   lazy val homeController = wire[HomeController]
   lazy val wateringController = wire[WateringController]
   lazy val bigClownController = wire[BigClownController]
+  lazy val signinController: SignInController = wire[SignInController]
+}
+
+trait PlayCoreComponents extends BuiltInComponents with Controllers {
+  lazy val assets: Assets = wire[Assets]
+  lazy val prefix: String = "/"
+  lazy val router: Router = wire[Routes]
+}
+
+trait AppComponents extends BuiltInComponents
+  with PlayCoreComponents
+  with MqttConfig
+  with FiltersConfig
+  with SqlH2Config
+  with SilhouetteAppModule
+  with Controllers {
 
   Logger.info("The app is about to start")
   statsActor ! Ping

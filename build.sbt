@@ -35,4 +35,14 @@ libraryDependencies += "org.eclipse.paho" % "org.eclipse.paho.client.mqttv3" % "
 libraryDependencies += "com.softwaremill.macwire" %% "macros" % "2.2.0" % "provided"
 libraryDependencies += "com.softwaremill.macwire" %% "util" % "2.2.0"
 
+// Security
+resolvers += "Atlassian Releases" at "https://maven.atlassian.com/public/"
+libraryDependencies ++= Seq(
+  "com.mohiva" %% "play-silhouette" % "4.0.0-BETA4",
+  "com.mohiva" %% "play-silhouette-password-bcrypt" % "4.0.0-BETA4",
+  "com.mohiva" %% "play-silhouette-persistence-memory" % "4.0.0-BETA4"
+)
+
 javaOptions in Test += "-Dconfig.file=conf/application.test.conf"
+
+scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")

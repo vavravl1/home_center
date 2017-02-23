@@ -91,7 +91,7 @@ class BcMeasureComponent extends React.Component {
                     </tr>
                     <tr>
                         <td scope="row">Actual {lastMeasure.phenomenon}</td>
-                        <td>{lastMeasure.value} {lastMeasure.unit}</td>
+                        <td>{lastMeasure.average} {lastMeasure.unit}</td>
                     </tr>
                     </tbody>
                 </table>

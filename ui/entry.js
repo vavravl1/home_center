@@ -1,2 +1,2 @@
-import "./scripts/main.js";
+import "./scripts/home-center-main.jsx";
 import "./styles/style.scss";

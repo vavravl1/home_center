@@ -5,16 +5,21 @@ import java.util.concurrent.TimeUnit
 import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.util.Timeout
+import com.mohiva.play.silhouette.api.{HandlerResult, Silhouette}
 import filters.StatsActor
 import play.api.libs.json.Json
 import play.api.mvc._
+import security.utils.auth.DefaultEnv
+
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
   * This controller creates an `Action` to handle HTTP requests to the
   * application's home page.
   */
-class HomeController(actorSystem: ActorSystem) extends Controller {
+class HomeController(actorSystem: ActorSystem,
+                     silhouette: Silhouette[DefaultEnv]) extends Controller {
 
   def numberOfRequestsExample = Action.async {
     implicit val timeout = Timeout(5, TimeUnit.MINUTES)
@@ -26,7 +31,16 @@ class HomeController(actorSystem: ActorSystem) extends Controller {
     } yield Ok(Json.toJson(count))
   }
 
-  def indexReact = Action {
-    Ok(views.html.index())
+  def indexReact = Action.async { implicit request =>
+    silhouette.UserAwareRequestHandler { userAwareRequest =>
+      Future.successful(HandlerResult(Ok, userAwareRequest.identity))
+    }.map {
+      case HandlerResult(r, Some(user)) => Ok(views.html.index(Some(user)))
+      case HandlerResult(r, None) => Ok(views.html.index(None))
+    }
   }
+//
+//  def indexReact = Action {
+//    Ok(views.html.index())
+//  }
 }

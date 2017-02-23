@@ -1,3 +1,5 @@
+@(user: Option[security.User])
+
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -7,6 +9,7 @@
     <body>
         <input type="hidden" id="wateringBackendUrl" value="@routes.WateringController.getAllStates()">
         <input type="hidden" id="bcSensorReading" value="@routes.BigClownController.getSensorReading("")">
+        <input type="hidden" id="username" value="@user.map(u=>u.email)">
         <div id="reactView"></div>
     </body>
     <script src="@routes.Assets.versioned("compiled/bundle.js")" ></script>
