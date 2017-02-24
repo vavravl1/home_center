@@ -9,7 +9,7 @@ GET         /assets/*file                           controllers.Assets.versioned
 # Main page - react router
 GET         /                                       controllers.HomeController.indexReact
 GET         /data                                   controllers.HomeController.indexReact
-GET         /signIn                                 controllers.HomeController.indexReact
+GET         /signIn                                 controllers.SignInController.view
 
 # Sign in/out
 POST        /signIn                          controllers.SignInController.submit
