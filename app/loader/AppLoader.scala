@@ -37,8 +37,11 @@ class AppApplicationLoader extends ApplicationLoader {
     LoggerConfigurator(context.environment.classLoader).foreach { configurator =>
       configurator.configure(context.environment)
     }
-    (new BuiltInComponentsFromContext(context) with AppComponents).application
+    createApp(context).application
   }
+
+  def createApp(context: Context) =
+    new BuiltInComponentsFromContext(context) with AppComponents
 }
 
 trait EnvironmentSettingsConfig extends BuiltInComponents {

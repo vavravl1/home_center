@@ -5,6 +5,10 @@ import HomeCenterLayout from "./home-center-layout.jsx";
 import HomeCenterData from "./home-center-data.jsx";
 import SignIn from "./home-center-sign-in.jsx";
 
+if(document.getElementById('router_path').value) {
+    browserHistory.push(document.getElementById('router_path').value)
+}
+
 ReactDOM.render(
     <Router history = {browserHistory}>
         <Route path="/" component={HomeCenterLayout}>

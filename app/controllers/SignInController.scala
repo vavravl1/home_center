@@ -89,7 +89,7 @@ class SignInController(
           }
         }.recover {
           case e: ProviderException =>
-            Redirect(request.uri + "?error=invalid.credentials")
+            Unauthorized(views.html.index(None, Some("signIn/?error=invalid.credentials")))
         }
       }
     )
