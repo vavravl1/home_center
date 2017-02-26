@@ -54,7 +54,10 @@ class HomeCenterData extends React.Component {
 
             t.setState(newState);
             t.tickHandler = setTimeout(t.tick.bind(t), 1000);
-        }));
+        })).catch(function (error) {
+            console.log(error);
+            t.tickHandler = setTimeout(t.tick.bind(t), 1000);
+        });
     };
 
     render = () => {
