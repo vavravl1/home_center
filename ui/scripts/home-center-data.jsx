@@ -62,7 +62,7 @@ class HomeCenterData extends React.Component {
 
     render = () => {
         return <div>
-            <Col xs={6} md={5}>
+            <Col xs={12} md={5}>
                 <BcMeasureComponent measure={this.state.temperature.data}
                                     sensorLocation="upstairs corridor"
                                     sensorName="temperature"
@@ -70,14 +70,14 @@ class HomeCenterData extends React.Component {
                                     timeGranularityCallback={this.changeTimeGranularity.bind(this, "temperature")}
                 />
             </Col>
-            <Col xs={6} md={5}>
+            <Col xs={12} md={5}>
                 <BcMeasureComponent measure={this.state.carbonDioxide.data}
                                     sensorLocation="upstairs corridor"
                                     sensorName="carbon dioxide"
                                     activeTimeGranularity={this.state.carbonDioxide.timeGranularity}
                                     timeGranularityCallback={this.changeTimeGranularity.bind(this, "carbonDioxide")}/>
             </Col>
-            <Col xs={6} md={5}>
+            <Col xs={12} md={5}>
                 <BcMeasureComponent measure={this.state.illuminance.data}
                                     sensorLocation="upstairs corridor"
                                     sensorName="illuminance"
@@ -85,7 +85,7 @@ class HomeCenterData extends React.Component {
                                     timeGranularityCallback={this.changeTimeGranularity.bind(this, "illuminance")}
                 />
             </Col>
-            <Col xs={6} md={5}>
+            <Col xs={12} md={5}>
                 <BcMeasureComponent measure={this.state.relativeHumidity.data}
                                     sensorLocation="upstairs corridor"
                                     sensorName="relative humidity"
@@ -93,7 +93,7 @@ class HomeCenterData extends React.Component {
                                     timeGranularityCallback={this.changeTimeGranularity.bind(this, "relativeHumidity")}
                 />
             </Col>
-            <Col xs={6} md={5}>
+            <Col xs={12} md={5}>
                 <WateringComponent watering={this.state.watering.data}
                                    activeTimeGranularity={this.state.watering.timeGranularity}
                                    timeGranularityCallback={this.changeTimeGranularity.bind(this, "watering")}

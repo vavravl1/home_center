@@ -6,7 +6,7 @@ import ButtonToolbar from "react-bootstrap/lib/ButtonToolbar";
 import Button from "react-bootstrap/lib/Button";
 
 class BcMeasureComponent extends React.Component {
-    isTimGranularityByDay = function() {
+    isTimGranularityByDay = function () {
         return this.props.activeTimeGranularity === 'ByDay'
     };
 
@@ -17,7 +17,7 @@ class BcMeasureComponent extends React.Component {
         let dates = this.props.measure
             .map(t => t.measureTimestamp)
             .map(t => {
-                if(this.isTimGranularityByDay()) {
+                if (this.isTimGranularityByDay()) {
                     return moment(t).startOf('day').format("DD/MM")
                 } else {
                     return moment(t).add(1, 'minute').startOf('minute').format("HH:mm")
@@ -25,7 +25,7 @@ class BcMeasureComponent extends React.Component {
             });
 
         let datasets = [];
-        if(this.isTimGranularityByDay()) {
+        if (this.isTimGranularityByDay()) {
             datasets = [{
                 label: 'Average',
                 backgroundColor: 'rgba(240, 247, 254, 0.5)',
@@ -43,7 +43,7 @@ class BcMeasureComponent extends React.Component {
                 data: max,
             }]
         } else {
-            datasets =  [{
+            datasets = [{
                 label: 'Average',
                 backgroundColor: 'rgba(240, 247, 254, 0.5)',
                 borderColor: 'rgb(0, 0, 0)',
@@ -73,44 +73,52 @@ class BcMeasureComponent extends React.Component {
         };
     };
 
-    handleTimeGranularity = function(value) {
+    handleTimeGranularity = function (value) {
         this.props.timeGranularityCallback(value)
     };
 
     render = () => {
+        let lastMeasure;
         if (this.props.measure.length > 0) {
-            let lastMeasure = this.props.measure[this.props.measure.length - 1];
-            return <div className="bc-measurement-box">
-                <h2 className="capital">{lastMeasure.sensor}</h2>
-                <h3>{this.props.sensorLocation}</h3>
-                <table className="table table-hover table-bordered table-condensed table-responsive">
-                    <tbody>
-                    <tr>
-                        <td scope="row">Last update</td>
-                        <td><Time value={new Date(lastMeasure.measureTimestamp)} format="HH:mm:ss"/></td>
-                    </tr>
-                    <tr>
-                        <td scope="row">Actual {lastMeasure.phenomenon}</td>
-                        <td>{lastMeasure.average} {lastMeasure.unit}</td>
-                    </tr>
-                    </tbody>
-                </table>
-                <Line data={this.valueChartData()} options={this.humidityChartOptions()} key={JSON.stringify(this.humidityChartOptions())}/>
-                <ButtonToolbar className="pull-right">
-                    <Button bsSize="xsmall"
-                            bsStyle={this.props.activeTimeGranularity === 'ByMinute' ? "primary" : "default"}
-                            onClick={this.handleTimeGranularity.bind(this, "ByMinute")}>By Minute</Button>
-                    <Button bsSize="xsmall"
-                            bsStyle={this.props.activeTimeGranularity === 'ByHour' ? "primary" : "default"}
-                            onClick={this.handleTimeGranularity.bind(this, "ByHour")}>By Hour</Button>
-                    <Button bsSize="xsmall"
-                            bsStyle={this.props.activeTimeGranularity === 'ByDay' ? "primary" : "default"}
-                            onClick={this.handleTimeGranularity.bind(this, "ByDay")}>By Day</Button>
-                </ButtonToolbar>
-            </div>
+            lastMeasure = this.props.measure[this.props.measure.length - 1];
         } else {
-            return <div className="capital">{this.props.sensorName} is not sending data.</div>
+            lastMeasure = {
+                sensor: this.props.sensorName,
+                measureTimestamp: "n/a",
+                phenomenon: "n/a",
+                unit: "",
+                average: "n/a",
+            }
         }
+        return <div className="bc-measurement-box">
+            <h2 className="capital">{lastMeasure.sensor}</h2>
+            <h3>{this.props.sensorLocation}</h3>
+            <table className="table table-hover table-bordered table-condensed table-responsive">
+                <tbody>
+                <tr>
+                    <td scope="row">Last update</td>
+                    <td><Time value={new Date(lastMeasure.measureTimestamp)} format="HH:mm:ss" /></td>
+                </tr>
+                <tr>
+                    <td scope="row">Actual {lastMeasure.phenomenon}</td>
+                    <td>{lastMeasure.average} {lastMeasure.unit}</td>
+                </tr>
+                </tbody>
+            </table>
+            <Line data={this.valueChartData()} options={this.humidityChartOptions()}
+                  key={JSON.stringify(this.humidityChartOptions())}/>
+            <ButtonToolbar className="pull-right">
+                <Button bsSize="xsmall"
+                        bsStyle={this.props.activeTimeGranularity === 'ByMinute' ? "primary" : "default"}
+                        onClick={this.handleTimeGranularity.bind(this, "ByMinute")}>By Minute</Button>
+                <Button bsSize="xsmall"
+                        bsStyle={this.props.activeTimeGranularity === 'ByHour' ? "primary" : "default"}
+                        onClick={this.handleTimeGranularity.bind(this, "ByHour")}>By Hour</Button>
+                <Button bsSize="xsmall"
+                        bsStyle={this.props.activeTimeGranularity === 'ByDay' ? "primary" : "default"}
+                        onClick={this.handleTimeGranularity.bind(this, "ByDay")}>By Day</Button>
+            </ButtonToolbar>
+        </div>
     };
 }
 
