@@ -1,7 +1,7 @@
 package controllers
 
 import org.scalatest.{Matchers, WordSpec}
-import play.api.mvc.Cookies
+import play.api.mvc.{Cookie, Cookies}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
@@ -11,13 +11,17 @@ import play.api.test.Helpers._
 class SignInControllerTest extends WordSpec with Matchers with IntegrationTest {
 
   "SignInController" when {
+    val token = getCsrfToken()
+
     "there is no logged user" should {
-      "has correct log in page" in {
+      "have correct log in page" in {
         val request = FakeRequest(GET, "/signIn").withHeaders()
         val signInPage = route(app, request).get
 
         status(signInPage) shouldBe OK
         contentType(signInPage) shouldBe Some("text/html")
+        token.name shouldBe "csrfToken"
+        token.value should have length  79
         //More assertions here are currently difficult as the page is rendered by javascript
       }
       "valid user can sign in" in {
@@ -30,14 +34,25 @@ class SignInControllerTest extends WordSpec with Matchers with IntegrationTest {
 
         status(signInPage) shouldBe SEE_OTHER
         val cookie:Cookies = cookies(signInPage)
-        cookie should have size(1)
+        cookie should have size 1
         cookie.get("id").isDefined shouldBe true
         cookie.get("id").get.maxAge shouldBe Some(43200) //12 hours
         cookie.get("id").get.value.length should be > 600
       }
 
-      "invalid user must not sign in" in {
+      "valid user can not sign in without correct csrf token" in {
         val request = FakeRequest(POST, "/signIn").withFormUrlEncodedBody(
+          ("email","vlvavra@cisco.com"),
+          ("password","123"),
+          ("rememberMe", "true")
+        ).withCookies(Cookie(token.name, "xxx"))
+        val signInPage = route(app, request).get
+
+        status(signInPage) shouldBe FORBIDDEN
+      }
+
+      "invalid user must not sign in" in {
+        val request = FakeRequest(POST, "/signIn?").withFormUrlEncodedBody(
           ("email","vlvavra@cisco.com"),
           ("password","XXX"),
           ("rememberMe", "true")

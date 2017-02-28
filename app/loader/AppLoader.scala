@@ -3,7 +3,6 @@ package loader
 import java.time.Clock
 
 import scala.language.postfixOps
-
 import akka.actor.Props
 import com.softwaremill.macwire._
 import config.HomeControllerConfiguration
@@ -21,7 +20,8 @@ import play.api.db.{DBComponents, HikariCPComponents}
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.mvc.Filter
 import play.api.routing.Router
-import play.api.{BuiltInComponents, _}
+import play.api._
+import play.filters.csrf.CSRFComponents
 import router.Routes
 import scalikejdbc.config.DBs
 
@@ -99,9 +99,9 @@ trait MqttConfig extends BuiltInComponents
   }
 }
 
-trait FiltersConfig extends BuiltInComponents {
+trait FiltersConfig extends BuiltInComponents with CSRFComponents {
   lazy val statsFilter: Filter = wire[StatsCounterFilter]
-  lazy override val httpFilters = Seq(statsFilter)
+  lazy override val httpFilters = Seq(statsFilter, csrfFilter)
 
   lazy val statsActor = actorSystem.actorOf(Props(wire[StatsActor]), StatsActor.name)
 }

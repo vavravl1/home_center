@@ -47,7 +47,7 @@ class SignInController(
    * @return The result to display.
    */
   def view = silhouette.UnsecuredAction.async { implicit request =>
-    Future.successful(Ok(views.html.index(None)))
+    Future.successful(Ok(views.html.index(None, CSRFHelper.token())))
   }
 
 
@@ -66,7 +66,7 @@ class SignInController(
    */
   def submit = silhouette.UnsecuredAction.async { implicit request =>
     SignInForm.form.bindFromRequest.fold(
-      form => Future.successful(BadRequest(views.html.index(None))),
+      form => Future.successful(BadRequest(views.html.index(None, CSRFHelper.token()))),
       data => {
         val credentials = Credentials(data.email, data.password)
         credentialsProvider.authenticate(credentials).flatMap { loginInfo =>
@@ -89,7 +89,7 @@ class SignInController(
           }
         }.recover {
           case e: ProviderException =>
-            Unauthorized(views.html.index(None, Some("signIn/?error=invalid.credentials")))
+            Unauthorized(views.html.index(None,  CSRFHelper.token(), Some("signIn/?error=invalid.credentials")))
         }
       }
     )

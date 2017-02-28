@@ -1,4 +1,5 @@
-@(user: Option[security.User], routerPath: Option[String] = None)
+@import play.filters.csrf.CSRF.Token
+@(user: Option[security.User], csrfToken: Token, routerPath: Option[String] = None)
 
 <!DOCTYPE html>
 <html lang="en">
@@ -12,6 +13,8 @@
         <input type="hidden" id="bcSensorReading" value="@routes.BigClownController.getSensorReading("")">
         <input type="hidden" id="username" value="@user.map(u=>u.email)">
         <input type="hidden" id="router_path" value="@routerPath">
+        <input type="hidden" id="csrf_token_name" value="@csrfToken.name">
+        <input type="hidden" id="csrf_token_value" value="@csrfToken.value">
         <div id="reactView"></div>
     </body>
     <script src="@routes.Assets.versioned("compiled/bundle.js")" ></script>

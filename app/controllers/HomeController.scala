@@ -35,8 +35,8 @@ class HomeController(actorSystem: ActorSystem,
     silhouette.UserAwareRequestHandler { userAwareRequest =>
       Future.successful(HandlerResult(Ok, userAwareRequest.identity))
     }.map {
-      case HandlerResult(r, Some(user)) => Ok(views.html.index(Some(user)))
-      case HandlerResult(r, None) => Ok(views.html.index(None))
+      case HandlerResult(r, Some(user)) => Ok(views.html.index(Some(user), CSRFHelper.token(), None))
+      case HandlerResult(r, None) => Ok(views.html.index(None, CSRFHelper.token()))
     }
   }
 //

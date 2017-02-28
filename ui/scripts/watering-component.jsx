@@ -134,7 +134,11 @@ class WateringComponent extends React.Component {
     };
 
     manualWatering = function () {
-        let wateringUrl = document.getElementById('wateringBackendUrl').value + "/manual-watering";
+        let wateringBackendUrl = document.getElementById('wateringBackendUrl').value;
+        let csrfTokenName = document.getElementById('csrf_token_name').value;
+        let csrfTokenValue = document.getElementById('csrf_token_value').value;
+
+        let wateringUrl = wateringBackendUrl + "/manual-watering?" + csrfTokenName + "=" + csrfTokenValue;
         axios({
             method: 'post',
             url: wateringUrl,
