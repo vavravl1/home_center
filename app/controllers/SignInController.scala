@@ -76,7 +76,7 @@ class SignInController(
               silhouette.env.authenticatorService.create(loginInfo).map {
                 case authenticator if data.rememberMe =>
                   authenticator.copy(
-                    expirationDateTime = new DateTime(clock.instant().toEpochMilli) + (10 minutes)
+                    expirationDateTime = new DateTime(clock.instant().toEpochMilli) + (7 days)
                   )
                 case authenticator => authenticator
               }.flatMap { authenticator =>
