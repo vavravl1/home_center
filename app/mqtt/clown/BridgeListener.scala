@@ -2,22 +2,22 @@ package mqtt.clown
 
 import java.time.Clock
 
+import akka.actor.Actor
 import dao.BcMeasureDao
 import entities.bigclown.{BcMeasure, BcMessage}
-import mqtt.Listener
+import mqtt.MqttListenerMessage.{ConsumeMessage, Ping}
 import play.api.Logger
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 
 /**
-  * Stores messages from watering to dao
+  * Stores messages from big clown
   */
-class BridgeListener(bcDao: BcMeasureDao, clock: Clock) extends Listener {
-  override val topic = "nodes/bridge/0/#"
-
+class BridgeListener(bcDao: BcMeasureDao, clock: Clock) extends Actor {
   val bcSensorTopic = """nodes/bridge/0/([\w-]+)/([\w-]+)""".r
 
-  override def messageReceived(receivedTopic: String, json: JsValue): Unit = {
-    receivedTopic match {
+  override def receive(): Receive = {
+    case Ping => ()
+    case ConsumeMessage(receivedTopic: String, json: JsValue) => receivedTopic match {
       case bcSensorTopic(sensor, _) =>
         Json.fromJson(json)(BcMessage.reads) match {
           case JsSuccess(msg: BcMessage, _) =>
@@ -25,6 +25,7 @@ class BridgeListener(bcDao: BcMeasureDao, clock: Clock) extends Listener {
             bcDao.save(measure)
           case JsError(_) => Logger.error(s"Parsing $json failed");
         }
+      case _ => {}
     }
   }
 }

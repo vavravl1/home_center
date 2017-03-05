@@ -2,31 +2,30 @@ package loader
 
 import java.time.Clock
 
-import scala.language.postfixOps
-import akka.actor.Props
+import akka.actor.{ActorRef, Props}
 import com.softwaremill.macwire._
 import config.HomeControllerConfiguration
-import controllers.SignInController
-import controllers.{Assets, BigClownController, HomeController, WateringController}
+import controllers._
 import dao.{BcMeasureDao, WateringDao}
 import filters.StatsActor.Ping
 import filters.{StatsActor, StatsCounterFilter}
 import mqtt.clown.BridgeListener
 import mqtt.watering.{WateringCommander, WateringHelloListener, WateringListener}
-import mqtt.{Listener, MqttConnector, MqttDispatchingListener}
+import mqtt.{MqttConnector, MqttDispatchingListener, MqttListenerMessage}
 import play.api.ApplicationLoader.Context
+import play.api._
 import play.api.db.evolutions.EvolutionsComponents
 import play.api.db.{DBComponents, HikariCPComponents}
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.mvc.Filter
 import play.api.routing.Router
-import play.api._
 import play.filters.csrf.CSRFComponents
 import router.Routes
 import scalikejdbc.config.DBs
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 
 /**
@@ -83,19 +82,22 @@ trait MqttConfig extends BuiltInComponents
   with DaoConfig
   with EnvironmentSettingsConfig
   with ClockConfig {
-  lazy val mqttListeners: List[Listener] = List()
   lazy val mqttDispatchingListener = wire[MqttDispatchingListener]
   lazy val mqttConnector = wire[MqttConnector]
   lazy val wateringCommander = wire[WateringCommander]
 
-  lazy val wateringListener: WateringListener = wire[WateringListener]
-  lazy val wateringHelloListener: WateringHelloListener = wire[WateringHelloListener]
-  lazy val bcBridgeListener: BridgeListener = wire[BridgeListener]
+  lazy val wateringListener:ActorRef = actorSystem.actorOf(Props(wire[WateringListener]))
+  lazy val WateringHelloListener:ActorRef = actorSystem.actorOf(Props(wire[WateringHelloListener]))
+  lazy val bcBridgeListenerActor:ActorRef = actorSystem.actorOf(Props(wire[BridgeListener]))
 
   def initializeListeners():Unit = {
-    mqttDispatchingListener.addListener(wateringListener)
-    mqttDispatchingListener.addListener(wateringHelloListener)
-    mqttDispatchingListener.addListener(bcBridgeListener)
+    bcBridgeListenerActor ! MqttListenerMessage.Ping
+    wateringListener ! MqttListenerMessage.Ping
+    WateringHelloListener ! MqttListenerMessage.Ping
+
+    mqttDispatchingListener.addListener(bcBridgeListenerActor.path)
+    mqttDispatchingListener.addListener(wateringListener.path)
+    mqttDispatchingListener.addListener(WateringHelloListener.path)
   }
 }
 

@@ -26,6 +26,7 @@ libraryDependencies += filters
 // Test
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
 libraryDependencies += "org.scalamock" %% "scalamock-scalatest-support" % "3.2.2" % "test"
+libraryDependencies += "com.typesafe.akka" % "akka-testkit_2.11" % "2.5-M2"
 
 // MQTT
 resolvers += "Eclipse Paho Repo" at "https://repo.eclipse.org/content/repositories/paho-releases/"
