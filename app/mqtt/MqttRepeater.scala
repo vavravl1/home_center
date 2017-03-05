@@ -15,26 +15,39 @@ import scala.util.{Failure, Success, Try}
   */
 class MqttRepeater(
                     remoteConfiguration: HomeControllerConfiguration,
-                    actorSystem: ActorSystem
+                    actorSystem: ActorSystem,
+                    localMqttConnector: MqttConnector
                   ) extends Actor {
   private val mqttConnector = new MqttConnector(
     remoteConfiguration,
-    new RepeatingMqttCallback(),
+    new RepeatingMqttCallback(localMqttConnector),
     actorSystem
   )
 
   override def receive(): Receive = {
     case Ping => mqttConnector.reconnect.run()
-    case ConsumeMessage(receivedTopic: String, json: JsValue) =>
-      Try(mqttConnector.sendRaw(receivedTopic, json.toString())) match {
+    case ConsumeMessage(receivedTopic: String, json: JsValue) => receivedTopic match {
+      case MqttRepeater.commandTopic() => Unit // Don't replay watering commands
+      case _ => Try(mqttConnector.sendRaw(receivedTopic, json.toString())) match {
         case Success(_) =>
         case Failure(exception) => Logger.warn("Unable to repeat message", exception)
       }
+
+    }
   }
 }
 
-class RepeatingMqttCallback extends MqttCallback {
+object MqttRepeater {
+  val commandTopic = "home/watering/ibisek/commands".r
+}
+
+class RepeatingMqttCallback(localMqttConnector: MqttConnector) extends MqttCallback {
+
+  override def messageArrived(receivedTopic: String, message: MqttMessage): Unit = receivedTopic match {
+    case MqttRepeater.commandTopic() => localMqttConnector.sendRaw(receivedTopic, new String(message.getPayload))
+    case _ => Unit
+  }
+
   override def deliveryComplete(token: IMqttDeliveryToken): Unit = {}
-  override def messageArrived(topic: String, message: MqttMessage): Unit = {}
   override def connectionLost(cause: Throwable): Unit = {}
 }

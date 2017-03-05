@@ -93,7 +93,10 @@ trait MqttConfig extends BuiltInComponents
       HomeControllerConfiguration(
         configuration.getString("home_center.mqtt_repeater.url").orNull,
         configuration.getString("home_center.mqtt_repeater.clientId").orNull
-      ), actorSystem)
+      ),
+      actorSystem,
+      mqttConnector
+    )
   ))
 
 
