@@ -22,8 +22,9 @@ class BcMeasureDao(_clock: Clock) {
   def save(message: BcMeasure): Unit = {
     DB.autoCommit(implicit session => {
       sql"""
-          INSERT INTO bc_measure (phenomenon, sensor, measure_timestamp, value, unit)
+          INSERT INTO bc_measure (location, phenomenon, sensor, measure_timestamp, value, unit)
           VALUES (
+              ${message.location},
               ${message.phenomenon},
               ${message.sensor},
               ${new java.sql.Timestamp(message.measureTimestamp.toEpochMilli)},
@@ -65,19 +66,20 @@ class BcMeasureDao(_clock: Clock) {
       val lastHourTs = new Timestamp(lastHour.toEpochMilli)
       val aggregated =
         sql"""
-           SELECT MAX(measure_timestamp) AS ts, AVG(value) AS val, unit, sensor, phenomenon
+           SELECT MAX(measure_timestamp) AS ts, AVG(value) AS val, unit, sensor, phenomenon, location
            FROM bc_measure
            WHERE measure_timestamp < ${lastHourTs}
            AND aggregated = FALSE
-           GROUP BY EXTRACT(HOUR FROM measure_timestamp), unit, sensor, phenomenon
+           GROUP BY EXTRACT(HOUR FROM measure_timestamp), unit, sensor, phenomenon, location
            ORDER BY MAX(measure_timestamp)
         """
           .map(rs => BcMeasure(
-            rs.string("sensor"),
-            rs.string("phenomenon"),
-            Instant.ofEpochMilli(rs.timestamp("ts").millis),
-            rs.double("val"),
-            rs.string("unit")
+            location = rs.string("location"),
+            sensor = rs.string("sensor"),
+            phenomenon = rs.string("phenomenon"),
+            measureTimestamp = Instant.ofEpochMilli(rs.timestamp("ts").millis),
+            value = rs.double("val"),
+            unit = rs.string("unit")
           )).toList().apply()
       Logger.info(s"Loaded ${aggregated.size} measures to aggregate")
       val updated = sql"""
@@ -89,8 +91,8 @@ class BcMeasureDao(_clock: Clock) {
       Logger.info(s"Removed $updated rows")
       if (aggregated.size > 0) {
         sql"""
-          INSERT INTO bc_measure (sensor, measure_timestamp, value, unit, phenomenon, aggregated)
-          VALUES (?, ?, ?, ?, ?, ?)
+          INSERT INTO bc_measure (sensor, measure_timestamp, value, unit, phenomenon, aggregated, location)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
           """
           .batch(aggregated.map(message => Seq(
             message.sensor,
@@ -98,7 +100,8 @@ class BcMeasureDao(_clock: Clock) {
             message.value,
             message.unit,
             message.phenomenon,
-            true
+            true,
+            message.location
           )):_*).apply()
       }
     })

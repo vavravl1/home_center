@@ -9,6 +9,7 @@ import scalikejdbc._
 /**
   * Represents measured value from any bc sensor
   *
+  * @param location         where the value was taken, e.g. "remote/2"
   * @param sensor           type of the sensor that measured this value
   * @param phenomenon       of the measured value
   * @param measureTimestamp when the measure happened
@@ -16,6 +17,7 @@ import scalikejdbc._
   * @param unit             unit of the measure
   */
 case class BcMeasure(
+                      location: String,
                       sensor: String,
                       phenomenon: String,
                       measureTimestamp: Instant,

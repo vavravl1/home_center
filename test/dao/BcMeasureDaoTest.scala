@@ -19,12 +19,12 @@ class BcMeasureDaoTest extends WordSpec with Matchers with DbTest with MockFacto
       val i = Instant.ofEpochSecond(0)
       bcMeasureDao.cleanDb()
 
-      bcMeasureDao.save(BcMeasure("thermometer", "temperature", i, 10, "C"))
-      bcMeasureDao.save(BcMeasure("thermometer", "temperature", i.plus(30, MINUTES), 20, "C"))
+      bcMeasureDao.save(BcMeasure("remote/1", "thermometer", "temperature", i, 10, "C"))
+      bcMeasureDao.save(BcMeasure("remote/1", "thermometer", "temperature", i.plus(30, MINUTES), 20, "C"))
 
-      bcMeasureDao.save(BcMeasure("thermometer", "temperature", i.plus(70, MINUTES), 30, "C"))
-      bcMeasureDao.save(BcMeasure("thermometer", "temperature", i.plus(80, MINUTES), 30, "C"))
-      bcMeasureDao.save(BcMeasure("thermometer", "temperature", i.plus(90, MINUTES), 60, "C"))
+      bcMeasureDao.save(BcMeasure("remote/1", "thermometer", "temperature", i.plus(70, MINUTES), 30, "C"))
+      bcMeasureDao.save(BcMeasure("remote/1", "thermometer", "temperature", i.plus(80, MINUTES), 30, "C"))
+      bcMeasureDao.save(BcMeasure("remote/1", "thermometer", "temperature", i.plus(90, MINUTES), 60, "C"))
 
       "correctly samples the temperatures" in {
         (clock.instant _).expects().returning(i).anyNumberOfTimes

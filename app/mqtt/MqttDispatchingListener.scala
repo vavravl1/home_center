@@ -1,6 +1,6 @@
 package mqtt
 
-import akka.actor.{Actor, ActorPath, ActorSystem}
+import akka.actor.{ActorPath, ActorSystem}
 import mqtt.MqttListenerMessage.{ConsumeMessage, Ping}
 import org.eclipse.paho.client.mqttv3.{IMqttDeliveryToken, MqttCallback, MqttMessage}
 import play.api.Logger

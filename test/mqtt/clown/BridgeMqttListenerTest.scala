@@ -27,7 +27,7 @@ class BridgeMqttListenerTest extends WordSpec with Matchers with MockFactory {
       "receive messages from thermometer" in {
         val dao = mock[BcMeasureDaoCtor]
         val listener = TestActorRef[BridgeListener](Props(wire[BridgeListener]))
-        (dao.save _).expects(BcMeasure("thermometer", "temperature", instant, 19.19, "\u2103"))
+        (dao.save _).expects(BcMeasure("bridge/0", "thermometer", "temperature", instant, 19.19, "\u2103"))
 
         listener ! ConsumeMessage(
           "nodes/bridge/0/thermometer/i2c0-48",
