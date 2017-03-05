@@ -18,7 +18,7 @@ trait IntegrationTest {
 
   trait WithoutMqttAppComponents extends AppComponents {
     override lazy val mqttConnector = new MqttConnector(null, null, actorSystem) {
-      override def reconnect() = new Runnable {
+      override val reconnect = new Runnable {
         override def run() = {}
       }
     }
