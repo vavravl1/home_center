@@ -9,4 +9,5 @@ import scala.concurrent.Future
   */
 trait JsonSender {
   def send[T](topic: String, payload: T)(implicit writes: Writes[T]): Future[Unit]
+  def sendRaw(topic: String, payload: String): Unit
 }

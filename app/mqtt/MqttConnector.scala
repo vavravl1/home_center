@@ -2,11 +2,10 @@ package mqtt
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
-
 import akka.actor.ActorSystem
 import config.HomeControllerConfiguration
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence
-import org.eclipse.paho.client.mqttv3.{MqttClient, MqttConnectOptions, MqttException, MqttMessage}
+import org.eclipse.paho.client.mqttv3._
 import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{Json, Writes}
@@ -18,41 +17,42 @@ import scala.concurrent.Future
   */
 class MqttConnector(
                      configuration: HomeControllerConfiguration,
-                     val mqttListener: MqttDispatchingListener,
-                     val actorSystem: ActorSystem
+                     mqttListener: MqttCallback,
+                     actorSystem: ActorSystem
                    ) extends JsonSender {
   private var mqttClient: Option[MqttClient] = None
-  actorSystem.scheduler.scheduleOnce(0 seconds, reconnect)
 
-  def reconnect():Runnable = {
+  val reconnect: Runnable = {
     new Runnable {
       override def run(): Unit = {
         mqttClient match {
           case Some(_) => Logger.info("Mqtt client has connected")
-          case None =>
+          case None if configuration.mqttClientId != null =>
             mqttClient = connect()
-            actorSystem.scheduler.scheduleOnce(2 seconds, reconnect)
+            actorSystem.scheduler.scheduleOnce(10 seconds, reconnect)
+          case None if configuration.mqttClientId == null => Unit
         }
       }
     }
   }
 
   private def connect(): Option[MqttClient] = try {
+    Logger.info(s"Connecting to broker $configuration.mqttBrokerUrl as $configuration.mqttClientId")
+
     val mqttClient = new MqttClient(configuration.mqttBrokerUrl, configuration.mqttClientId, new MemoryPersistence)
     val connOpts = new MqttConnectOptions()
     connOpts.setAutomaticReconnect(true)
     connOpts.setCleanSession(true)
-    Logger.info(s"Connecting to broker $configuration.mqttBrokerUrl as $configuration.mqttClientId")
-    mqttClient.connect(connOpts)
-    Logger.info("Connected")
     mqttClient.setCallback(mqttListener)
+    mqttClient.setTimeToWait(5000)
+    mqttClient.connect(connOpts)
     mqttClient.subscribe("#")
-    mqttClient.setTimeToWait(300)
-    Some(mqttClient)
+    Logger.info("Connected")
+    return Some(mqttClient)
   } catch {
     case me: MqttException =>
       Logger.error("Connection failed due {}", me)
-      None
+      return None
   }
 
   def disconnect(): Future[Unit] = {
@@ -76,6 +76,17 @@ class MqttConnector(
           )
         case None => throw new RuntimeException("Mqtt client is not yet connected")
       }
+    }
+  }
+
+  override def sendRaw(topic: String, payload: String): Unit = {
+      mqttClient match {
+        case Some(client) => Logger.debug(s"Raw publishing $payload to $topic")
+          client.publish(
+            topic,
+            new MqttMessage(payload.getBytes)
+          )
+        case None => {}
     }
   }
 }

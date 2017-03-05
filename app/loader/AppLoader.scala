@@ -11,7 +11,7 @@ import filters.StatsActor.Ping
 import filters.{StatsActor, StatsCounterFilter}
 import mqtt.clown.BridgeListener
 import mqtt.watering.{WateringCommander, WateringHelloListener, WateringListener}
-import mqtt.{MqttConnector, MqttDispatchingListener, MqttListenerMessage}
+import mqtt.{MqttConnector, MqttDispatchingListener, MqttListenerMessage, MqttRepeater}
 import play.api.ApplicationLoader.Context
 import play.api._
 import play.api.db.evolutions.EvolutionsComponents
@@ -41,13 +41,6 @@ class AppApplicationLoader extends ApplicationLoader {
 
   def createApp(context: Context) =
     new BuiltInComponentsFromContext(context) with AppComponents
-}
-
-trait EnvironmentSettingsConfig extends BuiltInComponents {
-  lazy val config = HomeControllerConfiguration(
-    mqttBrokerUrl = configuration.getString("home_center.mqtt.url").get,
-    mqttClientId = configuration.getString("home_center.mqtt.clientId").get
-  )
 }
 
 trait ClockConfig extends BuiltInComponents {
@@ -80,24 +73,42 @@ trait DaoConfig extends BuiltInComponents with ClockConfig {
 
 trait MqttConfig extends BuiltInComponents
   with DaoConfig
-  with EnvironmentSettingsConfig
   with ClockConfig {
-  lazy val mqttDispatchingListener = wire[MqttDispatchingListener]
-  lazy val mqttConnector = wire[MqttConnector]
+  lazy val mqttDispatchingListener:MqttDispatchingListener = wire[MqttDispatchingListener]
+  lazy val mqttConnector = new MqttConnector(
+    HomeControllerConfiguration(
+      mqttBrokerUrl = configuration.getString("home_center.mqtt.url").get,
+      mqttClientId = configuration.getString("home_center.mqtt.clientId").get
+    ),
+    mqttDispatchingListener,
+    actorSystem
+  )
   lazy val wateringCommander = wire[WateringCommander]
 
   lazy val wateringListener:ActorRef = actorSystem.actorOf(Props(wire[WateringListener]))
-  lazy val WateringHelloListener:ActorRef = actorSystem.actorOf(Props(wire[WateringHelloListener]))
+  lazy val wateringHelloListener:ActorRef = actorSystem.actorOf(Props(wire[WateringHelloListener]))
   lazy val bcBridgeListenerActor:ActorRef = actorSystem.actorOf(Props(wire[BridgeListener]))
+  lazy val mqttRepeaterActor:ActorRef = actorSystem.actorOf(Props(
+    new MqttRepeater(
+      HomeControllerConfiguration(
+        configuration.getString("home_center.mqtt_repeater.url").orNull,
+        configuration.getString("home_center.mqtt_repeater.clientId").orNull
+      ), actorSystem)
+  ))
+
 
   def initializeListeners():Unit = {
+    mqttConnector.reconnect.run()
+
     bcBridgeListenerActor ! MqttListenerMessage.Ping
     wateringListener ! MqttListenerMessage.Ping
-    WateringHelloListener ! MqttListenerMessage.Ping
+    wateringHelloListener ! MqttListenerMessage.Ping
+    mqttRepeaterActor ! MqttListenerMessage.Ping
 
     mqttDispatchingListener.addListener(bcBridgeListenerActor.path)
     mqttDispatchingListener.addListener(wateringListener.path)
-    mqttDispatchingListener.addListener(WateringHelloListener.path)
+    mqttDispatchingListener.addListener(wateringHelloListener.path)
+    mqttDispatchingListener.addListener(mqttRepeaterActor.path)
   }
 }
 
