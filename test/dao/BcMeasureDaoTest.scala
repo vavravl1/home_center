@@ -19,12 +19,12 @@ class BcMeasureDaoTest extends WordSpec with Matchers with DbTest with MockFacto
       val i = Instant.ofEpochSecond(0)
       bcMeasureDao.cleanDb()
 
-      bcMeasureDao.save(BcMeasure("remote/1", "thermometer", "temperature", i, 10, "C"))
-      bcMeasureDao.save(BcMeasure("remote/1", "thermometer", "temperature", i.plus(30, MINUTES), 20, "C"))
+      bcMeasureDao.save(BcMeasure("remote/0", "thermometer", "temperature", i, 10, "C"))
+      bcMeasureDao.save(BcMeasure("remote/0", "thermometer", "temperature", i.plus(30, MINUTES), 20, "C"))
 
-      bcMeasureDao.save(BcMeasure("remote/1", "thermometer", "temperature", i.plus(70, MINUTES), 30, "C"))
-      bcMeasureDao.save(BcMeasure("remote/1", "thermometer", "temperature", i.plus(80, MINUTES), 30, "C"))
-      bcMeasureDao.save(BcMeasure("remote/1", "thermometer", "temperature", i.plus(90, MINUTES), 60, "C"))
+      bcMeasureDao.save(BcMeasure("remote/0", "thermometer", "temperature", i.plus(70, MINUTES), 30, "C"))
+      bcMeasureDao.save(BcMeasure("remote/0", "thermometer", "temperature", i.plus(80, MINUTES), 30, "C"))
+      bcMeasureDao.save(BcMeasure("remote/0", "thermometer", "temperature", i.plus(90, MINUTES), 60, "C"))
 
       "correctly samples the temperatures" in {
         (clock.instant _).expects().returning(i).anyNumberOfTimes
@@ -36,6 +36,8 @@ class BcMeasureDaoTest extends WordSpec with Matchers with DbTest with MockFacto
         bcMeasureDao.getSampledMeasures("temperature")(0).unit shouldBe "C"
         bcMeasureDao.getSampledMeasures("temperature")(0).sensor shouldBe "thermometer"
         bcMeasureDao.getSampledMeasures("temperature")(0).phenomenon shouldBe "temperature"
+        bcMeasureDao.getSampledMeasures("temperature")(0).location shouldBe "upstairs corridor"
+
 
         bcMeasureDao.getSampledMeasures("temperature")(1).average shouldBe 40
         bcMeasureDao.getSampledMeasures("temperature")(1).min shouldBe 30
@@ -44,6 +46,7 @@ class BcMeasureDaoTest extends WordSpec with Matchers with DbTest with MockFacto
         bcMeasureDao.getSampledMeasures("temperature")(1).unit shouldBe "C"
         bcMeasureDao.getSampledMeasures("temperature")(1).sensor shouldBe "thermometer"
         bcMeasureDao.getSampledMeasures("temperature")(1).phenomenon shouldBe "temperature"
+        bcMeasureDao.getSampledMeasures("temperature")(1).location shouldBe "upstairs corridor"
       }
 
       "correctly groups the temperatures" in {

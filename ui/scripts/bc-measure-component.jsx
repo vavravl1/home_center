@@ -84,6 +84,7 @@ class BcMeasureComponent extends React.Component {
         } else {
             lastMeasure = {
                 sensor: this.props.sensorName,
+                location: "n/a",
                 measureTimestamp: "n/a",
                 phenomenon: "n/a",
                 unit: "",
@@ -92,7 +93,7 @@ class BcMeasureComponent extends React.Component {
         }
         return <div className="bc-measurement-box">
             <h2 className="capital">{lastMeasure.sensor}</h2>
-            <h3>{this.props.sensorLocation}</h3>
+            <h3>{lastMeasure.location}</h3>
             <table className="table table-hover table-bordered table-condensed table-responsive">
                 <tbody>
                 <tr>
@@ -124,7 +125,6 @@ class BcMeasureComponent extends React.Component {
 
 BcMeasureComponent.PropTypes = {
     measure: PropTypes.arrayOf(PropTypes.object).isRequired,
-    sensorLocation: PropTypes.string.isRequired,
     sensorName: PropTypes.string.isRequired,
     activeTimeGranularity: PropTypes.string.isRequired,
     timeGranularityCallback: PropTypes.func.isRequired

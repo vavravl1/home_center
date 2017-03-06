@@ -41,14 +41,19 @@ class BcMeasureDao(_clock: Clock) {
       val (extractTime, lastMeasureTimestamp) = by.toExtractAndTime
 
       sql"""
-           SELECT MAX(measure_timestamp) AS ts, ROUND(AVG(value), 2) AS avg, ROUND(MIN(value), 2) as min, ROUND(MAX(value), 2) as max, unit, sensor
+           SELECT
+            MAX(measure_timestamp) AS ts, ROUND(AVG(value), 2) AS avg,
+            ROUND(MIN(value), 2) as min, ROUND(MAX(value), 2) as max, unit, sensor,
+            bc_sensor_location.label AS label
            FROM bc_measure
+           JOIN bc_sensor_location ON bc_measure.location = bc_sensor_location.location
            WHERE phenomenon = ${phenomenon}
            AND measure_timestamp > ${lastMeasureTimestamp}
-           GROUP BY EXTRACT(${extractTime} FROM measure_timestamp), unit, sensor
+           GROUP BY EXTRACT(${extractTime} FROM measure_timestamp), unit, sensor, label
            ORDER BY MAX(measure_timestamp)
         """
         .map(rs => AggregatedBcMeasure(
+          location = rs.string("label"),
           sensor = rs.string("sensor"),
           phenomenon = phenomenon,
           measureTimestamp = Instant.ofEpochMilli(rs.timestamp("ts").millis),

@@ -25,6 +25,13 @@ case class BcMeasure(
                       unit: String
                     )
 
+/**
+  * Represents location of all associated sensors.
+  * @param location as seen by BigClown nodes, e.g. "remote/2"
+  * @param label as seen by the user, e.g. "Kitchen"
+  */
+case class BcSensorLocation(location:String, label: String)
+
 object BcMeasure extends SQLSyntaxSupport[BcMeasure] {
   implicit val writes: Writes[BcMeasure] = Json.writes[BcMeasure]
 }
@@ -41,6 +48,7 @@ object BcMeasure extends SQLSyntaxSupport[BcMeasure] {
   * @param unit             unit of the measure
   */
 case class AggregatedBcMeasure(
+                                location: String,
                                 sensor: String,
                                 phenomenon: String,
                                 measureTimestamp: Instant,
