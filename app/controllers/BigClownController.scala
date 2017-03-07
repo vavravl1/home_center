@@ -11,10 +11,11 @@ import scala.concurrent.Future
   * Controller for the BigClown sensors
   */
 class BigClownController(bcMeasureDao: BcMeasureDao) extends Controller {
-  def getSensorReading(sensor: String, timeGranularity: String) = Action.async {
+  def getSensorReading(location: String, position: String, sensor: String, timeGranularity: String) = Action.async {
     Future {
       Ok(Json.toJson(
         bcMeasureDao.getSampledMeasures(
+          location + "/" + position,
           sensor,
           TimeGranularity.parse(timeGranularity)
         )))

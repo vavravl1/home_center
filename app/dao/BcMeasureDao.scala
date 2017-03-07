@@ -36,7 +36,10 @@ class BcMeasureDao(_clock: Clock) {
     })
   }
 
-  def getSampledMeasures(phenomenon: String, by: TimeGranularity = ByHour): Seq[AggregatedBcMeasure] = {
+  def getSampledMeasures(
+                          location: String,
+                          phenomenon: String,
+                          by: TimeGranularity = ByHour): Seq[AggregatedBcMeasure] = {
     DB.readOnly(implicit session => {
       val (extractTime, lastMeasureTimestamp) = by.toExtractAndTime
 
@@ -47,7 +50,7 @@ class BcMeasureDao(_clock: Clock) {
             bc_sensor_location.label AS label
            FROM bc_measure
            JOIN bc_sensor_location ON bc_measure.location = bc_sensor_location.location
-           WHERE phenomenon = ${phenomenon}
+           WHERE phenomenon = ${phenomenon} AND bc_measure.location = ${location}
            AND measure_timestamp > ${lastMeasureTimestamp}
            GROUP BY EXTRACT(${extractTime} FROM measure_timestamp), unit, sensor, label
            ORDER BY MAX(measure_timestamp)

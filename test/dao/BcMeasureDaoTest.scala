@@ -29,38 +29,38 @@ class BcMeasureDaoTest extends WordSpec with Matchers with DbTest with MockFacto
       "correctly samples the temperatures" in {
         (clock.instant _).expects().returning(i).anyNumberOfTimes
 
-        bcMeasureDao.getSampledMeasures("temperature")(0).average shouldBe 15
-        bcMeasureDao.getSampledMeasures("temperature")(0).min shouldBe 10
-        bcMeasureDao.getSampledMeasures("temperature")(0).max shouldBe 20
-        bcMeasureDao.getSampledMeasures("temperature")(0).measureTimestamp shouldBe i.plus(30, MINUTES)
-        bcMeasureDao.getSampledMeasures("temperature")(0).unit shouldBe "C"
-        bcMeasureDao.getSampledMeasures("temperature")(0).sensor shouldBe "thermometer"
-        bcMeasureDao.getSampledMeasures("temperature")(0).phenomenon shouldBe "temperature"
-        bcMeasureDao.getSampledMeasures("temperature")(0).location shouldBe "upstairs corridor"
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(0).average shouldBe 15
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(0).min shouldBe 10
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(0).max shouldBe 20
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(0).measureTimestamp shouldBe i.plus(30, MINUTES)
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(0).unit shouldBe "C"
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(0).sensor shouldBe "thermometer"
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(0).phenomenon shouldBe "temperature"
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(0).location shouldBe "upstairs corridor"
 
 
-        bcMeasureDao.getSampledMeasures("temperature")(1).average shouldBe 40
-        bcMeasureDao.getSampledMeasures("temperature")(1).min shouldBe 30
-        bcMeasureDao.getSampledMeasures("temperature")(1).max shouldBe 60
-        bcMeasureDao.getSampledMeasures("temperature")(1).measureTimestamp shouldBe i.plus(90, MINUTES)
-        bcMeasureDao.getSampledMeasures("temperature")(1).unit shouldBe "C"
-        bcMeasureDao.getSampledMeasures("temperature")(1).sensor shouldBe "thermometer"
-        bcMeasureDao.getSampledMeasures("temperature")(1).phenomenon shouldBe "temperature"
-        bcMeasureDao.getSampledMeasures("temperature")(1).location shouldBe "upstairs corridor"
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(1).average shouldBe 40
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(1).min shouldBe 30
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(1).max shouldBe 60
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(1).measureTimestamp shouldBe i.plus(90, MINUTES)
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(1).unit shouldBe "C"
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(1).sensor shouldBe "thermometer"
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(1).phenomenon shouldBe "temperature"
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(1).location shouldBe "upstairs corridor"
       }
 
       "correctly groups the temperatures" in {
         (clock.instant _).expects().returning(i.plus(3, HOURS)).anyNumberOfTimes
         bcMeasureDao.sensorAggregation()
-        bcMeasureDao.getSampledMeasures("temperature")(0).average shouldBe 15
-        bcMeasureDao.getSampledMeasures("temperature")(0).measureTimestamp shouldBe i.plus(30, MINUTES)
-        bcMeasureDao.getSampledMeasures("temperature")(0).min shouldBe 15
-        bcMeasureDao.getSampledMeasures("temperature")(0).max shouldBe 15
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(0).average shouldBe 15
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(0).measureTimestamp shouldBe i.plus(30, MINUTES)
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(0).min shouldBe 15
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(0).max shouldBe 15
 
-        bcMeasureDao.getSampledMeasures("temperature")(1).average shouldBe 40
-        bcMeasureDao.getSampledMeasures("temperature")(1).measureTimestamp shouldBe i.plus(90, MINUTES)
-        bcMeasureDao.getSampledMeasures("temperature")(1).min shouldBe 40
-        bcMeasureDao.getSampledMeasures("temperature")(1).max shouldBe 40
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(1).average shouldBe 40
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(1).measureTimestamp shouldBe i.plus(90, MINUTES)
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(1).min shouldBe 40
+        bcMeasureDao.getSampledMeasures("remote/0", "temperature")(1).max shouldBe 40
 
         DB.autoCommit(implicit session => {
           sql"""SELECT COUNT(*) FROM bc_measure""".map(rs => rs.int(1)).single.apply() shouldBe Some(2)

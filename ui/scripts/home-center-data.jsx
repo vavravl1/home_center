@@ -39,10 +39,10 @@ class HomeCenterData extends React.Component {
 
         axios.all([
             axios.get(wateringUrl + "?timeGranularity=" + this.state.watering.timeGranularity),
-            axios.get(bcSensorReading + "temperature?timeGranularity=" + this.state.temperature.timeGranularity),
-            axios.get(bcSensorReading + "concentration?timeGranularity=" + this.state.carbonDioxide.timeGranularity),
-            axios.get(bcSensorReading + "illuminance?timeGranularity=" + this.state.illuminance.timeGranularity),
-            axios.get(bcSensorReading + "relative-humidity?timeGranularity=" + this.state.relativeHumidity.timeGranularity)
+            axios.get(bcSensorReading + "bridge/0/temperature?timeGranularity=" + this.state.temperature.timeGranularity),
+            axios.get(bcSensorReading + "bridge/0/concentration?timeGranularity=" + this.state.carbonDioxide.timeGranularity),
+            axios.get(bcSensorReading + "bridge/0/illuminance?timeGranularity=" + this.state.illuminance.timeGranularity),
+            axios.get(bcSensorReading + "remote/0/relative-humidity?timeGranularity=" + this.state.relativeHumidity.timeGranularity)
         ]).then(axios.spread(function (wateringResponse, temperatureResponse, carbonDioxide, illuminance, relativeHumidity) {
             const newState = update(t.state, {
                 watering: {data: {$set: wateringResponse.data}},
