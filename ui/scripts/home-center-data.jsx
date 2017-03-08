@@ -14,7 +14,8 @@ class HomeCenterData extends React.Component {
             temperature: new BcSensorState("temperature"),
             carbonDioxide: new BcSensorState("carbonDioxide"),
             illuminance: new BcSensorState("illuminance"),
-            relativeHumidity: new BcSensorState("relativeHumidity")
+            relativeHumidity: new BcSensorState("relativeHumidity"),
+            pressure: new BcSensorState("pressure")
         };
     };
 
@@ -42,14 +43,16 @@ class HomeCenterData extends React.Component {
             axios.get(bcSensorReading + "bridge/0/temperature?timeGranularity=" + this.state.temperature.timeGranularity),
             axios.get(bcSensorReading + "bridge/0/concentration?timeGranularity=" + this.state.carbonDioxide.timeGranularity),
             axios.get(bcSensorReading + "bridge/0/illuminance?timeGranularity=" + this.state.illuminance.timeGranularity),
-            axios.get(bcSensorReading + "remote/0/relative-humidity?timeGranularity=" + this.state.relativeHumidity.timeGranularity)
-        ]).then(axios.spread(function (wateringResponse, temperatureResponse, carbonDioxide, illuminance, relativeHumidity) {
+            axios.get(bcSensorReading + "bridge/0/relative-humidity?timeGranularity=" + this.state.relativeHumidity.timeGranularity),
+            axios.get(bcSensorReading + "bridge/0/pressure?timeGranularity=" + this.state.pressure.timeGranularity)
+        ]).then(axios.spread(function (wateringResponse, temperatureResponse, carbonDioxide, illuminance, relativeHumidity, pressure) {
             const newState = update(t.state, {
                 watering: {data: {$set: wateringResponse.data}},
                 temperature: {data: {$set: temperatureResponse.data}},
                 carbonDioxide: {data: {$set: carbonDioxide.data}},
                 illuminance: {data: {$set: illuminance.data}},
                 relativeHumidity: {data: {$set: relativeHumidity.data}},
+                pressure: {data: {$set: pressure.data}},
             });
 
             t.setState(newState);
@@ -87,6 +90,13 @@ class HomeCenterData extends React.Component {
                                     sensorName="relative humidity"
                                     activeTimeGranularity={this.state.relativeHumidity.timeGranularity}
                                     timeGranularityCallback={this.changeTimeGranularity.bind(this, "relativeHumidity")}
+                />
+            </Col>
+            <Col xs={12} md={5}>
+                <BcMeasureComponent measure={this.state.pressure.data}
+                                   sensorName="pressure"
+                                   activeTimeGranularity={this.state.pressure.timeGranularity}
+                                   timeGranularityCallback={this.changeTimeGranularity.bind(this, "pressure")}
                 />
             </Col>
             <Col xs={12} md={5}>

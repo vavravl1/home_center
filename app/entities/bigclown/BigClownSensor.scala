@@ -69,19 +69,30 @@ object AggregatedBcMeasure extends SQLSyntaxSupport[AggregatedBcMeasure] {
   * @param value      value of the measure, e.g 19.24
   * @param unit       unit of the measure, e.g. lux
   */
-case class BcMessage(phenomenon: String, value: Double, unit: String)
+case class SingleBcMessageValue(phenomenon: String, value: Double, unit: String)
 
-object BcMessage extends SQLSyntaxSupport[BcMeasure] {
+/**
+  * Single bc sensor can produce multiple measures, e.g. barometer does that.
+  * This represents all values from a single sensor.
+  */
+case class BcMessage(msgs: Seq[SingleBcMessageValue])
+
+object BcMessage {
   implicit val reads = new Reads[BcMessage] {
-    override def reads(json: JsValue): JsResult[BcMessage] = {
+    override def reads(json: JsValue): JsResult[BcMessage] = try {
       json match {
-        case JsObject(map) => map.toList match {
-          case List((phenomenon, JsArray(Seq(JsNumber(value), JsString(unit))))) =>
-            JsSuccess(new BcMessage(phenomenon, value.doubleValue(), unit))
-          case _ => JsError(error = s"Not a BcMeasure json: $json ")
-        }
-        case _ => JsError(error = s"Not a BcMeasure json: $json ")
+        case JsObject(measures) =>
+          val msgs = measures.toList.map { case (phenomenon: String, value: JsValue) => value match {
+            case JsArray (Seq (JsNumber (value), JsString (unit) ) ) =>
+              SingleBcMessageValue (phenomenon, value.doubleValue (), unit)
+            case _ => throw new RuntimeException(s"Not a BcMeasure json: $json ")
+          }}
+          JsSuccess(BcMessage(msgs))
+        case _ => throw new RuntimeException(s"Not a BcMeasure json: $json ")
       }
+    } catch {
+      case e:RuntimeException =>
+        JsError(s"Not a BcMeasure json: $json ")
     }
   }
 }
