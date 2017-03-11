@@ -33,6 +33,9 @@ class HomeCenterLayout extends React.Component {
                         <Link to='data' className='navbar-brand'>Home center</Link>
                     </Navbar.Brand>
                 </Navbar.Header>
+                <Nav>
+                    <LinkContainer to="/settings"><NavItem>Settings</NavItem></LinkContainer>
+                </Nav>
                 {userNavItem}
             </Navbar>
             {this.props.children}

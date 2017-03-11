@@ -24,6 +24,9 @@ case class BcMeasure(
                       value: Double,
                       unit: String
                     )
+object BcMeasure {
+  implicit val writes: Writes[BcMeasure] = Json.writes[BcMeasure]
+}
 
 /**
   * Represents location of all associated sensors.
@@ -31,10 +34,10 @@ case class BcMeasure(
   * @param label as seen by the user, e.g. "Kitchen"
   */
 case class BcSensorLocation(location:String, label: String)
-
-object BcMeasure {
-  implicit val writes: Writes[BcMeasure] = Json.writes[BcMeasure]
+object BcSensorLocation {
+  implicit val format: Format[BcSensorLocation] = Json.format[BcSensorLocation]
 }
+
 
 /**
   * Represents aggregated measures over a given period of time.
