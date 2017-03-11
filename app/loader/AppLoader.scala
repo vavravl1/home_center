@@ -121,6 +121,7 @@ trait Controllers extends BuiltInComponents with SqlH2Config with SilhouetteAppM
   lazy val wateringController = wire[WateringController]
   lazy val bigClownController = wire[BigClownController]
   lazy val signinController: SignInController = wire[SignInController]
+  lazy val settingsController: SettingsController = wire[SettingsController]
 }
 
 trait PlayCoreComponents extends BuiltInComponents with Controllers {
