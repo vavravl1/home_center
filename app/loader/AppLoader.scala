@@ -7,8 +7,6 @@ import com.softwaremill.macwire._
 import config.HomeControllerConfiguration
 import controllers._
 import dao.{BcMeasureDao, WateringDao}
-import filters.StatsActor.Ping
-import filters.{StatsActor, StatsCounterFilter}
 import mqtt.clown.BridgeListener
 import mqtt.watering.{WateringCommander, WateringHelloListener, WateringListener}
 import mqtt.{MqttConnector, MqttDispatchingListener, MqttListenerMessage, MqttRepeater}
@@ -17,7 +15,6 @@ import play.api._
 import play.api.db.evolutions.EvolutionsComponents
 import play.api.db.{DBComponents, HikariCPComponents}
 import play.api.libs.concurrent.Execution.Implicits._
-import play.api.mvc.Filter
 import play.api.routing.Router
 import play.filters.csrf.CSRFComponents
 import router.Routes
@@ -116,10 +113,7 @@ trait MqttConfig extends BuiltInComponents
 }
 
 trait FiltersConfig extends BuiltInComponents with CSRFComponents {
-  lazy val statsFilter: Filter = wire[StatsCounterFilter]
-  lazy override val httpFilters = Seq(statsFilter, csrfFilter)
-
-  lazy val statsActor = actorSystem.actorOf(Props(wire[StatsActor]), StatsActor.name)
+  lazy override val httpFilters = Seq(csrfFilter)
 }
 
 trait Controllers extends BuiltInComponents with SqlH2Config with SilhouetteAppModule with MqttConfig {
@@ -144,7 +138,6 @@ trait AppComponents extends BuiltInComponents
   with Controllers {
 
   Logger.info("The app is about to start")
-  statsActor ! Ping
   initDb
   initDbAggregation()
   initializeListeners()
