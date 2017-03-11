@@ -32,7 +32,7 @@ case class BcMeasure(
   */
 case class BcSensorLocation(location:String, label: String)
 
-object BcMeasure extends SQLSyntaxSupport[BcMeasure] {
+object BcMeasure {
   implicit val writes: Writes[BcMeasure] = Json.writes[BcMeasure]
 }
 
@@ -58,7 +58,7 @@ case class AggregatedBcMeasure(
                                 unit: String
                               )
 
-object AggregatedBcMeasure extends SQLSyntaxSupport[AggregatedBcMeasure] {
+object AggregatedBcMeasure {
   implicit val writes: Writes[AggregatedBcMeasure] = Json.writes[AggregatedBcMeasure]
 }
 
