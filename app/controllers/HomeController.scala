@@ -31,16 +31,10 @@ class HomeController(actorSystem: ActorSystem,
     } yield Ok(Json.toJson(count))
   }
 
-  def indexReact = Action.async { implicit request =>
-    silhouette.UserAwareRequestHandler { userAwareRequest =>
-      Future.successful(HandlerResult(Ok, userAwareRequest.identity))
-    }.map {
-      case HandlerResult(r, Some(user)) => Ok(views.html.index(Some(user), CSRFHelper.token(), None))
-      case HandlerResult(r, None) => Ok(views.html.index(None, CSRFHelper.token()))
+  def indexReact = silhouette.UserAwareAction.async { implicit userAwareRequest => Future {
+    userAwareRequest.identity match {
+      case Some(user) => Ok(views.html.index(Some(user), CSRFHelper.token(), None))
+      case None => Ok(views.html.index(None, CSRFHelper.token()))
     }
-  }
-//
-//  def indexReact = Action {
-//    Ok(views.html.index())
-//  }
+  }}
 }
