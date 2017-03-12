@@ -4,24 +4,25 @@
 # ~~~~
 
 # Versioned Assets
-GET         /assets/*file                           controllers.Assets.versioned(path="/public", file: Asset)
+GET           /assets/*file                                controllers.Assets.versioned(path="/public", file: Asset)
 
 # Main page - react router
-GET         /                                       controllers.HomeController.indexReact
-GET         /data                                   controllers.HomeController.indexReact
-GET         /signIn                                 controllers.HomeController.indexReact
-GET         /settings                               controllers.HomeController.indexReact
+GET           /                                            controllers.HomeController.indexReact
+GET           /data                                        controllers.HomeController.indexReact
+GET           /signIn                                      controllers.HomeController.indexReact
+GET           /settings                                    controllers.HomeController.indexReact
 
 # Sign in/out
-POST        /signIn                                 controllers.SignInController.submit
-GET         /signOut                                controllers.SignInController.signOut
+POST          /signIn                                      controllers.SignInController.submit
+GET           /signOut                                     controllers.SignInController.signOut
 
 # Ibisek watering
-GET         /watering/ibisek                        controllers.WateringController.getAllStates(timeGranularity:String ?= "ByHour")
-POST        /watering/ibisek/manual-watering        controllers.WateringController.manualWatering
+GET           /watering/ibisek                             controllers.WateringController.getAllStates(timeGranularity:String ?= "ByHour")
+POST          /watering/ibisek/manual-watering             controllers.WateringController.manualWatering
 
 # Big clown
-GET         /bc/:location/:position/:sensor         controllers.BigClownController.getSensorReading(location, position, sensor, timeGranularity:String ?= "ByHour")
+GET           /bc/:location/:position/:sensor              controllers.BigClownController.getSensorReading(location, position, sensor, timeGranularity:String ?= "ByHour")
 
-GET         /settings/bc/sensorLocation             controllers.SettingsController.getBcSensorLocation()
-POST        /settings/bc/sensorLocation             controllers.SettingsController.updateBcSensorLocation
+GET           /settings/bc/sensorLocation                  controllers.SettingsController.getBcSensorLocation()
+POST          /settings/bc/sensorLocation                  controllers.SettingsController.updateBcSensorLocation
+DELETE        /settings/bc/sensorLocation/:location        controllers.SettingsController.deleteBcSensorLocation(location)

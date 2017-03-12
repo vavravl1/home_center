@@ -16,6 +16,10 @@ class HomeCenterSettings extends React.Component {
     };
 
     componentDidMount = () => {
+        this.loadData();
+    };
+
+    loadData = () => {
         let t = this;
         axios.all([
             axios.get('/settings/bc/sensorLocation'),
@@ -31,27 +35,40 @@ class HomeCenterSettings extends React.Component {
         });
     };
 
-    onAfterSaveCell = (row, cellName, cellValue) => {
-        console.log('Storing change: ' + JSON.stringify(row) + ' ' + ' cellName: ' +  cellName + '; value=' + cellValue);
+    onAfterSaveCell = (row) => {
+        this.postSettings(row.location, row.label);
+    };
 
+    onAddRow = (row) => {
+        if (row.location.length > 0 && row.label.length > 0) {
+            this.postSettings(row.location, row.label);
+        }
+    };
+
+    onDeleteRow = (row) => {
+        let t = this;
+        let csrfTokenName = document.getElementById('csrf_token_name').value;
+        let csrfTokenValue = document.getElementById('csrf_token_value').value;
+        let deleteUrl = '/settings/bc/sensorLocation/' + row + '?' + csrfTokenName + '=' + csrfTokenValue;
+
+        axios.delete(deleteUrl).then(function () {
+            t.loadData();
+        });
+    };
+
+    postSettings = (location, label) => {
+        let t = this;
         let csrfTokenName = document.getElementById('csrf_token_name').value;
         let csrfTokenValue = document.getElementById('csrf_token_value').value;
 
         let postUrl = '/settings/bc/sensorLocation' + '?' + csrfTokenName + '=' + csrfTokenValue;
-        axios({
-            method: 'post',
-            url: postUrl,
-            data: {
-                location: row.location,
-                label: row.label
-            }
-        });
+        axios.post(postUrl, {location: location, label: label})
+            .then(function () {
+                t.loadData();
+            });
     };
 
     render = () => {
-        let csrfTokenName = document.getElementById('csrf_token_name').value;
-        let csrfTokenValue = document.getElementById('csrf_token_value').value;
-
         const cellEditProp = {
             mode: 'click',
             blurToSave: true,
@@ -59,31 +76,21 @@ class HomeCenterSettings extends React.Component {
         };
 
         return <Col xs={6} md={5}>
-            <BootstrapTable data={this.state.bcSensorLocations} cellEdit={cellEditProp} striped hover>
+            <BootstrapTable data={this.state.bcSensorLocations}
+                            cellEdit={cellEditProp}
+                            striped
+                            hover
+                            deleteRow
+                            insertRow
+                            selectRow={{mode: 'radio'}}
+                            options={{
+                                onDeleteRow: this.onDeleteRow,
+                                onAddRow: this.onAddRow
+                            }}
+            >
                 <TableHeaderColumn isKey dataField='location'>Location</TableHeaderColumn>
                 <TableHeaderColumn dataField='label'>Label</TableHeaderColumn>
             </BootstrapTable>
-
-
-                <div style={{float: 'left', 'marginRight': '1em', 'marginLeft': '1em'}}>
-                    <FormControl
-                        id="newLocation"
-                        type="text"
-                        label="Location"
-                        placeholder="Enter location"
-                    />
-                </div>
-                <div style={{float: 'left', 'marginRight': '1em'}}>
-                    <FormControl
-                        id="newLabel"
-                        type="text"
-                        label="Label"
-                        placeholder="Enter label"
-                    />
-                </div>
-            <Button type="submit">
-                Add new
-            </Button>
         </Col>
     }
 }

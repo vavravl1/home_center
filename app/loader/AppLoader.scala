@@ -6,7 +6,7 @@ import akka.actor.{ActorRef, Props}
 import com.softwaremill.macwire._
 import config.HomeControllerConfiguration
 import controllers._
-import dao.{BcMeasureDao, WateringDao}
+import dao.{BcMeasureDao, BcSensorLocationDao, WateringDao}
 import mqtt.clown.BridgeListener
 import mqtt.watering.{WateringCommander, WateringHelloListener, WateringListener}
 import mqtt.{MqttConnector, MqttDispatchingListener, MqttListenerMessage, MqttRepeater}
@@ -52,6 +52,7 @@ trait SqlH2Config extends BuiltInComponents with EvolutionsComponents with DBCom
 }
 
 trait DaoConfig extends BuiltInComponents with ClockConfig {
+  lazy val locationDao = wire[BcSensorLocationDao]
   lazy val wateringDao = wire[WateringDao]
   lazy val bcMeasureDao = wire[BcMeasureDao]
   def initDbAggregation():Unit = {
