@@ -1,5 +1,6 @@
 package controllers
 
+import com.google.common.io.BaseEncoding
 import com.mohiva.play.silhouette.api.Silhouette
 import dao.BcSensorLocationDao
 import entities.bigclown.BcSensorLocation
@@ -41,7 +42,7 @@ class SettingsController(dao: BcSensorLocationDao,
   def deleteBcSensorLocation(location: String) = silhouette.SecuredAction.async { implicit request =>
     Future {
       if (request.identity.admin) {
-        dao.delete(location)
+        dao.delete(new String(BaseEncoding.base64().decode(location)))
         NoContent
       } else {
         Unauthorized

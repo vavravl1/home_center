@@ -45,7 +45,7 @@ class HomeCenterSettings extends React.Component {
 
     onDeleteRow = (row) => {
         let t = this;
-        let deleteUrl = document.getElementById('settingsBackendUrl').value + '/' + row;
+        let deleteUrl = document.getElementById('settingsBackendUrl').value + '?location=' +  window.btoa(row);
 
         axios.delete(deleteUrl).then(function () {
             t.loadData();
