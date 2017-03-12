@@ -12,6 +12,7 @@
     <body>
         <input type="hidden" id="wateringBackendUrl" value="@routes.WateringController.getAllStates()">
         <input type="hidden" id="bcSensorReading" value="@routes.BigClownController.getSensorReading("","","").url.replace("//","")">
+        <input type="hidden" id="settingsBackendUrl" value="@routes.SettingsController.updateBcSensorLocation()">
         <input type="hidden" id="username" value="@user.map(u=>u.email)">
         <input type="hidden" id="router_path" value="@routerPath">
         <input type="hidden" id="csrf_token_name" value="@csrfToken.name">

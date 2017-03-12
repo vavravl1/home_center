@@ -20,7 +20,7 @@ class HomeCenterSettings extends React.Component {
     loadData = () => {
         let t = this;
         axios.all([
-            axios.get('/settings/bc/sensorLocation'),
+            axios.get(document.getElementById('settingsBackendUrl').value),
         ]).then(axios.spread(function (sensorLocation) {
             const newState = update(t.state, {
                 bcSensorLocations: {$set: sensorLocation.data},
@@ -45,7 +45,7 @@ class HomeCenterSettings extends React.Component {
 
     onDeleteRow = (row) => {
         let t = this;
-        let deleteUrl = '/settings/bc/sensorLocation/' + row;
+        let deleteUrl = document.getElementById('settingsBackendUrl').value + '/' + row;
 
         axios.delete(deleteUrl).then(function () {
             t.loadData();
@@ -54,7 +54,7 @@ class HomeCenterSettings extends React.Component {
 
     postSettings = (location, label) => {
         let t = this;
-        let postUrl = '/settings/bc/sensorLocation';
+        let postUrl = document.getElementById('settingsBackendUrl').value;
         axios.post(postUrl, {location: location, label: label})
             .then(function () {
                 t.loadData();
