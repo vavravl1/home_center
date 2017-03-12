@@ -5,10 +5,18 @@ import HomeCenterLayout from "./home-center-layout.jsx";
 import HomeCenterData from "./home-center-data.jsx";
 import SignIn from "./home-center-sign-in.jsx";
 import HomeCenterSettings from "./home-center-settings.jsx";
+import axios from "axios";
+
 
 if(document.getElementById('router_path').value) {
     browserHistory.push(document.getElementById('router_path').value)
 }
+
+let csrfTokenName = document.getElementById('csrf_token_name').value;
+let csrfTokenValue = document.getElementById('csrf_token_value').value;
+
+axios.defaults.params = {};
+axios.defaults.params[csrfTokenName] = csrfTokenValue;
 
 ReactDOM.render(
     <Router history = {browserHistory}>

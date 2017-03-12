@@ -1,7 +1,5 @@
 import React from "react";
 import Col from "react-bootstrap/lib/Col";
-import FormControl from "react-bootstrap/lib/FormControl";
-import Button from "react-bootstrap/lib/Button";
 import axios from "axios";
 import {BootstrapTable, TableHeaderColumn} from "react-bootstrap-table";
 import update from "react-addons-update";
@@ -47,9 +45,7 @@ class HomeCenterSettings extends React.Component {
 
     onDeleteRow = (row) => {
         let t = this;
-        let csrfTokenName = document.getElementById('csrf_token_name').value;
-        let csrfTokenValue = document.getElementById('csrf_token_value').value;
-        let deleteUrl = '/settings/bc/sensorLocation/' + row + '?' + csrfTokenName + '=' + csrfTokenValue;
+        let deleteUrl = '/settings/bc/sensorLocation/' + row;
 
         axios.delete(deleteUrl).then(function () {
             t.loadData();
@@ -58,10 +54,7 @@ class HomeCenterSettings extends React.Component {
 
     postSettings = (location, label) => {
         let t = this;
-        let csrfTokenName = document.getElementById('csrf_token_name').value;
-        let csrfTokenValue = document.getElementById('csrf_token_value').value;
-
-        let postUrl = '/settings/bc/sensorLocation' + '?' + csrfTokenName + '=' + csrfTokenValue;
+        let postUrl = '/settings/bc/sensorLocation';
         axios.post(postUrl, {location: location, label: label})
             .then(function () {
                 t.loadData();
