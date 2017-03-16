@@ -17,7 +17,7 @@ class HomeCenterLayout extends React.Component {
         if (user) {
             userNavItem =
                 <Nav pullRight>
-                    <LinkContainer to="/data"><NavItem>{user}</NavItem></LinkContainer>
+                    <NavItem>{user}</NavItem>
                     <NavItem eventKey={1} href="signOut">Logout</NavItem>
                 </Nav>
         } else {
@@ -33,6 +33,9 @@ class HomeCenterLayout extends React.Component {
                         <Link to='data' className='navbar-brand'>Home center</Link>
                     </Navbar.Brand>
                 </Navbar.Header>
+                <Nav>
+                    <LinkContainer to="/data"><NavItem>Sensors</NavItem></LinkContainer>
+                </Nav>
                 <Nav>
                     <LinkContainer to="/settings"><NavItem>Settings</NavItem></LinkContainer>
                 </Nav>
