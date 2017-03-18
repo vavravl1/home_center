@@ -4,8 +4,17 @@ import {Line} from "react-chartjs-2";
 import moment from "moment";
 import ButtonToolbar from "react-bootstrap/lib/ButtonToolbar";
 import Button from "react-bootstrap/lib/Button";
+import CheckBox from "react-bootstrap/lib/CheckBox";
+import update from "react-addons-update";
 
 class BcSensorView extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            startAtZero: true,
+        }
+    };
 
     isTimGranularityByDay = function () {
         return this.props.timeGranularity === 'ByDay'
@@ -64,7 +73,7 @@ class BcSensorView extends React.Component {
             scales: {
                 yAxes: [{
                     ticks: {
-                        beginAtZero: true
+                        beginAtZero: this.state.startAtZero
                     }
                 }]
             },
@@ -76,6 +85,13 @@ class BcSensorView extends React.Component {
 
     handleTimeGranularity = function (value) {
         this.props.timeGranularityChangedCallback(value);
+    };
+
+    handleStartAtZero = function (value) {
+        const newState = update(this.state, {
+            startAtZero: {$set: !this.state.startAtZero},
+        });
+        this.setState(newState);
     };
 
     render = () => {
@@ -99,7 +115,7 @@ class BcSensorView extends React.Component {
                 <tbody>
                 <tr>
                     <td scope="row">Last update</td>
-                    <td><Time value={new Date(lastMeasure.measureTimestamp)} format="HH:mm:ss" /></td>
+                    <td><Time value={new Date(lastMeasure.measureTimestamp)} format="HH:mm:ss"/></td>
                 </tr>
                 <tr>
                     <td scope="row">Actual {lastMeasure.phenomenon}</td>
@@ -109,17 +125,22 @@ class BcSensorView extends React.Component {
             </table>
             <Line data={this.valueChartData()} options={this.humidityChartOptions()}
                   key={JSON.stringify(this.humidityChartOptions())}/>
-            <ButtonToolbar className="pull-right">
-                <Button bsSize="xsmall"
-                        bsStyle={this.props.timeGranularity === 'ByMinute' ? "primary" : "default"}
-                        onClick={this.handleTimeGranularity.bind(this, "ByMinute")}>By Minute</Button>
-                <Button bsSize="xsmall"
-                        bsStyle={this.props.timeGranularity === 'ByHour' ? "primary" : "default"}
-                        onClick={this.handleTimeGranularity.bind(this, "ByHour")}>By Hour</Button>
-                <Button bsSize="xsmall"
-                        bsStyle={this.props.timeGranularity === 'ByDay' ? "primary" : "default"}
-                        onClick={this.handleTimeGranularity.bind(this, "ByDay")}>By Day</Button>
-            </ButtonToolbar>
+                    <CheckBox
+                        className="pull-left"
+                        bsSize="xsmall"
+                        checked={this.state.startAtZero}
+                        onChange={this.handleStartAtZero.bind(this)}>Start at zero?</CheckBox>
+                <ButtonToolbar className="pull-right">
+                    <Button bsSize="xsmall"
+                            bsStyle={this.props.timeGranularity === 'ByMinute' ? "primary" : "default"}
+                            onClick={this.handleTimeGranularity.bind(this, "ByMinute")}>By Minute</Button>
+                    <Button bsSize="xsmall"
+                            bsStyle={this.props.timeGranularity === 'ByHour' ? "primary" : "default"}
+                            onClick={this.handleTimeGranularity.bind(this, "ByHour")}>By Hour</Button>
+                    <Button bsSize="xsmall"
+                            bsStyle={this.props.timeGranularity === 'ByDay' ? "primary" : "default"}
+                            onClick={this.handleTimeGranularity.bind(this, "ByDay")}>By Day</Button>
+                </ButtonToolbar>
         </div>
     };
 }
