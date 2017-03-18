@@ -1,6 +1,6 @@
 import React from "react";
 import WateringComponent from "./watering-component.jsx";
-import BcMeasureComponent from "./bc-measure-component.jsx";
+import BcSensor from "./bc-sensor.jsx";
 import Col from "react-bootstrap/lib/Col";
 import axios from "axios";
 import update from "react-addons-update";
@@ -50,26 +50,26 @@ class HomeCenterData extends React.Component {
     render = () => {
         return <div>
             <Col xs={12} md={5}>
-                <BcMeasureComponent
+                <BcSensor
                     location="bridge/0"
                     phenomenon="temperature"
                 />
             </Col>
             <Col xs={12} md={5}>
-                <BcMeasureComponent
+                <BcSensor
                     location="bridge/0"
                     phenomenon="concentration"
                 />
             </Col>
             <Col xs={12} md={5}>
-                <BcMeasureComponent
+                <BcSensor
                     location="bridge/0"
                     phenomenon="illuminance"
 
                 />
             </Col>
             <Col xs={12} md={5}>
-                <BcMeasureComponent
+                <BcSensor
                     location="bridge/0"
                     phenomenon="pressure"
                 />

@@ -4,59 +4,18 @@ import {Line} from "react-chartjs-2";
 import moment from "moment";
 import ButtonToolbar from "react-bootstrap/lib/ButtonToolbar";
 import Button from "react-bootstrap/lib/Button";
-import axios from "axios";
-import update from "react-addons-update";
 
-class BcMeasureComponent extends React.Component {
-
-    constructor(props) {
-        super(props);
-        this.state = {
-            timeGranularity: "ByHour",
-            data: []
-        }
-    };
-
-    componentDidMount = () => {
-        this.tick();
-    };
-
-    componentWillUnmount = () => {
-        if (this.tickHandler !== null) {
-            clearTimeout(this.tickHandler);
-        }
-    };
-
-    tick = () => {
-        let t = this;
-        let bcSensorReading = document.getElementById('bcSensorReading').value;
-        axios
-            .get(
-                bcSensorReading + this.props.location + "/" +
-                this.props.phenomenon + "?timeGranularity=" + this.state.timeGranularity
-            )
-            .then(function(measurement) {
-                const newState = update(t.state, {
-                    data: {$set: measurement.data},
-                });
-                t.setState(newState);
-                t.tickHandler = setTimeout(t.tick.bind(t), 1000);
-            })
-            .catch(function (error) {
-                console.log(error);
-                t.tickHandler = setTimeout(t.tick.bind(t), 1000);
-            })
-    };
+class BcSensorView extends React.Component {
 
     isTimGranularityByDay = function () {
-        return this.state.timeGranularity === 'ByDay'
+        return this.props.timeGranularity === 'ByDay'
     };
 
     valueChartData = function () {
-        let average = this.state.data.map(t => t.average);
-        let min = this.state.data.map(t => t.min);
-        let max = this.state.data.map(t => t.max);
-        let dates = this.state.data
+        let average = this.props.data.map(t => t.average);
+        let min = this.props.data.map(t => t.min);
+        let max = this.props.data.map(t => t.max);
+        let dates = this.props.data
             .map(t => t.measureTimestamp)
             .map(t => {
                 if (this.isTimGranularityByDay()) {
@@ -116,16 +75,13 @@ class BcMeasureComponent extends React.Component {
     };
 
     handleTimeGranularity = function (value) {
-        const newState = update(this.state, {
-            timeGranularity: {$set: value},
-        });
-        this.setState(newState);
+        this.props.timeGranularityChangedCallback(value);
     };
 
     render = () => {
         let lastMeasure;
-        if (this.state.data.length > 0) {
-            lastMeasure = this.state.data[this.state.data.length - 1];
+        if (this.props.data.length > 0) {
+            lastMeasure = this.props.data[this.props.data.length - 1];
         } else {
             lastMeasure = {
                 sensor: this.props.phenomenon,
@@ -155,23 +111,25 @@ class BcMeasureComponent extends React.Component {
                   key={JSON.stringify(this.humidityChartOptions())}/>
             <ButtonToolbar className="pull-right">
                 <Button bsSize="xsmall"
-                        bsStyle={this.state.timeGranularity === 'ByMinute' ? "primary" : "default"}
+                        bsStyle={this.props.timeGranularity === 'ByMinute' ? "primary" : "default"}
                         onClick={this.handleTimeGranularity.bind(this, "ByMinute")}>By Minute</Button>
                 <Button bsSize="xsmall"
-                        bsStyle={this.state.timeGranularity === 'ByHour' ? "primary" : "default"}
+                        bsStyle={this.props.timeGranularity === 'ByHour' ? "primary" : "default"}
                         onClick={this.handleTimeGranularity.bind(this, "ByHour")}>By Hour</Button>
                 <Button bsSize="xsmall"
-                        bsStyle={this.state.timeGranularity === 'ByDay' ? "primary" : "default"}
+                        bsStyle={this.props.timeGranularity === 'ByDay' ? "primary" : "default"}
                         onClick={this.handleTimeGranularity.bind(this, "ByDay")}>By Day</Button>
             </ButtonToolbar>
         </div>
     };
 }
 
-BcMeasureComponent.PropTypes = {
-    phenomenon: PropTypes.string.isRequired,
+BcSensorView.PropTypes = {
     location: PropTypes.string.isRequired,
+    timeGranularity: PropTypes.string.isRequired,
+    timeGranularityChangedCallback: PropTypes.func.isRequired,
+    data: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
 
-export default BcMeasureComponent;
+export default BcSensorView;
