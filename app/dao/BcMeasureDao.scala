@@ -118,7 +118,7 @@ class BcMeasureDao(_clock: Clock) {
 
   def getAvailableBcSensors():Seq[BcSensorCoordinates] = DB.readOnly(implicit session => {
     sql"""
-          SELECT location, phenomenon FROM bc_measure GROUP BY location, phenomenon
+          SELECT location, phenomenon FROM bc_measure GROUP BY location, phenomenon ORDER BY phenomenon
       """.map(rs => BcSensorCoordinates(rs.string("location"), rs.string("phenomenon")))
       .toList().apply()
   })
