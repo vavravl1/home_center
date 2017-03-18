@@ -1,19 +1,57 @@
 import React, {Component, PropTypes} from "react";
-import axios from "axios";
 import Button from "react-bootstrap/lib/Button";
 import ButtonToolbar from "react-bootstrap/lib/ButtonToolbar";
 import Time from "react-time";
 import {Bar} from "react-chartjs-2";
 import moment from "moment";
+import axios from "axios";
+import update from "react-addons-update";
 
 class WateringComponent extends React.Component {
 
+    constructor(props) {
+        super(props);
+        this.state = {
+            timeGranularity: "ByHour",
+            data: []
+        }
+    };
+
+    componentDidMount = () => {
+        this.tick();
+    };
+
+    componentWillUnmount = () => {
+        if (this.tickHandler !== null) {
+            clearTimeout(this.tickHandler);
+        }
+    };
+
+    tick = () => {
+        let t = this;
+        let wateringUrl = document.getElementById('wateringBackendUrl').value;
+
+        axios
+            .get(wateringUrl + "?timeGranularity=" + this.state.timeGranularity)
+            .then(function (wateringResponse) {
+                const newState = update(t.state, {
+                    data: {$set: wateringResponse.data},
+                });
+
+                t.setState(newState);
+                t.tickHandler = setTimeout(t.tick.bind(t), 1000);
+            }).catch(function (error) {
+                console.log(error);
+                t.tickHandler = setTimeout(t.tick.bind(t), 1000);
+        });
+    };
+
     humidityChartData = function () {
-        let measures = this.props.watering
+        let measures = this.state.data
             .map(w => w.telemetry.humidity.actual);
-        let wip = this.props.watering
+        let wip = this.state.data
             .map(w => w.telemetry.watering.inProgress ? 10 : 0);
-        let dates = this.props.watering
+        let dates = this.state.data
             .map(w => w.timestamp)
             .map(w => moment(w).add(1, 'minute').startOf('minute').format("HH:mm:ss"));
 
@@ -79,12 +117,15 @@ class WateringComponent extends React.Component {
     };
 
     handleTimeGranularity = function (value) {
-        this.props.timeGranularityCallback(value)
+        const newState = update(this.state, {
+            timeGranularity: {$set: value},
+        });
+        this.setState(newState);
     };
 
     render = () => {
-        if (this.props.watering.length > 0) {
-            let lastWatering = this.props.watering[this.props.watering.length - 1];
+        if (this.state.data.length > 0) {
+            let lastWatering = this.state.data[this.state.data.length - 1];
             return <div className="bc-measurement-box">
                 <h2>Watering</h2>
                 <h3>Ibisek</h3>
@@ -117,13 +158,13 @@ class WateringComponent extends React.Component {
                     <Button bsSize="small" active onClick={this.manualWatering.bind(this)}>Water!</Button>
                     <div className="pull-right">
                         <Button bsSize="xsmall"
-                                bsStyle={this.props.activeTimeGranularity === 'ByMinute' ? "primary" : "default"}
+                                bsStyle={this.state.timeGranularity === 'ByMinute' ? "primary" : "default"}
                                 onClick={this.handleTimeGranularity.bind(this, "ByMinute")}>By Minute</Button>
                         <Button bsSize="xsmall"
-                                bsStyle={this.props.activeTimeGranularity === 'ByHour' ? "primary" : "default"}
+                                bsStyle={this.state.timeGranularity === 'ByHour' ? "primary" : "default"}
                                 onClick={this.handleTimeGranularity.bind(this, "ByHour")}>By Hour</Button>
                         <Button bsSize="xsmall"
-                                bsStyle={this.props.activeTimeGranularity === 'ByDay' ? "primary" : "default"}
+                                bsStyle={this.state.timeGranularity === 'ByDay' ? "primary" : "default"}
                                 onClick={this.handleTimeGranularity.bind(this, "ByDay")}>By Day</Button>
                     </div>
                 </ButtonToolbar>
@@ -142,12 +183,6 @@ class WateringComponent extends React.Component {
         });
     };
 }
-
-WateringComponent.PropTypes = {
-    watering: PropTypes.arrayOf(PropTypes.object).isRequired,
-    timeGranularityCallback: PropTypes.func.isRequired,
-    activeTimeGranularity: PropTypes.string.isRequired
-};
 
 
 export default WateringComponent;
