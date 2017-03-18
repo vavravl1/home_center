@@ -21,4 +21,12 @@ class BigClownController(bcMeasureDao: BcMeasureDao) extends Controller {
         )))
     }
   }
+
+  def getAvailableBcSensors = Action.async {
+    Future {
+      Ok(Json.toJson(
+        bcMeasureDao.getAvailableBcSensors()
+      ))
+    }
+  }
 }

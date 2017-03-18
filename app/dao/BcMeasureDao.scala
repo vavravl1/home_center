@@ -5,13 +5,14 @@ import java.time.temporal.ChronoUnit._
 import java.time.{Clock, Instant}
 
 import _root_.play.api.Logger
-import entities.bigclown.{AggregatedBcMeasure, BcMeasure}
+import entities.bigclown.{AggregatedBcMeasure, BcMeasure, BcSensorCoordinates}
 import scalikejdbc._
 
 /**
   * Dao for bc measures
   */
 class BcMeasureDao(_clock: Clock) {
+
   implicit val clock = _clock
   def cleanDb():Unit = {
     DB.autoCommit(implicit session => {
@@ -114,4 +115,11 @@ class BcMeasureDao(_clock: Clock) {
       }
     })
   }
+
+  def getAvailableBcSensors():Seq[BcSensorCoordinates] = DB.readOnly(implicit session => {
+    sql"""
+          SELECT location, phenomenon FROM bc_measure GROUP BY location, phenomenon
+      """.map(rs => BcSensorCoordinates(rs.string("location"), rs.string("phenomenon")))
+      .toList().apply()
+  })
 }

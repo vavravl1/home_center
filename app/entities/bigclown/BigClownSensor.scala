@@ -5,6 +5,18 @@ import java.time.Instant
 import play.api.libs.json._
 import scalikejdbc._
 
+/**
+  * Uniquely identifies the location of a single bc sensor in the whole system
+  * @param location as seen by mqtt, e.g. remote/1
+  * @param phenomenon which the associated sensor measures, e.g. temperature
+  */
+case class BcSensorCoordinates(
+                                location: String,
+                                phenomenon: String
+                              )
+object BcSensorCoordinates {
+  implicit val format: Format[BcSensorCoordinates] = Json.format[BcSensorCoordinates]
+}
 
 /**
   * Represents measured value from any bc sensor
@@ -25,7 +37,7 @@ case class BcMeasure(
                       unit: String
                     )
 object BcMeasure {
-  implicit val writes: Writes[BcMeasure] = Json.writes[BcMeasure]
+  implicit val format: Format[BcMeasure] = Json.format[BcMeasure]
 }
 
 /**
@@ -60,9 +72,8 @@ case class AggregatedBcMeasure(
                                 average: Double,
                                 unit: String
                               )
-
 object AggregatedBcMeasure {
-  implicit val writes: Writes[AggregatedBcMeasure] = Json.writes[AggregatedBcMeasure]
+  implicit val format: Format[AggregatedBcMeasure] = Json.format[AggregatedBcMeasure]
 }
 
 /**
