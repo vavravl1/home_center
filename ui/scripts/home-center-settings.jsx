@@ -9,7 +9,8 @@ class HomeCenterSettings extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            bcSensorLocations: []
+            bcSensorLocations: [],
+            bcActiveSensors: []
         };
     };
 
@@ -21,9 +22,11 @@ class HomeCenterSettings extends React.Component {
         let t = this;
         axios.all([
             axios.get(document.getElementById('settingsBackendUrl').value),
-        ]).then(axios.spread(function (sensorLocation) {
+            axios.get(document.getElementById('bcSensorReading').value)
+        ]).then(axios.spread(function (sensorLocation, activeSensors) {
             const newState = update(t.state, {
                 bcSensorLocations: {$set: sensorLocation.data},
+                activeSensors: {$set: activeSensors.data},
             });
 
             t.setState(newState);
@@ -45,7 +48,7 @@ class HomeCenterSettings extends React.Component {
 
     onDeleteRow = (row) => {
         let t = this;
-        let deleteUrl = document.getElementById('settingsBackendUrl').value + '?location=' +  window.btoa(row);
+        let deleteUrl = document.getElementById('settingsBackendUrl').value + '?location=' + window.btoa(row);
 
         axios.delete(deleteUrl).then(function () {
             t.loadData();
@@ -68,23 +71,35 @@ class HomeCenterSettings extends React.Component {
             afterSaveCell: this.onAfterSaveCell
         };
 
-        return <Col xs={6} md={5}>
-            <BootstrapTable data={this.state.bcSensorLocations}
-                            cellEdit={cellEditProp}
-                            striped
-                            hover
-                            deleteRow
-                            insertRow
-                            selectRow={{mode: 'radio'}}
-                            options={{
-                                onDeleteRow: this.onDeleteRow,
-                                onAddRow: this.onAddRow
-                            }}
-            >
-                <TableHeaderColumn isKey dataField='location'>Location</TableHeaderColumn>
-                <TableHeaderColumn dataField='label'>Label</TableHeaderColumn>
-            </BootstrapTable>
-        </Col>
+        return <div>
+            <Col xs={6} md={5}>
+                <BootstrapTable data={this.state.bcSensorLocations}
+                                cellEdit={cellEditProp}
+                                striped
+                                hover
+                                deleteRow
+                                insertRow
+                                selectRow={{mode: 'radio'}}
+                                options={{
+                                    onDeleteRow: this.onDeleteRow,
+                                    onAddRow: this.onAddRow
+                                }}
+                >
+                    <TableHeaderColumn isKey dataField='location'>Location</TableHeaderColumn>
+                    <TableHeaderColumn dataField='label'>Label</TableHeaderColumn>
+                </BootstrapTable>
+            </Col>
+            <Col xs={6} md={5}>
+                <BootstrapTable data={this.state.activeSensors}
+                                striped
+                                hover
+                                selectRow={{mode: 'radio'}}
+                >
+                    <TableHeaderColumn isKey dataField='location'>Location</TableHeaderColumn>
+                    <TableHeaderColumn isKey dataField='phenomenon'>Phenomenon</TableHeaderColumn>
+                </BootstrapTable>
+            </Col>
+        </div>
     }
 }
 

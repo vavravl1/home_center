@@ -10,7 +10,8 @@ class HomeCenterData extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            bcSensors: []
+            bcSensors: [],
+            bigBcSensor: null,
         }
     };
 
@@ -24,25 +25,58 @@ class HomeCenterData extends React.Component {
                     bcSensors: {$set: bcSensors.data},
                 });
                 t.setState(newState);
-                console.log("Setting state to " + JSON.stringify(newState));
             })
     };
 
+    makeBcSensorBig = (location, phenomenon) => {
+        const newState = update(this.state, {
+            bigBcSensor: {
+                $set: {
+                    location: location,
+                    phenomenon: phenomenon
+                }
+            },
+        });
+        this.setState(newState);
+    };
+
+    makeBcSensorSmall = () => {
+        const newState = update(this.state, {
+            bigBcSensor: {$set: null}
+        });
+        this.setState(newState);
+    };
+
     render = () => {
-        let bcSensorsComponents = this.state.bcSensors.map(oneSensor =>
-            <Col xs={12} md={5} key={oneSensor.location + '/' + oneSensor.phenomenon}>
+        if (this.state.bigBcSensor !== null) {
+            const bigBcSensor = this.state.bcSensors.find(oneSensor =>
+                oneSensor.location === this.state.bigBcSensor.location &&
+                oneSensor.phenomenon === this.state.bigBcSensor.phenomenon
+            );
+            return <Col xs={10} md={10}>
                 <BcSensor
-                    location={oneSensor.location}
-                    phenomenon={oneSensor.phenomenon}
+                    location={bigBcSensor.location}
+                    phenomenon={bigBcSensor.phenomenon}
+                    makeSmallCallback={this.makeBcSensorSmall}
                 />
             </Col>
-        );
-        return <div>
-            {bcSensorsComponents}
-            <Col xs={12} md={5}>
-                <WateringComponent />
-            </Col>
-        </div>
+        } else {
+            let bcSensorsComponents = this.state.bcSensors.map(oneSensor =>
+                <Col xs={12} md={5} key={oneSensor.location + '/' + oneSensor.phenomenon}>
+                    <BcSensor
+                        location={oneSensor.location}
+                        phenomenon={oneSensor.phenomenon}
+                        makeBigCallback={this.makeBcSensorBig}
+                    />
+                </Col>
+            );
+            return <div>
+                {bcSensorsComponents}
+                <Col xs={12} md={5}>
+                    <WateringComponent />
+                </Col>
+            </div>
+        }
     }
 }
 

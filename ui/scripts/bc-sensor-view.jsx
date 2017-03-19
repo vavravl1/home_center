@@ -5,6 +5,8 @@ import moment from "moment";
 import ButtonToolbar from "react-bootstrap/lib/ButtonToolbar";
 import Button from "react-bootstrap/lib/Button";
 import CheckBox from "react-bootstrap/lib/CheckBox";
+import Jumbotron from "react-bootstrap/lib/Jumbotron";
+import Badge from "react-bootstrap/lib/Badge";
 import update from "react-addons-update";
 
 class BcSensorView extends React.Component {
@@ -87,6 +89,14 @@ class BcSensorView extends React.Component {
         this.props.timeGranularityChangedCallback(value);
     };
 
+    makeBigOrSmallCallback = function () {
+        if(!!this.props.makeSmallCallback) {
+            this.props.makeSmallCallback();
+        } else {
+            this.props.makeBigCallback(this.props.location, this.props.phenomenon);
+        }
+    };
+
     handleStartAtZero = function (value) {
         const newState = update(this.state, {
             startAtZero: {$set: !this.state.startAtZero},
@@ -108,8 +118,12 @@ class BcSensorView extends React.Component {
                 average: "n/a",
             }
         }
-        return <div className="bc-measurement-box">
-            <h2 className="capital">{lastMeasure.sensor}</h2>
+        return <Jumbotron bsClass="bc-measurement-box">
+            <h2 className="capital" style={{display: 'inline'}}>{lastMeasure.sensor}</h2>
+            <ButtonToolbar className="pull-right">
+                <Button bsSize="xsmall" className="bcSensorMakeBig"
+                        onClick={this.makeBigOrSmallCallback.bind(this)}>o</Button>
+            </ButtonToolbar>
             <h3>{lastMeasure.location}</h3>
             <table className="table table-hover table-bordered table-condensed table-responsive">
                 <tbody>
@@ -141,15 +155,18 @@ class BcSensorView extends React.Component {
                             bsStyle={this.props.timeGranularity === 'ByDay' ? "primary" : "default"}
                             onClick={this.handleTimeGranularity.bind(this, "ByDay")}>By Day</Button>
                 </ButtonToolbar>
-        </div>
+        </Jumbotron>
     };
 }
 
 BcSensorView.PropTypes = {
     location: PropTypes.string.isRequired,
+    phenomenon: PropTypes.string.isRequired,
     timeGranularity: PropTypes.string.isRequired,
     timeGranularityChangedCallback: PropTypes.func.isRequired,
     data: PropTypes.arrayOf(PropTypes.object).isRequired,
+    makeBigCallback: PropTypes.func,
+    makeSmallCallback: PropTypes.func,
 };
 
 

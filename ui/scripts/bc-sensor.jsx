@@ -54,9 +54,12 @@ class BcSensor extends React.Component {
     render = () => {
         return <BcSensorView
             location={this.props.location}
+            phenomenon={this.props.phenomenon}
             data={this.state.data}
             timeGranularity = {this.state.timeGranularity}
             timeGranularityChangedCallback = {this.timeGranularityChangedCallback}
+            makeBigCallback = {this.props.makeBigCallback}
+            makeSmallCallback = {this.props.makeSmallCallback}
         />
     };
 }
@@ -64,6 +67,8 @@ class BcSensor extends React.Component {
 BcSensor.PropTypes = {
     phenomenon: PropTypes.string.isRequired,
     location: PropTypes.string.isRequired,
+    makeBigCallback: PropTypes.func,
+    makeSmallCallback: PropTypes.func
 };
 
 
