@@ -40,7 +40,8 @@ class BcMeasureDao(_clock: Clock) {
   def getSampledMeasures(
                           location: String,
                           phenomenon: String,
-                          by: TimeGranularity = ByHour): Seq[AggregatedBcMeasure] = {
+                          by: TimeGranularity = ByHour
+                        ): Seq[AggregatedBcMeasure] = {
     DB.readOnly(implicit session => {
       val (extractTime, lastMeasureTimestamp) = by.toExtractAndTime
 

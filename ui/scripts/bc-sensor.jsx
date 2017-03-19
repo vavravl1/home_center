@@ -29,7 +29,8 @@ class BcSensor extends React.Component {
         axios
             .get(
                 bcSensorReading + this.props.location + "/" +
-                this.props.phenomenon + "?timeGranularity=" + this.state.timeGranularity
+                this.props.phenomenon + "?timeGranularity=" + this.state.timeGranularity +
+                ((!!this.props.makeSmallCallback) ? "&big=true" : "&big=false")
             )
             .then(function(measurement) {
                 const newState = update(t.state, {

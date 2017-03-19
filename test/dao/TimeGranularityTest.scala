@@ -20,12 +20,16 @@ class TimeGranularityTest extends WordSpec with Matchers with MockFactory {
       val byDay = "ByDay"
       val nonsense = "nonsense"
       "parse correctly" in {
-        TimeGranularity.parse(byMinute) shouldBe ByMinute
-        TimeGranularity.parse(byHour) shouldBe ByHour
-        TimeGranularity.parse(byDay) shouldBe ByDay
+        TimeGranularity.parse(byMinute, false) shouldBe ByMinute
+        TimeGranularity.parse(byMinute, true) shouldBe ByMinuteBig
+        TimeGranularity.parse(byHour, false) shouldBe ByHour
+        TimeGranularity.parse(byHour, true) shouldBe ByHourBig
+        TimeGranularity.parse(byDay, false) shouldBe ByDay
+        TimeGranularity.parse(byDay, true) shouldBe ByDayBig
       }
       "fallback to byHour if can't be parsed" in {
-        TimeGranularity.parse(nonsense) shouldBe ByHour
+        TimeGranularity.parse(nonsense, false) shouldBe ByHour
+        TimeGranularity.parse(nonsense, true) shouldBe ByHour
       }
     }
     "given as class" should {

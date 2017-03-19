@@ -27,7 +27,7 @@ class WateringController(
   def getAllStates(timeGranularity: String) = Action.async {
     Future {
       Ok(Json.toJson(wateringDao.getAveragedMessages(
-        TimeGranularity.parse(timeGranularity)
+        TimeGranularity.parse(timeGranularity, false)
       )))
     }
   }
