@@ -1,6 +1,6 @@
 #!/bin/bash
 
-npm run prod
+npm run pack
 sbt dist
 scp ./target/universal/home_center-1.0.0.zip raspberry:
 ssh raspberry "cp /home/vlvavra/home_center-1.0.0.zip /opt/home_center/"

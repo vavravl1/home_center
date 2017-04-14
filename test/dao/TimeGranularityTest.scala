@@ -47,6 +47,13 @@ class TimeGranularityTest extends WordSpec with Matchers with MockFactory {
         ).anyNumberOfTimes
         ByHour.toExtractAndTime() shouldBe (sqls"HOUR", new Timestamp(0))
       }
+      "produce correct extracts and times for by hours when big" in {
+        implicit val clock = mock[Clock]
+        (clock.instant _).expects().returning(
+          Instant.ofEpochMilli(0).plus(2, ChronoUnit.DAYS)
+        ).anyNumberOfTimes
+        ByHourBig.toExtractAndTime() shouldBe (sqls"HOUR", new Timestamp(0))
+      }
       "produce correct extracts and times for by days" in {
         implicit val clock = mock[Clock]
         (clock.instant _).expects().returning(

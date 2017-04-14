@@ -13,11 +13,11 @@ sealed abstract class TimeGranularity {
   def toExtractAndTime()(implicit clock: Clock) = {
     this match {
       case ByMinute => (sqls"MINUTE", new Timestamp(clock.instant().minus(30, MINUTES).toEpochMilli))
-      case ByMinuteBig => (sqls"MINUTE", new Timestamp(clock.instant().minus(2, HOURS).toEpochMilli))
+      case ByMinuteBig => (sqls"MINUTE", new Timestamp(clock.instant().minus(120, MINUTES).toEpochMilli))
       case ByHour => (sqls"HOUR", new Timestamp(clock.instant().minus(1, DAYS).toEpochMilli))
-      case ByHourBig => (sqls"HOUR", new Timestamp(clock.instant().minus(3, DAYS).toEpochMilli))
+      case ByHourBig => (sqls"HOUR", new Timestamp(clock.instant().minus(2, DAYS).toEpochMilli))
       case ByDay => (sqls"DAY", new Timestamp(clock.instant().minus(14, DAYS).toEpochMilli))
-      case ByDayBig => (sqls"DAY", new Timestamp(clock.instant().minus(1, MONTHS).toEpochMilli))
+      case ByDayBig => (sqls"DAY", new Timestamp(clock.instant().minus(30, DAYS).toEpochMilli))
     }
   }
 }
@@ -26,7 +26,7 @@ object TimeGranularity {
   def parse(str: String, big: Boolean): TimeGranularity = str match {
     case "ByMinute" if !big => ByMinute
     case "ByMinute" if big => ByMinuteBig
-    case "ByHour" if !big=> ByHour
+    case "ByHour" if !big => ByHour
     case "ByHour" if big => ByHourBig
     case "ByDay" if !big => ByDay
     case "ByDay" if big => ByDayBig

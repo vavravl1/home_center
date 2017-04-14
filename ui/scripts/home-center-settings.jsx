@@ -96,7 +96,7 @@ class HomeCenterSettings extends React.Component {
                                 selectRow={{mode: 'radio'}}
                 >
                     <TableHeaderColumn isKey dataField='location'>Location</TableHeaderColumn>
-                    <TableHeaderColumn isKey dataField='phenomenon'>Phenomenon</TableHeaderColumn>
+                    <TableHeaderColumn dataField='phenomenon'>Phenomenon</TableHeaderColumn>
                 </BootstrapTable>
             </Col>
         </div>

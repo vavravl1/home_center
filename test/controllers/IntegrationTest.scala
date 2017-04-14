@@ -16,6 +16,8 @@ import play.filters.csrf.CSRF.Token
   */
 trait IntegrationTest {
 
+  var appComponents:BuiltInComponentsFromContext with WithoutMqttAppComponents = null
+
   trait WithoutMqttAppComponents extends AppComponents {
     override lazy val mqttConnector = new MqttConnector(null, null, actorSystem) {
       override val reconnect = new Runnable {
@@ -25,8 +27,10 @@ trait IntegrationTest {
   }
 
   class WithoutMqttApp extends AppApplicationLoader {
-    override def createApp(context: Context) =
-      new BuiltInComponentsFromContext(context) with WithoutMqttAppComponents
+    override def createApp(context: Context) = {
+      appComponents = new BuiltInComponentsFromContext(context) with WithoutMqttAppComponents
+      appComponents
+    }
   }
 
   implicit val app = new WithoutMqttApp()

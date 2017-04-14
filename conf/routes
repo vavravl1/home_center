@@ -21,7 +21,7 @@ GET           /watering/ibisek                        controllers.WateringContro
 POST          /watering/ibisek/manual-watering        controllers.WateringController.manualWatering
 
 # Big clown
-GET           /bc/:location/:position/:sensor         controllers.BigClownController.getSensorReading(location, position, sensor, timeGranularity:String ?= "ByHour", big:Boolean = false)
+GET           /bc/:location/:position/:sensor         controllers.BigClownController.getSensorReading(location, position, sensor, timeGranularity:String ?= "ByHour", big:String ?= "false")
 GET           /bc/                                    controllers.BigClownController.getAvailableBcSensors
 
 GET           /settings/bc/sensorLocation             controllers.SettingsController.getBcSensorLocation()

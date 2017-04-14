@@ -137,8 +137,7 @@ class BcSensorView extends React.Component {
                 </tr>
                 </tbody>
             </table>
-            <Line data={this.valueChartData()} options={this.humidityChartOptions()}
-                  key={JSON.stringify(this.humidityChartOptions())}/>
+            <Line data={this.valueChartData()} options={this.humidityChartOptions()}/>
                     <CheckBox
                         className="pull-left"
                         bsSize="xsmall"

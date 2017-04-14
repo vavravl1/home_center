@@ -11,20 +11,24 @@ class WateringComponent extends React.Component {
 
     constructor(props) {
         super(props);
+        const cancelToken = axios.CancelToken;
         this.state = {
             timeGranularity: "ByHour",
-            data: []
+            data: [],
+            tickHandler: null,
+            source: cancelToken.source()
         }
     };
 
     componentDidMount = () => {
-        this.tick();
+        this.tick.call(this);
     };
 
     componentWillUnmount = () => {
-        if (this.tickHandler !== null) {
-            clearTimeout(this.tickHandler);
+        if (this.state.tickHandler !== null) {
+            clearTimeout(this.state.tickHandler);
         }
+        this.state.source.cancel("Component is not rendered anymore");
     };
 
     tick = () => {
@@ -32,17 +36,20 @@ class WateringComponent extends React.Component {
         let wateringUrl = document.getElementById('wateringBackendUrl').value;
 
         axios
-            .get(wateringUrl + "?timeGranularity=" + this.state.timeGranularity)
+            .get(wateringUrl + "?timeGranularity=" + this.state.timeGranularity, {
+                cancelToken: this.state.source.token
+            })
             .then(function (wateringResponse) {
+                const tickHandler = setTimeout(t.tick.bind(t), 1000);
                 const newState = update(t.state, {
                     data: {$set: wateringResponse.data},
+                    tickHandler: {$set: tickHandler}
                 });
 
                 t.setState(newState);
-                t.tickHandler = setTimeout(t.tick.bind(t), 1000);
+
             }).catch(function (error) {
                 console.log(error);
-                t.tickHandler = setTimeout(t.tick.bind(t), 1000);
         });
     };
 

@@ -16,7 +16,15 @@ class BcMeasureDao(_clock: Clock) {
   implicit val clock = _clock
   def cleanDb():Unit = {
     DB.autoCommit(implicit session => {
-      sql"""TRUNCATE TABLE bc_measure""".update().apply()
+      sql"""
+           TRUNCATE TABLE bc_measure;
+        """.update().apply()
+    })
+  }
+
+  def cleanSensor(location:String):Unit = {
+    DB.autoCommit(implicit session => {
+      sql"""DELETE FROM bc_measure WHERE location=${location}"""
     })
   }
 
