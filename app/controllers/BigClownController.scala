@@ -34,10 +34,10 @@ class BigClownController(
     }
   }
 
-  def cleanSensor(location: String) = silhouette.SecuredAction.async { implicit request =>
+  def cleanSensor(location: String, position: String, sensor: String) = silhouette.SecuredAction.async { implicit request =>
     Future {
       if (request.identity.admin) {
-        bcMeasureDao.cleanSensor(location)
+        bcMeasureDao.cleanSensor(location + "/" + position, sensor)
         NoContent
       } else {
         Unauthorized

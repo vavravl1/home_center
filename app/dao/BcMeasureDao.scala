@@ -22,9 +22,9 @@ class BcMeasureDao(_clock: Clock) {
     })
   }
 
-  def cleanSensor(location:String):Unit = {
+  def cleanSensor(location:String, sensor:String):Unit = {
     DB.autoCommit(implicit session => {
-      sql"""DELETE FROM bc_measure WHERE location=${location}"""
+      sql"""DELETE FROM bc_measure WHERE location=${location} AND sensor=${sensor}"""
     })
   }
 

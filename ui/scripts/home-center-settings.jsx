@@ -64,6 +64,30 @@ class HomeCenterSettings extends React.Component {
             });
     };
 
+    onCleanData = (location, phenomenon) => {
+        let t = this;
+        let deleteUrl = document.getElementById('bcSensorReading').value +
+            location + "/" + phenomenon;
+
+        axios.delete(deleteUrl).then(function () {
+            t.loadData();
+        });
+    };
+
+    buttonFormatter = (cell, data, rowIndex) => {
+        console.log(JSON.stringify(cell) + ' ' + JSON.stringify(data) + ' ' + rowIndex);
+        return <button
+            type="button"
+            onClick={this.onCleanData.bind(
+                this,
+                data.location,
+                data.phenomenon
+            )}
+        >
+            Clean data
+        </button>
+    };
+
     render = () => {
         const cellEditProp = {
             mode: 'click',
@@ -97,6 +121,10 @@ class HomeCenterSettings extends React.Component {
                 >
                     <TableHeaderColumn isKey dataField='location'>Location</TableHeaderColumn>
                     <TableHeaderColumn dataField='phenomenon'>Phenomenon</TableHeaderColumn>
+                    <TableHeaderColumn
+                        dataField='location'
+                        dataFormat={this.buttonFormatter.bind(this)}
+                    />
                 </BootstrapTable>
             </Col>
         </div>
