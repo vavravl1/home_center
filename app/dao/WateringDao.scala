@@ -47,13 +47,13 @@ class WateringDao(_clock: Clock) {
       case None => Seq.empty
       case Some(last) =>
         DB.readOnly(implicit session => {
-          val (extractTime, lastMeasureTimestamp) = by.toExtractAndTime
+          val (extractTime, secondExtractTime, lastMeasureTimestamp) = by.toExtractAndTime
 
           sql"""
            SELECT MAX(timestamp) AS ts, AVG(actual_humidity) AS actual, BOOL_OR(watering_in_progress) AS wip
            FROM watering
            WHERE timestamp > ${lastMeasureTimestamp}
-           GROUP BY EXTRACT(${extractTime} FROM timestamp)
+           GROUP BY EXTRACT(${extractTime} FROM timestamp), EXTRACT(${secondExtractTime} FROM timestamp)
            ORDER BY MAX(timestamp)
         """.map(rs => WateringMessage(
             Instant.ofEpochMilli(rs.timestamp("ts").millis),
@@ -87,7 +87,7 @@ class WateringDao(_clock: Clock) {
            FROM watering
            WHERE timestamp < ${lastHourTs}
            AND aggregated = FALSE
-           GROUP BY EXTRACT(HOUR FROM timestamp)
+           GROUP BY EXTRACT(HOUR FROM timestamp), EXTRACT(DAY FROM timestamp)
            ORDER BY MAX(timestamp)
         """
           .map(rs => (

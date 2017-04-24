@@ -38,28 +38,28 @@ class TimeGranularityTest extends WordSpec with Matchers with MockFactory {
         (clock.instant _).expects().returning(
           Instant.ofEpochMilli(0).plus(30, ChronoUnit.MINUTES)
         ).anyNumberOfTimes
-        ByMinute.toExtractAndTime() shouldBe (sqls"MINUTE", new Timestamp(0))
+        ByMinute.toExtractAndTime() shouldBe (sqls"MINUTE", sqls"HOUR", new Timestamp(0))
       }
       "produce correct extracts and times for by hours" in {
         implicit val clock = mock[Clock]
         (clock.instant _).expects().returning(
           Instant.ofEpochMilli(0).plus(1, ChronoUnit.DAYS)
         ).anyNumberOfTimes
-        ByHour.toExtractAndTime() shouldBe (sqls"HOUR", new Timestamp(0))
+        ByHour.toExtractAndTime() shouldBe (sqls"HOUR", sqls"DAY", new Timestamp(0))
       }
       "produce correct extracts and times for by hours when big" in {
         implicit val clock = mock[Clock]
         (clock.instant _).expects().returning(
           Instant.ofEpochMilli(0).plus(2, ChronoUnit.DAYS)
         ).anyNumberOfTimes
-        ByHourBig.toExtractAndTime() shouldBe (sqls"HOUR", new Timestamp(0))
+        ByHourBig.toExtractAndTime() shouldBe (sqls"HOUR", sqls"DAY", new Timestamp(0))
       }
       "produce correct extracts and times for by days" in {
         implicit val clock = mock[Clock]
         (clock.instant _).expects().returning(
           Instant.ofEpochMilli(0).plus(14, ChronoUnit.DAYS)
         ).anyNumberOfTimes
-        ByDay.toExtractAndTime() shouldBe (sqls"DAY", new Timestamp(0))
+        ByDay.toExtractAndTime() shouldBe (sqls"DAY", sqls"MONTH", new Timestamp(0))
       }
     }
   }

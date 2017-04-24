@@ -6,7 +6,6 @@ import ButtonToolbar from "react-bootstrap/lib/ButtonToolbar";
 import Button from "react-bootstrap/lib/Button";
 import CheckBox from "react-bootstrap/lib/CheckBox";
 import Jumbotron from "react-bootstrap/lib/Jumbotron";
-import Badge from "react-bootstrap/lib/Badge";
 import update from "react-addons-update";
 
 class BcSensorView extends React.Component {
@@ -35,6 +34,8 @@ class BcSensorView extends React.Component {
                     return moment(t).add(1, 'minute').startOf('minute').format("HH:mm")
                 }
             });
+        let times = this.props.data
+            .map(t => moment(t.measureTimestamp).add(1, 'minute').format("DD.MM.YYYY HH:mm"));
 
         let datasets = [];
         if (this.isTimGranularityByDay()) {
@@ -65,7 +66,8 @@ class BcSensorView extends React.Component {
 
         return {
             labels: dates,
-            datasets: datasets
+            times: times,
+            datasets: datasets,
         };
     };
 
@@ -81,6 +83,14 @@ class BcSensorView extends React.Component {
             },
             legend: {
                 display: this.isTimGranularityByDay()
+            },
+            tooltips: {
+                callbacks: {
+                    title: function (array, data) {
+                        let index = array[0].index;
+                        return data.times[index];
+                    }
+                }
             }
         };
     };
@@ -97,7 +107,7 @@ class BcSensorView extends React.Component {
         }
     };
 
-    handleStartAtZero = function (value) {
+    handleStartAtZero = function () {
         const newState = update(this.state, {
             startAtZero: {$set: !this.state.startAtZero},
         });

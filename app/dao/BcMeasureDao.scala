@@ -51,7 +51,7 @@ class BcMeasureDao(_clock: Clock) {
                           by: TimeGranularity = ByHour
                         ): Seq[AggregatedBcMeasure] = {
     DB.readOnly(implicit session => {
-      val (extractTime, lastMeasureTimestamp) = by.toExtractAndTime
+      val (extractTime, secondExtractTime, lastMeasureTimestamp) = by.toExtractAndTime
 
       sql"""
            SELECT
@@ -62,7 +62,12 @@ class BcMeasureDao(_clock: Clock) {
            JOIN bc_sensor_location ON bc_measure.location = bc_sensor_location.location
            WHERE phenomenon = ${phenomenon} AND bc_measure.location = ${location}
            AND measure_timestamp > ${lastMeasureTimestamp}
-           GROUP BY EXTRACT(${extractTime} FROM measure_timestamp), unit, sensor, label
+           GROUP BY
+            EXTRACT(${extractTime} FROM measure_timestamp),
+            EXTRACT(${secondExtractTime} FROM measure_timestamp),
+            unit,
+            sensor,
+            label
            ORDER BY MAX(measure_timestamp)
         """
         .map(rs => AggregatedBcMeasure(
