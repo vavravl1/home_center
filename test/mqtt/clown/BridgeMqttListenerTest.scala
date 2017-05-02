@@ -5,8 +5,8 @@ import java.time.{Clock, Instant}
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.TestActorRef
 import com.softwaremill.macwire.wire
-import dao.BcMeasureDao
-import entities.bigclown.BcMeasure
+import model.impl.{LocationRepositorySql, SensorRepositorySql}
+import model.{Measurement, Sensor}
 import mqtt.MqttListenerMessage.ConsumeMessage
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, WordSpec}
@@ -25,9 +25,15 @@ class BridgeMqttListenerTest extends WordSpec with Matchers with MockFactory {
 
     "in default state" should {
       "receive messages from thermometer" in {
-        val dao = mock[BcMeasureDaoCtor]
+        val locationRepository = mock[LocationRepositorySql]
+        val sensorRepository = mock[SensorRepositorySqlWithCtor]
         val listener = TestActorRef[BridgeListener](Props(wire[BridgeListener]))
-        (dao.save _).expects(BcMeasure("bridge/0", "thermometer", "temperature", instant, 19.19, "\u2103"))
+        val sensor = mock[Sensor]
+
+        (locationRepository.findOrCreateLocation _).expects("bridge/0", "???")
+        (sensorRepository.findOrCreateSensor _).expects("bridge/0", "thermometer", "temperature", "\u2103")
+          .returning(sensor)
+        (sensor.addMeasurement _).expects(Measurement(19.19, Instant.ofEpochSecond(22), false))
 
         listener ! ConsumeMessage(
           "nodes/bridge/0/thermometer/i2c0-48",
@@ -35,6 +41,7 @@ class BridgeMqttListenerTest extends WordSpec with Matchers with MockFactory {
         )
       }
     }
-    class BcMeasureDaoCtor extends BcMeasureDao(clock)
   }
+
+  class SensorRepositorySqlWithCtor extends SensorRepositorySql(null)
 }

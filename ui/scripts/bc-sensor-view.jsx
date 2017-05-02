@@ -103,7 +103,7 @@ class BcSensorView extends React.Component {
         if(!!this.props.makeSmallCallback) {
             this.props.makeSmallCallback();
         } else {
-            this.props.makeBigCallback(this.props.location, this.props.phenomenon);
+            this.props.makeBigCallback(this.props.location, this.props.measuredPhenomenon);
         }
     };
 
@@ -120,10 +120,9 @@ class BcSensorView extends React.Component {
             lastMeasure = this.props.data[this.props.data.length - 1];
         } else {
             lastMeasure = {
-                sensor: this.props.phenomenon,
-                location: "n/a",
+                sensor: this.props.measuredPhenomenon,
                 measureTimestamp: "n/a",
-                phenomenon: "n/a",
+                measuredPhenomenon: "n/a",
                 unit: "",
                 average: "n/a",
             }
@@ -134,7 +133,7 @@ class BcSensorView extends React.Component {
                 <Button bsSize="xsmall" className="bcSensorMakeBig"
                         onClick={this.makeBigOrSmallCallback.bind(this)}>o</Button>
             </ButtonToolbar>
-            <h3>{lastMeasure.location}</h3>
+            <h3>{this.props.location.label}</h3>
             <table className="table table-hover table-bordered table-condensed table-responsive">
                 <tbody>
                 <tr>
@@ -142,7 +141,7 @@ class BcSensorView extends React.Component {
                     <td><Time value={new Date(lastMeasure.measureTimestamp)} format="HH:mm:ss"/></td>
                 </tr>
                 <tr>
-                    <td scope="row">Actual {lastMeasure.phenomenon}</td>
+                    <td scope="row">Actual {lastMeasure.measuredPhenomenon}</td>
                     <td>{lastMeasure.average} {lastMeasure.unit}</td>
                 </tr>
                 </tbody>
@@ -169,8 +168,8 @@ class BcSensorView extends React.Component {
 }
 
 BcSensorView.PropTypes = {
-    location: PropTypes.string.isRequired,
-    phenomenon: PropTypes.string.isRequired,
+    location: PropTypes.object.isRequired,
+    measuredPhenomenon: PropTypes.string.isRequired,
     timeGranularity: PropTypes.string.isRequired,
     timeGranularityChangedCallback: PropTypes.func.isRequired,
     data: PropTypes.arrayOf(PropTypes.object).isRequired,

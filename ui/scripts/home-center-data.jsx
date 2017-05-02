@@ -51,21 +51,21 @@ class HomeCenterData extends React.Component {
         if (this.state.bigBcSensor !== null) {
             const bigBcSensor = this.state.bcSensors.find(oneSensor =>
                 oneSensor.location === this.state.bigBcSensor.location &&
-                oneSensor.phenomenon === this.state.bigBcSensor.phenomenon
+                oneSensor.measuredPhenomenon === this.state.bigBcSensor.measuredPhenomenon
             );
             return <Col xs={10} md={10}>
                 <BcSensor
                     location={bigBcSensor.location}
-                    phenomenon={bigBcSensor.phenomenon}
+                    measuredPhenomenon={bigBcSensor.measuredPhenomenon}
                     makeSmallCallback={this.makeBcSensorSmall}
                 />
             </Col>
         } else {
             let bcSensorsComponents = this.state.bcSensors.map(oneSensor =>
-                <Col xs={12} md={5} key={oneSensor.location + '/' + oneSensor.phenomenon}>
+                <Col xs={12} md={5} key={oneSensor.location.address + '/' + oneSensor.measuredPhenomenon}>
                     <BcSensor
                         location={oneSensor.location}
-                        phenomenon={oneSensor.phenomenon}
+                        measuredPhenomenon={oneSensor.measuredPhenomenon}
                         makeBigCallback={this.makeBcSensorBig}
                     />
                 </Col>

@@ -32,8 +32,8 @@ class BcSensor extends React.Component {
         let bcSensorReading = document.getElementById('bcSensorReading').value;
         axios
             .get(
-                bcSensorReading + this.props.location + "/" +
-                this.props.phenomenon + "?timeGranularity=" + this.state.timeGranularity +
+                bcSensorReading + this.props.location.address + "/" +
+                this.props.measuredPhenomenon + "?timeGranularity=" + this.state.timeGranularity +
                 ((!!this.props.makeSmallCallback) ? "&big=true" : "&big=false"), {
                     cancelToken: this.state.source.token
                 }
@@ -61,7 +61,7 @@ class BcSensor extends React.Component {
     render = () => {
         return <BcSensorView
             location={this.props.location}
-            phenomenon={this.props.phenomenon}
+            measuredPhenomenon={this.props.measuredPhenomenon}
             data={this.state.data}
             timeGranularity = {this.state.timeGranularity}
             timeGranularityChangedCallback = {this.timeGranularityChangedCallback}
@@ -72,8 +72,8 @@ class BcSensor extends React.Component {
 }
 
 BcSensor.PropTypes = {
-    phenomenon: PropTypes.string.isRequired,
-    location: PropTypes.string.isRequired,
+    measuredPhenomenon: PropTypes.string.isRequired,
+    location: PropTypes.object.isRequired,
     makeBigCallback: PropTypes.func,
     makeSmallCallback: PropTypes.func
 };
