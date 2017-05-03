@@ -26,7 +26,16 @@ class HomeCenterSettings extends React.Component {
         ]).then(axios.spread(function (sensorLocation, activeSensors) {
             const newState = update(t.state, {
                 bcSensorLocations: {$set: sensorLocation.data},
-                activeSensors: {$set: activeSensors.data},
+                activeSensors: {
+                    $set: activeSensors.data.map(d => {
+                        let nd = {
+                            measuredPhenomenon: d.measuredPhenomenon,
+                            address: d.location.address,
+                            key: d.location.address + ":" + d.measuredPhenomenon
+                        };
+                        return nd;
+                    })
+                },
             });
 
             t.setState(newState);
@@ -119,10 +128,14 @@ class HomeCenterSettings extends React.Component {
                                 hover
                                 selectRow={{mode: 'radio'}}
                 >
-                    <TableHeaderColumn isKey dataField='location'>Location</TableHeaderColumn>
-                    <TableHeaderColumn dataField='phenomenon'>Phenomenon</TableHeaderColumn>
+                    <TableHeaderColumn isKey dataField='key'
+                                       dataFormat={(cell, data, rowIndex) => {
+                                           return cell.split(":")[0]
+                    }}>
+                        Location</TableHeaderColumn>
+                    <TableHeaderColumn dataField='measuredPhenomenon'>Phenomenon</TableHeaderColumn>
                     <TableHeaderColumn
-                        dataField='location'
+                        dataField='address'
                         dataFormat={this.buttonFormatter.bind(this)}
                     />
                 </BootstrapTable>
