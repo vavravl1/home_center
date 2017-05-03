@@ -1,6 +1,6 @@
 package dao
 
-import entities.bigclown.BcSensorLocation
+import entities.bigclown.Location
 import scalikejdbc.{DB, _}
 
 /**
@@ -13,7 +13,7 @@ class BcSensorLocationDao {
     })
   }
 
-  def saveOrUpdate(location: BcSensorLocation): Unit = {
+  def saveOrUpdate(location: Location): Unit = {
     DB.autoCommit(implicit session => {
       sql"""SELECT location FROM bc_sensor_location WHERE location = ${location.location}"""
         .map(rs => 1).toList().apply() match {
@@ -35,11 +35,11 @@ class BcSensorLocationDao {
     })
   }
 
-  def getAllLocations(): Seq[BcSensorLocation] =
+  def getAllLocations(): Seq[Location] =
     DB.readOnly(implicit session => {
       sql"""SELECT location, label FROM bc_sensor_location ORDER BY location"""
         .map(rs => {
-          BcSensorLocation(
+          Location(
             label = rs.string("label"),
             location = rs.string("location")
           )

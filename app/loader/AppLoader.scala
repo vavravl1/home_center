@@ -8,7 +8,6 @@ import config.HomeControllerConfiguration
 import controllers._
 import dao.{BcMeasureDao, BcSensorLocationDao, WateringDao}
 import model.impl.{LocationRepositorySql, SensorRepositorySql}
-import model.{LocationRepository, SensorRepository}
 import mqtt.clown.BridgeListener
 import mqtt.watering.{WateringCommander, WateringHelloListener, WateringListener}
 import mqtt.{MqttConnector, MqttDispatchingListener, MqttListenerMessage, MqttRepeater}
@@ -58,9 +57,8 @@ trait DaoConfig extends BuiltInComponents with ClockConfig {
   lazy val wateringDao = wire[WateringDao]
   lazy val bcMeasureDao = wire[BcMeasureDao]
 
-  private lazy val locationRepositorySql:LocationRepositorySql = wire[LocationRepositorySql]
-  lazy val locationRepository:LocationRepository = locationRepositorySql
-  lazy val sensorRepository:SensorRepository = new SensorRepositorySql(locationRepositorySql)
+  lazy val locationRepository:LocationRepositorySql = wire[LocationRepositorySql]
+  lazy val sensorRepository:SensorRepositorySql = new SensorRepositorySql(locationRepository)
 
   def initDbAggregation():Unit = {
     actorSystem.scheduler.schedule(

@@ -3,7 +3,7 @@ package dao
 import java.time.temporal.ChronoUnit._
 import java.time.{Clock, Instant}
 
-import entities.bigclown.{BcMeasure, BcSensorLocation}
+import entities.bigclown.{BcMeasure, Location}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, WordSpec}
 import scalikejdbc._
@@ -26,7 +26,7 @@ class BcMeasureDaoTest extends WordSpec with Matchers with DbTest with MockFacto
       bcMeasureDao.save(BcMeasure("remote/0", "thermometer", "temperature", i.plus(80, MINUTES), 30, "C"))
       bcMeasureDao.save(BcMeasure("remote/0", "thermometer", "temperature", i.plus(90, MINUTES), 60, "C"))
 
-      locationDao.saveOrUpdate(BcSensorLocation("remote/0", "upstairs corridor"))
+      locationDao.saveOrUpdate(Location("remote/0", "upstairs corridor"))
 
       "correctly samples the temperatures" in {
         (clock.instant _).expects().returning(i).anyNumberOfTimes

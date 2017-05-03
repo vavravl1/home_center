@@ -37,12 +37,12 @@ class HomeCenterSettings extends React.Component {
     };
 
     onAfterSaveCell = (row) => {
-        this.postSettings(row.location, row.label);
+        this.postSettings(row.address, row.label);
     };
 
     onAddRow = (row) => {
-        if (row.location.length > 0 && row.label.length > 0) {
-            this.postSettings(row.location, row.label);
+        if (row.address.length > 0 && row.label.length > 0) {
+            this.postSettings(row.address, row.label);
         }
     };
 
@@ -55,10 +55,10 @@ class HomeCenterSettings extends React.Component {
         });
     };
 
-    postSettings = (location, label) => {
+    postSettings = (address, label) => {
         let t = this;
         let postUrl = document.getElementById('settingsBackendUrl').value;
-        axios.post(postUrl, {location: location, label: label})
+        axios.post(postUrl, {address: address, label: label})
             .then(function () {
                 t.loadData();
             });
@@ -80,7 +80,7 @@ class HomeCenterSettings extends React.Component {
             type="button"
             onClick={this.onCleanData.bind(
                 this,
-                data.location,
+                data.address,
                 data.phenomenon
             )}
         >
@@ -109,7 +109,7 @@ class HomeCenterSettings extends React.Component {
                                     onAddRow: this.onAddRow
                                 }}
                 >
-                    <TableHeaderColumn isKey dataField='location'>Location</TableHeaderColumn>
+                    <TableHeaderColumn isKey dataField='address'>Address</TableHeaderColumn>
                     <TableHeaderColumn dataField='label'>Label</TableHeaderColumn>
                 </BootstrapTable>
             </Col>

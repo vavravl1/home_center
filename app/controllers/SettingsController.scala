@@ -3,7 +3,7 @@ package controllers
 import com.google.common.io.BaseEncoding
 import com.mohiva.play.silhouette.api.Silhouette
 import dao.BcSensorLocationDao
-import entities.bigclown.BcSensorLocation
+import model.{Location, LocationRepository}
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc._
@@ -16,12 +16,13 @@ import scala.concurrent.Future
   * This controller creates an `Action` to handle HTTP requests to the
   * application's home page.
   */
-class SettingsController(dao: BcSensorLocationDao,
+class SettingsController(locationRepo: LocationRepository,
+                         dao: BcSensorLocationDao,
                          silhouette: Silhouette[DefaultEnv]) extends Controller {
 
   def getBcSensorLocation() = Action.async {
     Future {
-      Ok(Json.toJson(dao.getAllLocations()))
+      Ok(Json.toJson(locationRepo.getAllLocations()))
     }
   }
 
@@ -29,9 +30,9 @@ class SettingsController(dao: BcSensorLocationDao,
     Future {
       if (request.identity.admin) {
         val json = request.body.asJson.get
-        val locationToUpdate = json.as[BcSensorLocation]
+        val locationToUpdate = json.as[Location]
         Logger.info(s"Updating $locationToUpdate")
-        dao.saveOrUpdate(locationToUpdate)
+        locationToUpdate.updateLabel(locationToUpdate.label)
         NoContent
       } else {
         Unauthorized

@@ -36,4 +36,14 @@ object LocationSql {
     (JsPath \ "address").write[String] and
       (JsPath \ "label").write[String]
     )(unlift(LocationSql.unapply))
+
+  implicit val reads: Reads[LocationSql] = (
+    (JsPath \ "address").read[String] and
+      (JsPath \ "label").read[String]
+    )(LocationSql.apply _)
+
+  def fromRs(rs:WrappedResultSet):LocationSql = new LocationSql(
+    address = rs.string("address"),
+    locationLabel = rs.string("label")
+  )
 }

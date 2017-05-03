@@ -1,25 +1,29 @@
 package model.impl
 
-import model.LocationRepository
+import model.{Location, LocationRepository}
 import scalikejdbc._
 
 /**
   *
   */
 class LocationRepositorySql extends LocationRepository {
-  override def findLocation(address: String): Option[LocationSql] = {
-    DB.autoCommit(implicit session => {
+  override def findLocation(address: String): Option[LocationSql] = DB.autoCommit(implicit session => {
       sql"""
            SELECT address, label
            FROM location
            WHERE address = ${address}
         """
-        .map(rs => new LocationSql(
-          rs.string("address"),
-          rs.string("label")
-        )).single().apply()
+        .map(LocationSql.fromRs(_)).single().apply()
     })
-  }
+
+  override def getAllLocations(): Seq[Location] = DB.autoCommit(implicit session => {
+    sql"""
+           SELECT address, label
+           FROM location
+           ORDER BY address
+        """
+      .map(LocationSql.fromRs(_)).list().apply()
+  })
 
   override def findOrCreateLocation(address: String, label: String): LocationSql = {
     val location = findLocation(address)

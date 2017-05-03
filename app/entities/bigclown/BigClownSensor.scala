@@ -3,7 +3,6 @@ package entities.bigclown
 import java.time.Instant
 
 import play.api.libs.json._
-import scalikejdbc._
 
 /**
   * Uniquely identifies the location of a single bc sensor in the whole system
@@ -45,9 +44,9 @@ object BcMeasure {
   * @param location as seen by BigClown nodes, e.g. "remote/2"
   * @param label as seen by the user, e.g. "Kitchen"
   */
-case class BcSensorLocation(location:String, label: String)
-object BcSensorLocation {
-  implicit val format: Format[BcSensorLocation] = Json.format[BcSensorLocation]
+case class Location(location:String, label: String)
+object Location {
+  implicit val format: Format[Location] = Json.format[Location]
 }
 
 

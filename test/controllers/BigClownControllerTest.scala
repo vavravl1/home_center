@@ -3,7 +3,7 @@ package controllers
 import java.time.Instant
 import java.time.temporal.ChronoUnit.MINUTES
 
-import entities.bigclown.{AggregatedBcMeasure, BcMeasure, BcSensorLocation}
+import entities.bigclown.{AggregatedBcMeasure, BcMeasure, Location}
 import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.json.{JsArray, Json}
 import play.api.test.FakeRequest
@@ -20,7 +20,7 @@ class BigClownControllerTest extends WordSpec with Matchers with IntegrationTest
     appComponents.bcMeasureDao.cleanDb()
 
     "when there are old measures" should {
-      appComponents.locationDao.saveOrUpdate(BcSensorLocation("remote/0", "location-label"))
+      appComponents.locationDao.saveOrUpdate(Location("remote/0", "location-label"))
       appComponents.bcMeasureDao.save(BcMeasure("remote/0", "thermometer", "temperature", now, 10, "C"))
       appComponents.bcMeasureDao.save(BcMeasure("remote/0", "thermometer", "temperature", now.minus(70, MINUTES), 20, "C"))
       appComponents.bcMeasureDao.save(BcMeasure("remote/0", "thermometer", "temperature", now.minus(119, MINUTES), 30, "C"))
