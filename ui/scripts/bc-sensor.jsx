@@ -62,6 +62,8 @@ class BcSensor extends React.Component {
         return <BcSensorView
             location={this.props.location}
             measuredPhenomenon={this.props.measuredPhenomenon}
+            unit={this.props.unit}
+            name={this.props.name}
             data={this.state.data}
             timeGranularity = {this.state.timeGranularity}
             timeGranularityChangedCallback = {this.timeGranularityChangedCallback}
@@ -73,6 +75,8 @@ class BcSensor extends React.Component {
 
 BcSensor.PropTypes = {
     measuredPhenomenon: PropTypes.string.isRequired,
+    unit:PropTypes.string.isRequired,
+    name:PropTypes.string.isRequired,
     location: PropTypes.object.isRequired,
     makeBigCallback: PropTypes.func,
     makeSmallCallback: PropTypes.func

@@ -65,6 +65,8 @@ class HomeCenterData extends React.Component {
                 <Col xs={12} md={5} key={oneSensor.location.address + '/' + oneSensor.measuredPhenomenon}>
                     <BcSensor
                         location={oneSensor.location}
+                        unit={oneSensor.unit}
+                        name={oneSensor.name}
                         measuredPhenomenon={oneSensor.measuredPhenomenon}
                         makeBigCallback={this.makeBcSensorBig}
                     />

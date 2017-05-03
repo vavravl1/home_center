@@ -128,7 +128,7 @@ class BcSensorView extends React.Component {
             }
         }
         return <Jumbotron bsClass="bc-measurement-box">
-            <h2 className="capital" style={{display: 'inline'}}>{lastMeasure.sensor}</h2>
+            <h2 className="capital" style={{display: 'inline'}}>{this.props.name}</h2>
             <ButtonToolbar className="pull-right">
                 <Button bsSize="xsmall" className="bcSensorMakeBig"
                         onClick={this.makeBigOrSmallCallback.bind(this)}>o</Button>
@@ -141,8 +141,8 @@ class BcSensorView extends React.Component {
                     <td><Time value={new Date(lastMeasure.measureTimestamp)} format="HH:mm:ss"/></td>
                 </tr>
                 <tr>
-                    <td scope="row">Actual {lastMeasure.measuredPhenomenon}</td>
-                    <td>{lastMeasure.average} {lastMeasure.unit}</td>
+                    <td scope="row">Actual {this.props.measuredPhenomenon}</td>
+                    <td>{lastMeasure.average} {this.props.unit}</td>
                 </tr>
                 </tbody>
             </table>
@@ -170,6 +170,8 @@ class BcSensorView extends React.Component {
 BcSensorView.PropTypes = {
     location: PropTypes.object.isRequired,
     measuredPhenomenon: PropTypes.string.isRequired,
+    unit:PropTypes.string.isRequired,
+    name:PropTypes.string.isRequired,
     timeGranularity: PropTypes.string.isRequired,
     timeGranularityChangedCallback: PropTypes.func.isRequired,
     data: PropTypes.arrayOf(PropTypes.object).isRequired,
