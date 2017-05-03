@@ -73,24 +73,26 @@ class HomeCenterSettings extends React.Component {
             });
     };
 
-    onCleanData = (location, phenomenon) => {
+    onCleanData = (address, measuredPhenomenon) => {
         let t = this;
         let deleteUrl = document.getElementById('bcSensorReading').value +
-            location + "/" + phenomenon;
+            address + "/" + measuredPhenomenon;
+
+        console.log("deleteUrl=" + deleteUrl);
 
         axios.delete(deleteUrl).then(function () {
             t.loadData();
         });
     };
 
-    buttonFormatter = (cell, data, rowIndex) => {
-        console.log(JSON.stringify(cell) + ' ' + JSON.stringify(data) + ' ' + rowIndex);
+    cleanDataButtonFormatter = (cell, data, rowIndex) => {
+        console.log(JSON.stringify(cell) + '>>>' + JSON.stringify(data) + '>>>' + rowIndex);
         return <button
             type="button"
             onClick={this.onCleanData.bind(
                 this,
                 data.address,
-                data.phenomenon
+                data.measuredPhenomenon
             )}
         >
             Clean data
@@ -136,7 +138,7 @@ class HomeCenterSettings extends React.Component {
                     <TableHeaderColumn dataField='measuredPhenomenon'>Phenomenon</TableHeaderColumn>
                     <TableHeaderColumn
                         dataField='address'
-                        dataFormat={this.buttonFormatter.bind(this)}
+                        dataFormat={this.cleanDataButtonFormatter.bind(this)}
                     />
                 </BootstrapTable>
             </Col>

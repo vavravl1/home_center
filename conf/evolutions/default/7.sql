@@ -24,4 +24,4 @@ CREATE TABLE measurement (
   aggregated BOOLEAN DEFAULT FALSE,
   sensor_id BIGINT
 );
-ALTER TABLE measurement ADD FOREIGN KEY (sensor_id) REFERENCES sensor(id);
+ALTER TABLE measurement ADD FOREIGN KEY (sensor_id) REFERENCES sensor(id) ON DELETE CASCADE;

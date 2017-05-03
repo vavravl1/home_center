@@ -1,9 +1,7 @@
 package controllers
 
-import com.google.common.io.BaseEncoding
 import com.mohiva.play.silhouette.api.Silhouette
-import dao.BcSensorLocationDao
-import model.{Location, LocationRepository}
+import model.{Location, LocationRepository, SensorRepository}
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc._
@@ -17,7 +15,7 @@ import scala.concurrent.Future
   * application's home page.
   */
 class SettingsController(locationRepo: LocationRepository,
-                         dao: BcSensorLocationDao,
+                         sensorRepository: SensorRepository,
                          silhouette: Silhouette[DefaultEnv]) extends Controller {
 
   def getBcSensorLocation() = Action.async {
@@ -40,10 +38,10 @@ class SettingsController(locationRepo: LocationRepository,
     }
   }
 
-  def deleteBcSensorLocation(location: String) = silhouette.SecuredAction.async { implicit request =>
+  def deleteBcSensorLocation(location: String, position:String, measuredPhenomenon:String) = silhouette.SecuredAction.async { implicit request =>
     Future {
       if (request.identity.admin) {
-        dao.delete(new String(BaseEncoding.base64().decode(location)))
+        sensorRepository.delete(location + "/" + position, measuredPhenomenon)
         NoContent
       } else {
         Unauthorized
