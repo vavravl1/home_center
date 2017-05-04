@@ -58,7 +58,7 @@ trait DaoConfig extends BuiltInComponents with ClockConfig {
   lazy val bcMeasureDao = wire[BcMeasureDao]
 
   lazy val locationRepository:LocationRepositorySql = wire[LocationRepositorySql]
-  lazy val sensorRepository:SensorRepositorySql = new SensorRepositorySql(locationRepository)
+  lazy val sensorRepository:SensorRepositorySql = new SensorRepositorySql(locationRepository, clock)
 
   def initDbAggregation():Unit = {
     actorSystem.scheduler.schedule(

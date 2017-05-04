@@ -23,7 +23,7 @@ class BridgeListener(sensorRepository: SensorRepository, locationRepository: Loc
           case JsSuccess(messages: BcMessage, _) =>
             messages.msgs.foreach(msg => {
               val locationAddress = location + "/" + position
-              locationRepository.findOrCreateLocation(locationAddress, "???")
+              locationRepository.findOrCreateLocation(locationAddress)
               val foundSensor = sensorRepository.findOrCreateSensor(
                 locationAddress = locationAddress,
                 name = sensor,

@@ -6,5 +6,5 @@ package model
 trait LocationRepository {
   def getAllLocations():Seq[Location]
   def findLocation(address:String):Option[Location]
-  def findOrCreateLocation(address: String, label:String):Location
+  def findOrCreateLocation(address: String):Location
 }

@@ -33,7 +33,7 @@ trait Sensor {
 
   def addMeasurement(measurement: Measurement)
   def getAggregatedValues(timeGranularity: TimeGranularity):Seq[AggregatedValues]
-  def aggregatedOldMeasurements()
+  def aggregateOldMeasurements()
 }
 
 object Sensor {

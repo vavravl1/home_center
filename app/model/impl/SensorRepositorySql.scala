@@ -1,12 +1,17 @@
 package model.impl
 
+import java.time.Clock
+
 import model.{Sensor, SensorRepository}
 import scalikejdbc._
 
 /**
   * Sql implementation of sensor repository
   */
-class SensorRepositorySql(locationRepository: LocationRepositorySql) extends SensorRepository {
+class SensorRepositorySql(
+                           locationRepository: LocationRepositorySql,
+                           val clock: Clock) extends SensorRepository {
+
   override def findOrCreateSensor(locationAddress: String, name: String, measuredPhenomenon: String, unit: String): Sensor = {
 
     DB.localTx(implicit session => {
@@ -31,7 +36,7 @@ class SensorRepositorySql(locationRepository: LocationRepositorySql) extends Sen
            FROM sensor S
            JOIN location L ON S.location_address = L.address
         """
-      .map(rs => SensorSql.fromRs(rs)).list().apply()
+      .map(rs => SensorSql.fromRs(rs, clock)).list().apply()
   })
 
   override def delete(locationAddress: String, measuredPhenomenon: String): Unit =
@@ -49,7 +54,7 @@ class SensorRepositorySql(locationRepository: LocationRepositorySql) extends Sen
            JOIN location L ON S.location_address = L.address
            WHERE S.location_address = ${locationAddress} AND S.measuredPhenomenon = ${measuredPhenomenon}
         """
-      .map(rs => SensorSql.fromRs(rs)).single().apply()
+      .map(rs => SensorSql.fromRs(rs, clock)).single().apply()
   }
 
   private def storeSensor(locationAddress: String, name: String, measuredPhenomenon: String, unit: String)(implicit session: DBSession) = {

@@ -5,7 +5,7 @@ import java.time.temporal.ChronoUnit._
 import java.time.{Clock, Instant}
 
 import _root_.play.api.Logger
-import entities.bigclown.{AggregatedBcMeasure, BcMeasure, BcSensorCoordinates}
+import entities.bigclown.BcMeasure
 import scalikejdbc._
 
 /**
@@ -45,43 +45,43 @@ class BcMeasureDao(_clock: Clock) {
     })
   }
 
-  def getSampledMeasures(
-                          location: String,
-                          phenomenon: String,
-                          by: TimeGranularity = ByHour
-                        ): Seq[AggregatedBcMeasure] = {
-    DB.readOnly(implicit session => {
-      val (extractTime, secondExtractTime, lastMeasureTimestamp) = by.toExtractAndTime
-
-      sql"""
-           SELECT
-            MAX(measure_timestamp) AS ts, ROUND(AVG(value), 2) AS avg,
-            ROUND(MIN(value), 2) as min, ROUND(MAX(value), 2) as max, unit, sensor,
-            bc_sensor_location.label AS label
-           FROM bc_measure
-           JOIN bc_sensor_location ON bc_measure.location = bc_sensor_location.location
-           WHERE phenomenon = ${phenomenon} AND bc_measure.location = ${location}
-           AND measure_timestamp > ${lastMeasureTimestamp}
-           GROUP BY
-            EXTRACT(${extractTime} FROM measure_timestamp),
-            EXTRACT(${secondExtractTime} FROM measure_timestamp),
-            unit,
-            sensor,
-            label
-           ORDER BY MAX(measure_timestamp)
-        """
-        .map(rs => AggregatedBcMeasure(
-          location = rs.string("label"),
-          sensor = rs.string("sensor"),
-          phenomenon = phenomenon,
-          measureTimestamp = Instant.ofEpochMilli(rs.timestamp("ts").millis),
-          min = rs.double("min"),
-          max = rs.double("max"),
-          average = rs.double("avg"),
-          unit = rs.string("unit")
-        )).toList().apply()
-    })
-  }
+//  def getSampledMeasures(
+//                          location: String,
+//                          phenomenon: String,
+//                          by: TimeGranularity = ByHour
+//                        ): Seq[AggregatedBcMeasure] = {
+//    DB.readOnly(implicit session => {
+//      val (extractTime, secondExtractTime, lastMeasureTimestamp) = by.toExtractAndTime
+//
+//      sql"""
+//           SELECT
+//            MAX(measure_timestamp) AS ts, ROUND(AVG(value), 2) AS avg,
+//            ROUND(MIN(value), 2) as min, ROUND(MAX(value), 2) as max, unit, sensor,
+//            bc_sensor_location.label AS label
+//           FROM bc_measure
+//           JOIN bc_sensor_location ON bc_measure.location = bc_sensor_location.location
+//           WHERE phenomenon = ${phenomenon} AND bc_measure.location = ${location}
+//           AND measure_timestamp > ${lastMeasureTimestamp}
+//           GROUP BY
+//            EXTRACT(${extractTime} FROM measure_timestamp),
+//            EXTRACT(${secondExtractTime} FROM measure_timestamp),
+//            unit,
+//            sensor,
+//            label
+//           ORDER BY MAX(measure_timestamp)
+//        """
+//        .map(rs => AggregatedBcMeasure(
+//          location = rs.string("label"),
+//          sensor = rs.string("sensor"),
+//          phenomenon = phenomenon,
+//          measureTimestamp = Instant.ofEpochMilli(rs.timestamp("ts").millis),
+//          min = rs.double("min"),
+//          max = rs.double("max"),
+//          average = rs.double("avg"),
+//          unit = rs.string("unit")
+//        )).toList().apply()
+//    })
+//  }
 
   def sensorAggregation(): Unit = {
     DB.localTx(implicit session => {
@@ -130,10 +130,10 @@ class BcMeasureDao(_clock: Clock) {
     })
   }
 
-  def getAvailableBcSensors():Seq[BcSensorCoordinates] = DB.readOnly(implicit session => {
-    sql"""
-          SELECT location, phenomenon FROM bc_measure GROUP BY location, phenomenon ORDER BY phenomenon
-      """.map(rs => BcSensorCoordinates(rs.string("location"), rs.string("phenomenon")))
-      .toList().apply()
-  })
+//  def getAvailableBcSensors():Seq[BcSensorCoordinates] = DB.readOnly(implicit session => {
+//    sql"""
+//          SELECT location, phenomenon FROM bc_measure GROUP BY location, phenomenon ORDER BY phenomenon
+//      """.map(rs => BcSensorCoordinates(rs.string("location"), rs.string("phenomenon")))
+//      .toList().apply()
+//  })
 }

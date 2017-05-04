@@ -30,7 +30,7 @@ class BridgeMqttListenerTest extends WordSpec with Matchers with MockFactory {
         val listener = TestActorRef[BridgeListener](Props(wire[BridgeListener]))
         val sensor = mock[Sensor]
 
-        (locationRepository.findOrCreateLocation _).expects("bridge/0", "???")
+        (locationRepository.findOrCreateLocation _).expects("bridge/0")
         (sensorRepository.findOrCreateSensor _).expects("bridge/0", "thermometer", "temperature", "\u2103")
           .returning(sensor)
         (sensor.addMeasurement _).expects(Measurement(19.19, Instant.ofEpochSecond(22), false))
@@ -43,5 +43,5 @@ class BridgeMqttListenerTest extends WordSpec with Matchers with MockFactory {
     }
   }
 
-  class SensorRepositorySqlWithCtor extends SensorRepositorySql(null)
+  class SensorRepositorySqlWithCtor extends SensorRepositorySql(null, null)
 }

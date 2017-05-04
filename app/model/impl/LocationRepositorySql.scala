@@ -25,7 +25,7 @@ class LocationRepositorySql extends LocationRepository {
       .map(LocationSql.fromRs(_)).list().apply()
   })
 
-  override def findOrCreateLocation(address: String, label: String): LocationSql = {
+  override def findOrCreateLocation(address: String): LocationSql = {
     val location = findLocation(address)
     if(location.isEmpty) {
       DB.autoCommit(implicit session => {
@@ -33,11 +33,11 @@ class LocationRepositorySql extends LocationRepository {
           INSERT INTO location (address, label)
           VALUES (
             ${address},
-            ${label}
+            '???'
           )
       """
           .update.apply()
-        new LocationSql(address, label)
+        new LocationSql(address, "???")
       })
     } else {
       location.get
