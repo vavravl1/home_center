@@ -1,9 +1,9 @@
-package dao
+package model
 
 import java.time.temporal.ChronoUnit._
 import java.time.{Clock, Instant}
 
-import model.Measurement
+import dao.{ByHour, DbTest}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, WordSpec}
 import scalikejdbc._
