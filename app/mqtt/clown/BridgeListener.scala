@@ -3,7 +3,6 @@ package mqtt.clown
 import java.time.Clock
 
 import akka.actor.Actor
-import entities.bigclown.BcMessage
 import model.{LocationRepository, Measurement, SensorRepository}
 import mqtt.MqttListenerMessage.{ConsumeMessage, Ping}
 import play.api.Logger

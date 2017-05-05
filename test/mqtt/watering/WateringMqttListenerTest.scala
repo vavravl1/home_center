@@ -1,12 +1,11 @@
 package mqtt.watering
 
-import java.time.{Clock, Instant}
+import java.time.Clock
 
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.TestActorRef
 import com.softwaremill.macwire.wire
 import dao.WateringDao
-import entities.bigclown.BcMeasure
 import entities.watering.WateringMessage
 import mqtt.MqttListenerMessage.ConsumeMessage
 import mqtt.clown.BridgeListener

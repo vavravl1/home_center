@@ -1,5 +1,6 @@
 package entities.bigclown
 
+import mqtt.clown.BcMessage
 import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.json.Json
 

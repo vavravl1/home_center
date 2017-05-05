@@ -6,7 +6,7 @@ import akka.actor.{ActorRef, Props}
 import com.softwaremill.macwire._
 import config.HomeControllerConfiguration
 import controllers._
-import dao.{BcMeasureDao, BcSensorLocationDao, WateringDao}
+import dao.WateringDao
 import model.impl.{LocationRepositorySql, SensorRepositorySql}
 import mqtt.clown.BridgeListener
 import mqtt.watering.{WateringCommander, WateringHelloListener, WateringListener}
@@ -53,9 +53,7 @@ trait SqlH2Config extends BuiltInComponents with EvolutionsComponents with DBCom
 }
 
 trait DaoConfig extends BuiltInComponents with ClockConfig {
-  lazy val locationDao = wire[BcSensorLocationDao]
   lazy val wateringDao = wire[WateringDao]
-  lazy val bcMeasureDao = wire[BcMeasureDao]
 
   lazy val locationRepository:LocationRepositorySql = wire[LocationRepositorySql]
   lazy val sensorRepository:SensorRepositorySql = new SensorRepositorySql(locationRepository, clock)
@@ -66,7 +64,7 @@ trait DaoConfig extends BuiltInComponents with ClockConfig {
       1 hour,
       new Runnable {
         override def run() = {
-          bcMeasureDao.sensorAggregation()
+          sensorRepository.findAll().foreach(sensor => sensor.aggregateOldMeasurements())
           wateringDao.sensorAggregation()
         }
       }
