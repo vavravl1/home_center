@@ -8,25 +8,20 @@ import scalikejdbc._
 /**
   *
   */
-case class LocationSql(val address:String, var locationLabel:String) extends Location {
-  /**
-    * human readable representation of the sensor, e.g. living room
-    */
-  override def label: String = locationLabel
-
+case class LocationSql(val address:String, val label:String) extends Location {
   /**
     * Set label to this location
     *
     * @param newLabel
     * @return
     */
-  override def updateLabel(newLabel: String) = {
+  override def updateLabel(newLabel: String):Location = {
     DB.autoCommit(implicit session => {
       sql"""
           UPDATE location SET label = ${newLabel} WHERE address = ${address}
       """
         .update.apply()
-      locationLabel = newLabel
+      LocationSql(address, label)
     })
   }
 }
@@ -44,6 +39,6 @@ object LocationSql {
 
   def fromRs(rs:WrappedResultSet):LocationSql = new LocationSql(
     address = rs.string("address"),
-    locationLabel = rs.string("label")
+    label = rs.string("label")
   )
 }

@@ -18,14 +18,14 @@ trait Location {
   /**
     * human readable representation of the sensor, e.g. living room
     */
-  def label: String
+  val label: String
 
   /**
     * Set label to this location
     * @param newLabel
     * @return
     */
-  def updateLabel(newLabel:String)
+  def updateLabel(newLabel:String):Location
 }
 
 object Location {
