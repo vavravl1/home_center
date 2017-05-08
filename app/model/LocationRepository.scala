@@ -19,4 +19,9 @@ trait LocationRepository {
     * create a new one with other parameters unspecified
     */
   def findOrCreateLocation(address: String):Location
+
+  /**
+    * Delete whole location and all associated sensors
+    */
+  def deleteLocation(address:String):Unit
 }

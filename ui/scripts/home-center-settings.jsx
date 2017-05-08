@@ -10,7 +10,8 @@ class HomeCenterSettings extends React.Component {
         super(props);
         this.state = {
             bcSensorLocations: [],
-            bcActiveSensors: []
+            bcActiveSensors: [],
+            admin: (document.getElementById('admin').value == 'true')
         };
     };
 
@@ -45,26 +46,26 @@ class HomeCenterSettings extends React.Component {
         });
     };
 
-    onAfterSaveCell = (row) => {
-        this.postSettings(row.address, row.label);
+    onAfterSaveLocationCell = (row) => {
+        this.postLocationSettings(row.address, row.label);
     };
 
-    onAddRow = (row) => {
+    onAddLocationRow = (row) => {
         if (row.address.length > 0 && row.label.length > 0) {
-            this.postSettings(row.address, row.label);
+            this.postLocationSettings(row.address, row.label);
         }
     };
 
-    onDeleteRow = (row) => {
+    onDeleteLocationRow = (row) => {
         let t = this;
-        let deleteUrl = document.getElementById('settingsBackendUrl').value + '?location=' + window.btoa(row);
+        let deleteUrl = document.getElementById('settingsDeleteLocation').value + "/" + row;
 
         axios.delete(deleteUrl).then(function () {
             t.loadData();
         });
     };
 
-    postSettings = (address, label) => {
+    postLocationSettings = (address, label) => {
         let t = this;
         let postUrl = document.getElementById('settingsBackendUrl').value;
         axios.post(postUrl, {address: address, label: label})
@@ -78,15 +79,12 @@ class HomeCenterSettings extends React.Component {
         let deleteUrl = document.getElementById('bcSensorReading').value +
             address + "/" + measuredPhenomenon;
 
-        console.log("deleteUrl=" + deleteUrl);
-
         axios.delete(deleteUrl).then(function () {
             t.loadData();
         });
     };
 
     cleanDataButtonFormatter = (cell, data, rowIndex) => {
-        console.log(JSON.stringify(cell) + '>>>' + JSON.stringify(data) + '>>>' + rowIndex);
         return <button
             type="button"
             onClick={this.onCleanData.bind(
@@ -103,7 +101,7 @@ class HomeCenterSettings extends React.Component {
         const cellEditProp = {
             mode: 'click',
             blurToSave: true,
-            afterSaveCell: this.onAfterSaveCell
+            afterSaveCell: this.onAfterSaveLocationCell
         };
 
         return <div>
@@ -112,33 +110,36 @@ class HomeCenterSettings extends React.Component {
                                 cellEdit={cellEditProp}
                                 striped
                                 hover
-                                deleteRow
-                                insertRow
+                                deleteRow={this.state.admin}
+                                insertRow={this.state.admin}
                                 selectRow={{mode: 'radio'}}
                                 options={{
-                                    onDeleteRow: this.onDeleteRow,
-                                    onAddRow: this.onAddRow
+                                    onDeleteRow: this.onDeleteLocationRow,
+                                    onAddRow: this.onAddLocationRow
                                 }}
                 >
                     <TableHeaderColumn isKey dataField='address'>Address</TableHeaderColumn>
-                    <TableHeaderColumn dataField='label'>Label</TableHeaderColumn>
+                    <TableHeaderColumn
+                        dataField='label'
+                        editable={this.state.admin}>Label</TableHeaderColumn>
                 </BootstrapTable>
             </Col>
             <Col xs={6} md={5}>
                 <BootstrapTable data={this.state.activeSensors}
                                 striped
                                 hover
-                                selectRow={{mode: 'radio'}}
+                                selectRow={{mode: 'none'}}
                 >
                     <TableHeaderColumn isKey dataField='key'
                                        dataFormat={(cell, data, rowIndex) => {
                                            return cell.split(":")[0]
-                    }}>
+                                       }}>
                         Location</TableHeaderColumn>
                     <TableHeaderColumn dataField='measuredPhenomenon'>Phenomenon</TableHeaderColumn>
                     <TableHeaderColumn
                         dataField='address'
                         dataFormat={this.cleanDataButtonFormatter.bind(this)}
+                        hiddenHeader={true}
                     />
                 </BootstrapTable>
             </Col>

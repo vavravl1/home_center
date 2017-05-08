@@ -37,4 +37,15 @@ class SettingsController(locationRepo: LocationRepository,
       }
     }
   }
+
+  def deleteLocation(location: String, position:String) = silhouette.SecuredAction.async { implicit request =>
+    Future {
+      if (request.identity.admin) {
+        locationRepo.deleteLocation(location + "/" + position)
+        NoContent
+      } else {
+        Unauthorized
+      }
+    }
+  }
 }

@@ -43,4 +43,15 @@ class LocationRepositorySql extends LocationRepository {
       location.get
     }
   }
+
+  /**
+    * Delete whole location and all associated sensors
+    */
+  override def deleteLocation(address: String): Unit =
+    DB.localTx(implicit session => {
+      sql"""
+            DELETE FROM location
+            WHERE address = ${address}
+        """.update().apply()
+    })
 }
