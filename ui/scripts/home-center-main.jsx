@@ -1,10 +1,10 @@
 import React from "react";
-import {Router, Route, Link, IndexRoute, browserHistory} from 'react-router' //hashHistory
+import {browserHistory, IndexRoute, Link, Route, Router} from "react-router"; //hashHistory
 import ReactDOM from "react-dom";
 import HomeCenterLayout from "./home-center-layout.jsx";
 import HomeCenterData from "./home-center-data.jsx";
 import SignIn from "./home-center-sign-in.jsx";
-import HomeCenterSettings from "./home-center-settings.jsx";
+import HomeCenterSettings from "./settings/home-center-settings.jsx";
 import axios from "axios";
 
 
