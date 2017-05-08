@@ -1,9 +1,8 @@
 import React, {Component, PropTypes} from "react";
 import axios from "axios";
 import update from "react-addons-update";
-import BcSensorView from "./bc-sensor-view.jsx";
 
-class BcSensor extends React.Component {
+class Sensor extends React.Component {
 
     constructor(props) {
         super(props);
@@ -59,7 +58,7 @@ class BcSensor extends React.Component {
     };
 
     render = () => {
-        return <BcSensorView
+        return <SensorView
             location={this.props.location}
             measuredPhenomenon={this.props.measuredPhenomenon}
             unit={this.props.unit}
@@ -73,7 +72,7 @@ class BcSensor extends React.Component {
     };
 }
 
-BcSensor.PropTypes = {
+Sensor.PropTypes = {
     measuredPhenomenon: PropTypes.string.isRequired,
     unit:PropTypes.string.isRequired,
     name:PropTypes.string.isRequired,
@@ -83,4 +82,4 @@ BcSensor.PropTypes = {
 };
 
 
-export default BcSensor;
+export default Sensor;

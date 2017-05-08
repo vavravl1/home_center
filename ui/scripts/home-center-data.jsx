@@ -1,6 +1,6 @@
 import React from "react";
 import WateringComponent from "./watering-component.jsx";
-import BcSensor from "./bc-sensor.jsx";
+import Sensor from "./sensor/sensor.jsx";
 import Col from "react-bootstrap/lib/Col";
 import axios from "axios";
 import update from "react-addons-update";
@@ -54,7 +54,7 @@ class HomeCenterData extends React.Component {
                 oneSensor.measuredPhenomenon === this.state.bigBcSensor.measuredPhenomenon
             );
             return <Col xs={10} md={10}>
-                <BcSensor
+                <Sensor
                     location={bigBcSensor.location}
                     measuredPhenomenon={bigBcSensor.measuredPhenomenon}
                     makeSmallCallback={this.makeBcSensorSmall}
@@ -63,7 +63,7 @@ class HomeCenterData extends React.Component {
         } else {
             let bcSensorsComponents = this.state.bcSensors.map(oneSensor =>
                 <Col xs={12} md={5} key={oneSensor.location.address + '/' + oneSensor.measuredPhenomenon}>
-                    <BcSensor
+                    <Sensor
                         location={oneSensor.location}
                         unit={oneSensor.unit}
                         name={oneSensor.name}

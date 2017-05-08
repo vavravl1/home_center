@@ -8,7 +8,7 @@ import CheckBox from "react-bootstrap/lib/CheckBox";
 import Jumbotron from "react-bootstrap/lib/Jumbotron";
 import update from "react-addons-update";
 
-class BcSensorView extends React.Component {
+class SensorView extends React.Component {
 
     constructor(props) {
         super(props);
@@ -167,7 +167,7 @@ class BcSensorView extends React.Component {
     };
 }
 
-BcSensorView.PropTypes = {
+SensorView.PropTypes = {
     location: PropTypes.object.isRequired,
     measuredPhenomenon: PropTypes.string.isRequired,
     unit:PropTypes.string.isRequired,
@@ -180,4 +180,4 @@ BcSensorView.PropTypes = {
 };
 
 
-export default BcSensorView;
+export default SensorView;
