@@ -2,6 +2,7 @@ import React from "react";
 import {BootstrapTable, TableHeaderColumn} from "react-bootstrap-table";
 import axios from "axios";
 import update from "react-addons-update";
+import Jumbotron from "react-bootstrap/lib/Jumbotron";
 
 class ActiveSensorsSettings extends React.Component {
     constructor(props) {
@@ -63,29 +64,26 @@ class ActiveSensorsSettings extends React.Component {
     };
 
     render = () => {
-        const cellEditProp = {
-            mode: 'click',
-            blurToSave: true,
-            afterSaveCell: this.onAfterSaveLocationCell
-        };
-
-        return <BootstrapTable data={this.state.activeSensors}
-                               striped
-                               hover
-                               selectRow={{mode: 'none'}}
-        >
-            <TableHeaderColumn isKey dataField='key'
-                               dataFormat={(cell, data, rowIndex) => {
-                                   return cell.split(":")[0]
-                               }}>
-                Location</TableHeaderColumn>
-            <TableHeaderColumn dataField='measuredPhenomenon'>Phenomenon</TableHeaderColumn>
-            <TableHeaderColumn
-                dataField='address'
-                dataFormat={this.cleanDataButtonFormatter.bind(this)}
-                hiddenHeader={true}
-            />
-        </BootstrapTable>
+        return <Jumbotron bsClass="bc-measurement-box">
+            <h3>Active sensors</h3>
+            <BootstrapTable data={this.state.activeSensors}
+                            striped
+                            hover
+                            selectRow={{mode: 'none'}}
+            >
+                <TableHeaderColumn isKey dataField='key'
+                                   dataFormat={(cell, data, rowIndex) => {
+                                       return cell.split(":")[0]
+                                   }}>
+                    Location</TableHeaderColumn>
+                <TableHeaderColumn dataField='measuredPhenomenon'>Phenomenon</TableHeaderColumn>
+                <TableHeaderColumn
+                    dataField='address'
+                    dataFormat={this.cleanDataButtonFormatter.bind(this)}
+                    hiddenHeader={true}
+                />
+            </BootstrapTable>
+            </Jumbotron>
     }
 }
 

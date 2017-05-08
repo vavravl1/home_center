@@ -1,7 +1,7 @@
 package controllers
 
 import com.mohiva.play.silhouette.api.Silhouette
-import model.{Location, LocationRepository, SensorRepository}
+import model.{Location, LocationRepository}
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc._
@@ -15,7 +15,6 @@ import scala.concurrent.Future
   * application's home page.
   */
 class SettingsController(locationRepo: LocationRepository,
-                         sensorRepository: SensorRepository,
                          silhouette: Silhouette[DefaultEnv]) extends Controller {
 
   def getBcSensorLocation() = Action.async {
@@ -28,9 +27,10 @@ class SettingsController(locationRepo: LocationRepository,
     Future {
       if (request.identity.admin) {
         val json = request.body.asJson.get
-        val locationToUpdate = json.as[Location]
+        val inputLocation = json.as[Location]
+        val locationToUpdate = locationRepo.findOrCreateLocation(inputLocation.address)
         Logger.info(s"Updating $locationToUpdate")
-        locationToUpdate.updateLabel(locationToUpdate.label)
+        locationToUpdate.updateLabel(inputLocation.label)
         NoContent
       } else {
         Unauthorized

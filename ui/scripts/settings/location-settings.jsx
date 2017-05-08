@@ -2,6 +2,7 @@ import React from "react";
 import {BootstrapTable, TableHeaderColumn} from "react-bootstrap-table";
 import axios from "axios";
 import update from "react-addons-update";
+import Jumbotron from "react-bootstrap/lib/Jumbotron";
 
 class LocationSettings extends React.Component {
     constructor(props) {
@@ -61,27 +62,30 @@ class LocationSettings extends React.Component {
             });
     };
     render = () => {
-        return <BootstrapTable data={this.state.locations}
-                               cellEdit={{
-                                   mode: 'click',
-                                   blurToSave: true,
-                                   afterSaveCell: this.onAfterSaveLocationCell
-                               }}
-                               striped
-                               hover
-                               deleteRow={this.state.admin}
-                               insertRow={this.state.admin}
-                               selectRow={{mode: 'radio'}}
-                               options={{
-                                   onDeleteRow: this.onDeleteLocationRow,
-                                   onAddRow: this.onAddLocationRow
-                               }}
-        >
-            <TableHeaderColumn isKey dataField='address'>Address</TableHeaderColumn>
-            <TableHeaderColumn
-                dataField='label'
-                editable={this.state.admin}>Label</TableHeaderColumn>
-        </BootstrapTable>
+        return <Jumbotron bsClass="bc-measurement-box">
+            <h3>Locations</h3>
+            <BootstrapTable data={this.state.locations}
+                            cellEdit={{
+                                mode: 'click',
+                                blurToSave: true,
+                                afterSaveCell: this.onAfterSaveLocationCell
+                            }}
+                            striped
+                            hover
+                            deleteRow={this.state.admin}
+                            insertRow={this.state.admin}
+                            selectRow={{mode: 'radio'}}
+                            options={{
+                                onDeleteRow: this.onDeleteLocationRow,
+                                onAddRow: this.onAddLocationRow
+                            }}
+            >
+                <TableHeaderColumn isKey dataField='address'>Address</TableHeaderColumn>
+                <TableHeaderColumn
+                    dataField='label'
+                    editable={this.state.admin}>Label</TableHeaderColumn>
+            </BootstrapTable>
+        </Jumbotron>
     }
 }
 
