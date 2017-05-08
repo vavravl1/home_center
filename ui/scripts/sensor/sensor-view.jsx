@@ -103,7 +103,7 @@ class SensorView extends React.Component {
         if(!!this.props.makeSmallCallback) {
             this.props.makeSmallCallback();
         } else {
-            this.props.makeBigCallback(this.props.location, this.props.measuredPhenomenon);
+            this.props.makeBigCallback(this.props.sensor);
         }
     };
 
@@ -128,12 +128,12 @@ class SensorView extends React.Component {
             }
         }
         return <Jumbotron bsClass="bc-measurement-box">
-            <h2 className="capital" style={{display: 'inline'}}>{this.props.name}</h2>
+            <h2 className="capital" style={{display: 'inline'}}>{this.props.sensor.name}</h2>
             <ButtonToolbar className="pull-right">
                 <Button bsSize="xsmall" className="bcSensorMakeBig"
                         onClick={this.makeBigOrSmallCallback.bind(this)}>o</Button>
             </ButtonToolbar>
-            <h3>{this.props.location.label}</h3>
+            <h3>{this.props.sensor.location.label}</h3>
             <table className="table table-hover table-bordered table-condensed table-responsive">
                 <tbody>
                 <tr>
@@ -141,8 +141,8 @@ class SensorView extends React.Component {
                     <td><Time value={new Date(lastMeasure.measureTimestamp)} format="HH:mm:ss"/></td>
                 </tr>
                 <tr>
-                    <td scope="row">Actual {this.props.measuredPhenomenon}</td>
-                    <td>{lastMeasure.average} {this.props.unit}</td>
+                    <td scope="row">Actual {this.props.sensor.measuredPhenomenon}</td>
+                    <td>{lastMeasure.average} {this.props.sensor.unit}</td>
                 </tr>
                 </tbody>
             </table>
@@ -168,10 +168,7 @@ class SensorView extends React.Component {
 }
 
 SensorView.PropTypes = {
-    location: PropTypes.object.isRequired,
-    measuredPhenomenon: PropTypes.string.isRequired,
-    unit:PropTypes.string.isRequired,
-    name:PropTypes.string.isRequired,
+    sensor: PropTypes.object.isRequired,
     timeGranularity: PropTypes.string.isRequired,
     timeGranularityChangedCallback: PropTypes.func.isRequired,
     data: PropTypes.arrayOf(PropTypes.object).isRequired,

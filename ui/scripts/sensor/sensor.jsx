@@ -1,6 +1,7 @@
 import React, {Component, PropTypes} from "react";
 import axios from "axios";
 import update from "react-addons-update";
+import SensorView from "./sensor-view.jsx";
 
 class Sensor extends React.Component {
 
@@ -31,8 +32,8 @@ class Sensor extends React.Component {
         let bcSensorReading = document.getElementById('bcSensorReading').value;
         axios
             .get(
-                bcSensorReading + this.props.location.address + "/" +
-                this.props.measuredPhenomenon + "?timeGranularity=" + this.state.timeGranularity +
+                bcSensorReading + this.props.sensor.location.address + "/" +
+                this.props.sensor.measuredPhenomenon + "?timeGranularity=" + this.state.timeGranularity +
                 ((!!this.props.makeSmallCallback) ? "&big=true" : "&big=false"), {
                     cancelToken: this.state.source.token
                 }
@@ -59,10 +60,7 @@ class Sensor extends React.Component {
 
     render = () => {
         return <SensorView
-            location={this.props.location}
-            measuredPhenomenon={this.props.measuredPhenomenon}
-            unit={this.props.unit}
-            name={this.props.name}
+            sensor={this.props.sensor}
             data={this.state.data}
             timeGranularity = {this.state.timeGranularity}
             timeGranularityChangedCallback = {this.timeGranularityChangedCallback}
@@ -73,10 +71,7 @@ class Sensor extends React.Component {
 }
 
 Sensor.PropTypes = {
-    measuredPhenomenon: PropTypes.string.isRequired,
-    unit:PropTypes.string.isRequired,
-    name:PropTypes.string.isRequired,
-    location: PropTypes.object.isRequired,
+    sensor: PropTypes.object.isRequired,
     makeBigCallback: PropTypes.func,
     makeSmallCallback: PropTypes.func
 };

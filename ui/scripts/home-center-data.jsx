@@ -28,14 +28,9 @@ class HomeCenterData extends React.Component {
             })
     };
 
-    makeBcSensorBig = (location, phenomenon) => {
+    makeBcSensorBig = (sensor) => {
         const newState = update(this.state, {
-            bigBcSensor: {
-                $set: {
-                    location: location,
-                    phenomenon: phenomenon
-                }
-            },
+            bigBcSensor: {$set: sensor},
         });
         this.setState(newState);
     };
@@ -49,14 +44,9 @@ class HomeCenterData extends React.Component {
 
     render = () => {
         if (this.state.bigBcSensor !== null) {
-            const bigBcSensor = this.state.bcSensors.find(oneSensor =>
-                oneSensor.location === this.state.bigBcSensor.location &&
-                oneSensor.measuredPhenomenon === this.state.bigBcSensor.measuredPhenomenon
-            );
             return <Col xs={10} md={10}>
                 <Sensor
-                    location={bigBcSensor.location}
-                    measuredPhenomenon={bigBcSensor.measuredPhenomenon}
+                    sensor={this.state.bigBcSensor}
                     makeSmallCallback={this.makeBcSensorSmall}
                 />
             </Col>
@@ -64,9 +54,7 @@ class HomeCenterData extends React.Component {
             let bcSensorsComponents = this.state.bcSensors.map(oneSensor =>
                 <Col xs={12} md={5} key={oneSensor.location.address + '/' + oneSensor.measuredPhenomenon}>
                     <Sensor
-                        location={oneSensor.location}
-                        unit={oneSensor.unit}
-                        name={oneSensor.name}
+                        sensor={oneSensor}
                         measuredPhenomenon={oneSensor.measuredPhenomenon}
                         makeBigCallback={this.makeBcSensorBig}
                     />
