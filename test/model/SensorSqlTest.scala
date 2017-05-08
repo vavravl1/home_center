@@ -21,7 +21,7 @@ class SensorSqlTest extends WordSpec with Matchers with DbTest with MockFactory 
       location.updateLabel("upstairs corridor")
 
       sensorRepository.findAll()
-        .foreach(s => sensorRepository.delete(s.location.address, s.measuredPhenomenon))
+        .foreach(s => sensorRepository.delete(s))
       val sensor = sensorRepository.findOrCreateSensor("remote/0", "thermometer", "temperature", "C")
       sensor.addMeasurement(Measurement(10, i, false))
       sensor.addMeasurement(Measurement(20, i.plus(30, MINUTES), false))

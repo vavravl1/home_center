@@ -29,8 +29,21 @@ trait Sensor {
     */
   val location: Location
 
+  /**
+    * Add single measurement that is associated with this sensor
+    */
   def addMeasurement(measurement: Measurement)
+
+  /**
+    * Return sequence of aggregated measurements over given period of time.
+    * The sequence is ordered by timestamp of the measurement. The first measurement is the oldest
+    */
   def getAggregatedValues(timeGranularity: TimeGranularity):Seq[AggregatedValue]
+
+  /**
+    * Remove old un-aggregated measurements and replace them by aggregated one.
+    * Aggregation is done by hours.
+    */
   def aggregateOldMeasurements()
 }
 

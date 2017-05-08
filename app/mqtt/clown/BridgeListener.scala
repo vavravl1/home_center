@@ -26,7 +26,7 @@ class BridgeListener(sensorRepository: SensorRepository, locationRepository: Loc
               val foundSensor = sensorRepository.findOrCreateSensor(
                 locationAddress = locationAddress,
                 name = sensor,
-                measuresPhenomenon = msg.phenomenon,
+                measuredPhenomenon = msg.phenomenon,
                 unit = msg.unit
               )
               val measurement = Measurement(

@@ -19,7 +19,7 @@ class BigClownControllerTest extends WordSpec with Matchers with IntegrationTest
     val now = Instant.now()
 
     appComponents.sensorRepository.findAll()
-      .foreach(s => appComponents.sensorRepository.delete(s.location.address, s.measuredPhenomenon))
+      .foreach(s => appComponents.sensorRepository.delete(s))
 
     val location = appComponents.locationRepository.findOrCreateLocation("remote/0")
     location.updateLabel("location-label")

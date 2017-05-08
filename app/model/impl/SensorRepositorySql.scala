@@ -35,15 +35,16 @@ class SensorRepositorySql(
            SELECT S.id, S.name, S.measuredPhenomenon, S.unit, L.address, L.label
            FROM sensor S
            JOIN location L ON S.location_address = L.address
+           ORDER BY L.address
         """
       .map(rs => SensorSql.fromRs(rs, clock)).list().apply()
   })
 
-  override def delete(locationAddress: String, measuredPhenomenon: String): Unit =
+  override def delete(sensor:Sensor): Unit =
     DB.localTx(implicit session => {
       sql"""
             DELETE FROM sensor
-            WHERE location_address = ${locationAddress} AND measuredPhenomenon = ${measuredPhenomenon}
+            WHERE location_address = ${sensor.location.address} AND measuredPhenomenon = ${sensor.measuredPhenomenon}
         """.update().apply()
     })
 

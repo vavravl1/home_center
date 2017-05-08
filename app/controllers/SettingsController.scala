@@ -37,15 +37,4 @@ class SettingsController(locationRepo: LocationRepository,
       }
     }
   }
-
-  def deleteBcSensorLocation(location: String, position:String, measuredPhenomenon:String) = silhouette.SecuredAction.async { implicit request =>
-    Future {
-      if (request.identity.admin) {
-        sensorRepository.delete(location + "/" + position, measuredPhenomenon)
-        NoContent
-      } else {
-        Unauthorized
-      }
-    }
-  }
 }

@@ -35,10 +35,12 @@ class BigClownController(
     }
   }
 
-  def cleanSensor(location: String, position: String, sensor: String) = silhouette.SecuredAction.async { implicit request =>
+  def cleanSensor(location: String, position: String, measuredPhenomenon: String) = silhouette.SecuredAction.async { implicit request =>
     Future {
       if (request.identity.admin) {
-        sensorRepository.delete(location + "/" + position, sensor)
+        sensorRepository
+          .find(location + "/" + position, measuredPhenomenon)
+          .foreach(sensor => sensorRepository.delete(sensor))
         NoContent
       } else {
         Unauthorized
