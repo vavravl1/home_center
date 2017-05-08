@@ -21,10 +21,10 @@ class BigClownControllerTest extends WordSpec with Matchers with IntegrationTest
     appComponents.sensorRepository.findAll()
       .foreach(s => appComponents.sensorRepository.delete(s))
 
-    val location = appComponents.locationRepository.findOrCreateLocation("remote/0")
+    val location = appComponents.locationRepository.findOrCreateLocation("remote-0")
     location.updateLabel("location-label")
 
-    val sensor = appComponents.sensorRepository.findOrCreateSensor("remote/0", "thermometer", "temperature", "C")
+    val sensor = appComponents.sensorRepository.findOrCreateSensor("remote-0", "thermometer", "temperature", "C")
 
     "when there are old measures" should {
       sensor.addMeasurement(Measurement(10, now, false))
@@ -33,7 +33,7 @@ class BigClownControllerTest extends WordSpec with Matchers with IntegrationTest
       sensor.addMeasurement(Measurement(50, now.minus(130, MINUTES), false))
 
       "it returns correct values for big scale" in {
-        val request = FakeRequest(GET, "/bc/remote/0/temperature?timeGranularity=ByMinute&big=true")
+        val request = FakeRequest(GET, "/bc/remote-0/temperature?timeGranularity=ByMinute&big=true")
         val bcMeasures = route(app, request).get
 
         status(bcMeasures) shouldBe OK
@@ -45,7 +45,7 @@ class BigClownControllerTest extends WordSpec with Matchers with IntegrationTest
       }
 
       "it returns correct values for small scale" in {
-        val request = FakeRequest(GET, "/bc/remote/0/temperature?timeGranularity=ByMinute&big=false")
+        val request = FakeRequest(GET, "/bc/remote-0/temperature?timeGranularity=ByMinute&big=false")
         val bcMeasures = route(app, request).get
 
         status(bcMeasures) shouldBe OK

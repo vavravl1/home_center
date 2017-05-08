@@ -12,7 +12,7 @@ import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
   * Stores messages from big clown
   */
 class BridgeListener(sensorRepository: SensorRepository, locationRepository: LocationRepository, clock: Clock) extends Actor {
-  val bcSensorTopic = """nodes/(bridge|remote|base)/(\d+)/([\w-]+)/([\w-]+)""".r
+  val bcSensorTopic = """node/(bridge|remote|base)/(\d+)/([\w-]+)/([\w-]+)""".r
 
   override def receive(): Receive = {
     case Ping => ()
@@ -21,7 +21,7 @@ class BridgeListener(sensorRepository: SensorRepository, locationRepository: Loc
         Json.fromJson(json)(BcMessage.reads) match {
           case JsSuccess(messages: BcMessage, _) =>
             messages.msgs.foreach(msg => {
-              val locationAddress = location + "/" + position
+              val locationAddress = location + "-" + position
               locationRepository.findOrCreateLocation(locationAddress)
               val foundSensor = sensorRepository.findOrCreateSensor(
                 locationAddress = locationAddress,

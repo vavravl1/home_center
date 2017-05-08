@@ -16,11 +16,11 @@ import scala.concurrent.Future
 class BigClownController(
                           sensorRepository: SensorRepository,
                           silhouette: Silhouette[DefaultEnv]) extends Controller {
-  def getSensorReading(location: String, position: String, measuredPhenomenon: String, timeGranularity: String, big: String) = Action.async {
+  def getSensorReading(locationAddress: String, measuredPhenomenon: String, timeGranularity: String, big: String) = Action.async {
     Future {
       val data:Seq[AggregatedValue] =
         sensorRepository
-        .find(location + "/" + position, measuredPhenomenon)
+        .find(locationAddress, measuredPhenomenon)
         .map(sensor => sensor.getAggregatedValues(TimeGranularity.parse(timeGranularity, big.toBoolean)))
         .getOrElse(Seq.empty)
       Ok(Json.toJson(data))
@@ -35,11 +35,11 @@ class BigClownController(
     }
   }
 
-  def cleanSensor(location: String, position: String, measuredPhenomenon: String) = silhouette.SecuredAction.async { implicit request =>
+  def cleanSensor(locationAddress: String, measuredPhenomenon: String) = silhouette.SecuredAction.async { implicit request =>
     Future {
       if (request.identity.admin) {
         sensorRepository
-          .find(location + "/" + position, measuredPhenomenon)
+          .find(locationAddress, measuredPhenomenon)
           .foreach(sensor => sensorRepository.delete(sensor))
         NoContent
       } else {

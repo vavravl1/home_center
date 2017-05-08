@@ -14,7 +14,10 @@ CREATE TABLE sensor (
   unit VARCHAR(5),
   location_address VARCHAR(20)
 );
-ALTER TABLE sensor ADD FOREIGN KEY (location_address) REFERENCES location(address);
+ALTER TABLE sensor ADD CONSTRAINT fk_location_address
+  FOREIGN KEY (location_address) REFERENCES location(address)
+  ON UPDATE CASCADE;
+
 CREATE INDEX unique__sensor ON sensor(measuredPhenomenon, location_address);
 
 
@@ -24,4 +27,7 @@ CREATE TABLE measurement (
   aggregated BOOLEAN DEFAULT FALSE,
   sensor_id BIGINT
 );
-ALTER TABLE measurement ADD FOREIGN KEY (sensor_id) REFERENCES sensor(id) ON DELETE CASCADE;
+ALTER TABLE measurement ADD CONSTRAINT fk_sensor_id
+  FOREIGN KEY (sensor_id) REFERENCES sensor(id)
+  ON DELETE CASCADE
+  ON UPDATE CASCADE;
