@@ -1,8 +1,6 @@
 package model
 
-import java.time.Instant
-
-import _root_.play.api.libs.json.{Format, Json, _}
+import _root_.play.api.libs.json._
 import dao.TimeGranularity
 import model.impl.SensorSql
 
@@ -32,7 +30,7 @@ trait Sensor {
   val location: Location
 
   def addMeasurement(measurement: Measurement)
-  def getAggregatedValues(timeGranularity: TimeGranularity):Seq[AggregatedValues]
+  def getAggregatedValues(timeGranularity: TimeGranularity):Seq[AggregatedValue]
   def aggregateOldMeasurements()
 }
 
@@ -43,20 +41,4 @@ object Sensor {
         case s: SensorSql => SensorSql.writes.writes(s)
       }
     }
-}
-
-/**
-  * Represents aggregated value for a period of time
-  * @param min
-  * @param max
-  * @param average
-  */
-case class AggregatedValues(
-                           val min:Double,
-                           val max:Double,
-                           val average:Double,
-                           val measureTimestamp:Instant
-                           )
-object AggregatedValues {
-  implicit val format: Format[AggregatedValues] = Json.format[AggregatedValues]
 }

@@ -2,7 +2,7 @@ package controllers
 
 import com.mohiva.play.silhouette.api.Silhouette
 import dao.TimeGranularity
-import model.{AggregatedValues, SensorRepository}
+import model.{AggregatedValue, SensorRepository}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
 import security.utils.auth.DefaultEnv
@@ -18,7 +18,7 @@ class BigClownController(
                           silhouette: Silhouette[DefaultEnv]) extends Controller {
   def getSensorReading(location: String, position: String, measuredPhenomenon: String, timeGranularity: String, big: String) = Action.async {
     Future {
-      val data:Seq[AggregatedValues] =
+      val data:Seq[AggregatedValue] =
         sensorRepository
         .find(location + "/" + position, measuredPhenomenon)
         .map(sensor => sensor.getAggregatedValues(TimeGranularity.parse(timeGranularity, big.toBoolean)))

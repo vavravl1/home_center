@@ -3,7 +3,7 @@ package controllers
 import java.time.Instant
 import java.time.temporal.ChronoUnit.MINUTES
 
-import model.{AggregatedValues, Measurement}
+import model.{AggregatedValue, Measurement}
 import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.json.{JsArray, Json}
 import play.api.test.FakeRequest
@@ -39,9 +39,9 @@ class BigClownControllerTest extends WordSpec with Matchers with IntegrationTest
         status(bcMeasures) shouldBe OK
         contentAsJson(bcMeasures) shouldBe a [JsArray]
         contentAsJson(bcMeasures).as[JsArray].value.size shouldBe 3
-        (Json.fromJson(contentAsJson(bcMeasures).as[JsArray].value(0))(AggregatedValues.format)).get.average shouldBe 30.0
-        (Json.fromJson(contentAsJson(bcMeasures).as[JsArray].value(1))(AggregatedValues.format)).get.average shouldBe 20.0
-        (Json.fromJson(contentAsJson(bcMeasures).as[JsArray].value(2))(AggregatedValues.format)).get.average shouldBe 10.0
+        (Json.fromJson(contentAsJson(bcMeasures).as[JsArray].value(0))(AggregatedValue.format)).get.average shouldBe 30.0
+        (Json.fromJson(contentAsJson(bcMeasures).as[JsArray].value(1))(AggregatedValue.format)).get.average shouldBe 20.0
+        (Json.fromJson(contentAsJson(bcMeasures).as[JsArray].value(2))(AggregatedValue.format)).get.average shouldBe 10.0
       }
 
       "it returns correct values for small scale" in {
@@ -51,7 +51,7 @@ class BigClownControllerTest extends WordSpec with Matchers with IntegrationTest
         status(bcMeasures) shouldBe OK
         contentAsJson(bcMeasures) shouldBe a [JsArray]
         contentAsJson(bcMeasures).as[JsArray].value.size shouldBe 1
-        (Json.fromJson(contentAsJson(bcMeasures).as[JsArray].value(0))(AggregatedValues.format)).get.average shouldBe 10.0
+        (Json.fromJson(contentAsJson(bcMeasures).as[JsArray].value(0))(AggregatedValue.format)).get.average shouldBe 10.0
       }
     }
   }

@@ -7,7 +7,7 @@ import java.time.{Clock, Instant}
 import _root_.play.api.Logger
 import _root_.play.api.libs.json._
 import dao.TimeGranularity
-import model.{AggregatedValues, Measurement, Sensor}
+import model.{AggregatedValue, Measurement, Sensor}
 import scalikejdbc.{WrappedResultSet, _}
 
 /**
@@ -38,7 +38,7 @@ class SensorSql(
     })
   }
 
-  override def getAggregatedValues(timeGranularity: TimeGranularity): Seq[AggregatedValues] = {
+  override def getAggregatedValues(timeGranularity: TimeGranularity): Seq[AggregatedValue] = {
     DB.readOnly(implicit session => {
       val (extractTime, secondExtractTime, lastMeasureTimestamp) = timeGranularity.toExtractAndTime
 
@@ -101,8 +101,8 @@ class SensorSql(
     }
   })
 
-  private val aggregatedFromRs: (WrappedResultSet => AggregatedValues) = rs => {
-    AggregatedValues(
+  private val aggregatedFromRs: (WrappedResultSet => AggregatedValue) = rs => {
+    AggregatedValue(
       min = rs.double("min"),
       max = rs.double("max"),
       average = rs.double("avg"),
