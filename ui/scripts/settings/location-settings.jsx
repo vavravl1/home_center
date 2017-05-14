@@ -46,7 +46,7 @@ class LocationSettings extends React.Component {
 
     onDeleteLocationRow = (row) => {
         let t = this;
-        let deleteUrl = document.getElementById('settingsDeleteLocation').value + "/" + row;
+        let deleteUrl = document.getElementById('settingsDeleteLocation').value + row;
 
         axios.delete(deleteUrl).then(function () {
             t.loadData();

@@ -33,7 +33,7 @@ class Sensor extends React.Component {
         axios
             .get(
                 bcSensorReading + this.props.sensor.location.address + "/" +
-                this.props.sensor.measuredPhenomenon + "?timeGranularity=" + this.state.timeGranularity +
+                this.props.sensor.name + "?timeGranularity=" + this.state.timeGranularity +
                 ((!!this.props.makeSmallCallback) ? "&big=true" : "&big=false"), {
                     cancelToken: this.state.source.token
                 }

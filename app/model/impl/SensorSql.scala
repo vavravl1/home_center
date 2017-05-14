@@ -84,7 +84,8 @@ object SensorSql {
     def writes(s: SensorSql): JsValue = {
       Json.obj(
         "name" -> s.name,
-        "location" -> Json.toJson(s.location)(LocationSql.writes)
+        "location" -> Json.toJson(s.location)(LocationSql.writes),
+        "measuredPhenomenons" -> Json.toJson(s.measuredPhenomenons)//(MeasuredPhenomenonSql.writes)
       )
     }
   }

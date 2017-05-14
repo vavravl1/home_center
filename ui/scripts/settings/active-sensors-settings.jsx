@@ -25,7 +25,8 @@ class ActiveSensorsSettings extends React.Component {
                     activeSensors: {
                         $set: activeSensors.data.map(d => {
                             let nd = {
-                                measuredPhenomenon: d.measuredPhenomenon,
+                                name: d.name,
+                                measuredPhenomenons: d.measuredPhenomenons.map(mp => mp.name + " " + mp.unit).join(),
                                 address: d.location.address,
                                 key: d.location.address + ":" + d.measuredPhenomenon
                             };
@@ -40,10 +41,10 @@ class ActiveSensorsSettings extends React.Component {
         });
     };
 
-    onCleanData = (address, measuredPhenomenon) => {
+    onCleanData = (address, name) => {
         let t = this;
         let deleteUrl = document.getElementById('bcSensorReading').value +
-            address + "/" + measuredPhenomenon;
+            address + "/" + name;
 
         axios.delete(deleteUrl).then(function () {
             t.loadData();
@@ -56,7 +57,7 @@ class ActiveSensorsSettings extends React.Component {
             onClick={this.onCleanData.bind(
                 this,
                 data.address,
-                data.measuredPhenomenon
+                data.name
             )}
         >
             Clean data
@@ -76,7 +77,8 @@ class ActiveSensorsSettings extends React.Component {
                                        return cell.split(":")[0]
                                    }}>
                     Location</TableHeaderColumn>
-                <TableHeaderColumn dataField='measuredPhenomenon'>Phenomenon</TableHeaderColumn>
+                <TableHeaderColumn dataField='name'>Name</TableHeaderColumn>
+                <TableHeaderColumn dataField='measuredPhenomenons'>Phenomenons</TableHeaderColumn>
                 <TableHeaderColumn
                     dataField='address'
                     dataFormat={this.cleanDataButtonFormatter.bind(this)}

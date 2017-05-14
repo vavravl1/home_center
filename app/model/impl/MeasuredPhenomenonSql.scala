@@ -5,6 +5,7 @@ import java.time.temporal.ChronoUnit
 import java.time.{Clock, Instant}
 
 import _root_.play.Logger
+import _root_.play.api.libs.json.{JsValue, Json, _}
 import dao.TimeGranularity
 import model.{MeasuredPhenomenon, Measurement}
 import scalikejdbc._
@@ -102,4 +103,11 @@ object MeasuredPhenomenonSql {
       sensorId = rs.string("sensorId"),
       _clock =  clock
     )
+
+  implicit val writes: Writes[MeasuredPhenomenonSql] = new Writes[MeasuredPhenomenonSql] {
+    def writes(mp: MeasuredPhenomenonSql): JsValue = Json.obj(
+      "name" -> mp.name,
+      "unit" -> mp.unit
+    )
+  }
 }

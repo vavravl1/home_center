@@ -37,7 +37,7 @@ trait Sensor {
 
 object Sensor {
   implicit val writes: Writes[Sensor] =
-    new Writes[Sensor]{
+    new Writes[Sensor] {
       def writes(o: Sensor): JsValue = o match {
         case s: SensorSql => SensorSql.writes.writes(s)
       }
