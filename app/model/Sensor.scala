@@ -1,7 +1,6 @@
 package model
 
 import _root_.play.api.libs.json._
-import dao.TimeGranularity
 import model.impl.SensorSql
 
 /**
@@ -15,30 +14,19 @@ trait Sensor {
   val name: String
 
   /**
-    * name of the measured phenomenon, e.g. pressure
-    */
-  val measuredPhenomenon: String
-
-  /**
-    * symbol of the measured unit by this sensor, e.g. kPa
-    */
-  val unit: String
-
-  /**
     *  location of this sensor
     */
   val location: Location
 
   /**
-    * Add single measurement that is associated with this sensor
+    * All measured phenomenons by this sensor
     */
-  def addMeasurement(measurement: Measurement)
+  def measuredPhenomenons:Seq[MeasuredPhenomenon]
 
   /**
-    * Return sequence of aggregated measurements over given period of time.
-    * The sequence is ordered by timestamp of the measurement. The first measurement is the oldest
+    * Add single measurement that is associated with this sensor
     */
-  def getAggregatedValues(timeGranularity: TimeGranularity):Seq[AggregatedValue]
+  def addMeasurement(measurement: Measurement, measuredPhenomenonName: String, unit:String)
 
   /**
     * Remove old un-aggregated measurements and replace them by aggregated one.

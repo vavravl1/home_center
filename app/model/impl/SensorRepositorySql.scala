@@ -12,56 +12,56 @@ class SensorRepositorySql(
                            locationRepository: LocationRepositorySql,
                            val clock: Clock) extends SensorRepository {
 
-  override def findOrCreateSensor(locationAddress: String, name: String, measuredPhenomenon: String, unit: String): Sensor = {
+  override def findOrCreateSensor(locationAddress: String, name: String): Sensor = {
 
     DB.localTx(implicit session => {
-      val maybeSensorSql: Option[Sensor] = getSensor(locationAddress, measuredPhenomenon)
+      val maybeSensorSql: Option[SensorSql] = getSensor(locationAddress, name)
 
       if (maybeSensorSql.isEmpty) {
-        storeSensor(locationAddress, name, measuredPhenomenon, unit)
-        getSensor(locationAddress, measuredPhenomenon).get
+        storeSensor(locationAddress, name)
+        getSensor(locationAddress, name).get
       } else {
         maybeSensorSql.get
       }
     })
   }
 
-  override def find(locationAddress: String, measuredPhenomenon: String): Option[Sensor] = DB.autoCommit(implicit session => {
-    getSensor(locationAddress, measuredPhenomenon)
+  override def find(locationAddress: String, name: String): Option[Sensor] = DB.autoCommit(implicit session => {
+    getSensor(locationAddress, name)
   })
 
   override def findAll(): Seq[Sensor] = DB.autoCommit(implicit session => {
     sql"""
-           SELECT S.id, S.name, S.measuredPhenomenon, S.unit, L.address, L.label
-           FROM sensor S
-           JOIN location L ON S.location_address = L.address
-           ORDER BY L.address
+          SELECT S.id, S.name, L.address, L.label
+          FROM sensor S
+          JOIN location L ON S.locationAddress = L.address
+          ORDER BY L.address
         """
       .map(rs => SensorSql.fromRs(rs, clock)).list().apply()
   })
 
-  override def delete(sensor:Sensor): Unit =
+  override def delete(sensor: Sensor): Unit =
     DB.localTx(implicit session => {
       sql"""
             DELETE FROM sensor
-            WHERE location_address = ${sensor.location.address} AND measuredPhenomenon = ${sensor.measuredPhenomenon}
+            WHERE locationAddress = ${sensor.location.address} AND name = ${sensor.name}
         """.update().apply()
     })
 
-  private def getSensor(locationAddress: String, measuredPhenomenon: String)(implicit session: DBSession): Option[Sensor] = {
+  private def getSensor(locationAddress: String, name: String)(implicit session: DBSession): Option[SensorSql] = {
     sql"""
-           SELECT S.id, S.name, S.measuredPhenomenon, S.unit, L.address, L.label
+           SELECT S.id, S.name, L.address, L.label
            FROM sensor S
-           JOIN location L ON S.location_address = L.address
-           WHERE S.location_address = ${locationAddress} AND S.measuredPhenomenon = ${measuredPhenomenon}
+           JOIN location L ON S.locationAddress = L.address
+           WHERE S.locationAddress = ${locationAddress} AND S.name = ${name}
         """
-      .map(rs => SensorSql.fromRs(rs, clock)).single().apply()
+      .map(SensorSql.fromRs(_, clock)).single().apply()
   }
 
-  private def storeSensor(locationAddress: String, name: String, measuredPhenomenon: String, unit: String)(implicit session: DBSession) = {
+  private def storeSensor(locationAddress: String, name: String)(implicit session: DBSession) = {
     sql"""
-              INSERT INTO sensor(name, measuredPhenomenon, unit, location_address)
-              VALUES (${name}, ${measuredPhenomenon}, ${unit}, ${locationAddress})
+              INSERT INTO sensor(name, locationAddress)
+              VALUES (${name}, ${locationAddress})
           """.update.apply()
   }
 }

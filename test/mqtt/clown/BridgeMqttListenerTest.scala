@@ -31,12 +31,11 @@ class BridgeMqttListenerTest extends WordSpec with Matchers with MockFactory {
         val sensor = mock[Sensor]
 
         (locationRepository.findOrCreateLocation _).expects("bridge-0")
-        (sensorRepository.findOrCreateSensor _).expects("bridge-0", "thermometer", "temperature", "\u2103")
-          .returning(sensor)
-        (sensor.addMeasurement _).expects(Measurement(19.19, Instant.ofEpochSecond(22), false))
+        (sensorRepository.findOrCreateSensor _).expects("bridge-0", "thermometer").returning(sensor)
+        (sensor.addMeasurement _).expects(Measurement(19.19, Instant.ofEpochSecond(22)), "temperature", "\u2103")
 
         listener ! ConsumeMessage(
-          "nodes/bridge/0/thermometer/i2c0-48",
+          "node/bridge/0/thermometer/i2c0-48",
           Json.parse("{\"temperature\": [19.19, \"\\u2103\"]}")
         )
       }

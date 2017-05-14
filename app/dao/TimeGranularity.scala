@@ -2,7 +2,7 @@ package dao
 
 import java.sql.Timestamp
 import java.time.Clock
-import java.time.temporal.ChronoUnit.{DAYS, MINUTES, HOURS, MONTHS}
+import java.time.temporal.ChronoUnit.{DAYS, MINUTES}
 
 import scalikejdbc._
 
@@ -16,6 +16,7 @@ sealed abstract class TimeGranularity {
       case ByMinuteBig => (sqls"MINUTE", sqls"HOUR", new Timestamp(clock.instant().minus(120, MINUTES).toEpochMilli))
       case ByHour => (sqls"HOUR", sqls"DAY", new Timestamp(clock.instant().minus(1, DAYS).toEpochMilli))
       case ByHourBig => (sqls"HOUR", sqls"DAY", new Timestamp(clock.instant().minus(2, DAYS).toEpochMilli))
+      case ByHourUnlimited => (sqls"HOUR", sqls"DAY", new Timestamp(0))
       case ByDay => (sqls"DAY", sqls"MONTH", new Timestamp(clock.instant().minus(14, DAYS).toEpochMilli))
       case ByDayBig => (sqls"DAY", sqls"MONTH", new Timestamp(clock.instant().minus(30, DAYS).toEpochMilli))
     }
@@ -38,5 +39,6 @@ object ByMinute extends TimeGranularity
 object ByMinuteBig extends TimeGranularity
 object ByHour extends TimeGranularity
 object ByHourBig extends TimeGranularity
+object ByHourUnlimited extends TimeGranularity
 object ByDay extends TimeGranularity
 object ByDayBig extends TimeGranularity

@@ -1,127 +1,82 @@
 package model.impl
 
-import java.sql.Timestamp
-import java.time.temporal.ChronoUnit.HOURS
-import java.time.{Clock, Instant}
+import java.time.Clock
 
-import _root_.play.api.Logger
 import _root_.play.api.libs.json._
-import dao.TimeGranularity
-import model.{AggregatedValue, Measurement, Sensor}
+import model.{Measurement, Sensor}
 import scalikejdbc.{WrappedResultSet, _}
 
 /**
   * Sql implementation of Sensor
   */
-class SensorSql(
+case class SensorSql(
                  override val name: String,
-                 override val measuredPhenomenon: String,
-                 override val unit: String,
-                 private val id: String,
                  override val location: LocationSql,
+                 val id: String,
                  val _clock: Clock
                ) extends Sensor {
   implicit val clock = _clock
 
-  override def addMeasurement(measurement: Measurement): Unit = {
-    DB.autoCommit(implicit session => {
+  override def addMeasurement(measurement: Measurement, measuredPhenomenonName: String, unit:String): Unit = {
+    DB.localTx(implicit session => {
+      val mp = measuredPhenomenons
+        .find(mp => mp.name == measuredPhenomenonName && mp.unit == unit)
+        .getOrElse(saveMeasuredPhenomenon(measuredPhenomenonName, unit))
+
       sql"""
-          INSERT INTO measurement (value, measureTimestamp, aggregated, sensor_id)
+          INSERT INTO measurement (value, measureTimestamp, measuredPhenomenonId, aggregated)
           VALUES (
-            ${measurement.value},
+            ${measurement.average},
             ${measurement.measureTimestamp},
-            FALSE,
-            ${id}
+            ${mp.id},
+            FALSE
           )
       """
         .update.apply()
     })
   }
 
-  override def getAggregatedValues(timeGranularity: TimeGranularity): Seq[AggregatedValue] = {
+  /**
+    * All measured phenomenons by this sensor
+    */
+  override def measuredPhenomenons: Seq[MeasuredPhenomenonSql] = {
     DB.readOnly(implicit session => {
-      val (extractTime, secondExtractTime, lastMeasureTimestamp) = timeGranularity.toExtractAndTime
-
       sql"""
-           SELECT
-            MAX(measureTimestamp) AS ts,
-            ROUND(AVG(value), 2) AS avg,
-            ROUND(MIN(value), 2) AS min,
-            ROUND(MAX(value), 2) AS max
-           FROM measurement
-           WHERE sensor_id = ${id} AND measureTimestamp > ${lastMeasureTimestamp}
-           GROUP BY
-            EXTRACT(${extractTime} FROM measureTimestamp),
-            EXTRACT(${secondExtractTime} FROM measureTimestamp)
-           ORDER BY MAX(measureTimestamp)
-        """
-        .map(aggregatedFromRs(_)).toList().apply()
+            SELECT MP.name, MP.unit, MP.id, MP.sensorId
+            FROM measuredPhenomenon MP
+            WHERE MP.sensorId = ${id}
+            """
+        .map(MeasuredPhenomenonSql.fromRs(_, clock)).list().apply()
     })
   }
 
-  override def aggregateOldMeasurements(): Unit = DB.localTx(implicit session => {
-    val lastHour = clock.instant().truncatedTo(HOURS).minus(1, HOURS)
-    val lastHourTs = new Timestamp(lastHour.toEpochMilli)
-    val aggregated =
-      sql"""
-           SELECT
-            MAX(measureTimestamp) AS ts,
-            ROUND(AVG(value), 2) AS avg,
-            ROUND(MIN(value), 2) AS min,
-            ROUND(MAX(value), 2) AS max
-           FROM measurement
-           WHERE sensor_id = ${id} AND aggregated = FALSE
-           GROUP BY
-            EXTRACT(HOUR FROM measureTimestamp),
-            EXTRACT(DAY FROM measureTimestamp)
-           ORDER BY MAX(measureTimestamp)
-        """
-        .map(aggregatedFromRs(_)).toList().apply()
-    Logger.info(s"Loaded ${aggregated.size} measures to aggregate")
-    val updated =
-      sql"""
-           DELETE FROM measurement
-           WHERE measureTimestamp < ${lastHourTs}
-           AND aggregated = FALSE
-           AND sensor_id = ${id}
-         """
-        .update.apply()
-    Logger.info(s"Removed $updated rows")
-    if (aggregated.size > 0) {
-      sql"""
-          INSERT INTO measurement (value, measureTimestamp, aggregated, sensor_id)
-          VALUES (?, ?, ?, ?)
-          """
-        .batch(aggregated.map(message => Seq(
-          message.average,
-          new java.sql.Timestamp(message.measureTimestamp.toEpochMilli),
-          true,
-          id
-        )): _*).apply()
-    }
-  })
+  override def aggregateOldMeasurements(): Unit = {
+    measuredPhenomenons.foreach(mp => mp.aggregateOldMeasurements())
+  }
 
-  private val aggregatedFromRs: (WrappedResultSet => AggregatedValue) = rs => {
-    AggregatedValue(
-      min = rs.double("min"),
-      max = rs.double("max"),
-      average = rs.double("avg"),
-      measureTimestamp = Instant.ofEpochMilli(rs.timestamp("ts").millis)
-    )
+  private def saveMeasuredPhenomenon(measuredPhenomenonName: String, unit:String)(implicit session: DBSession):MeasuredPhenomenonSql = {
+    sql"""
+         INSERT INTO measuredPhenomenon(name, unit, sensorId)
+         VALUES (${measuredPhenomenonName}, ${unit}, ${id})
+      """.update().apply()
+    sql"""
+          SELECT MP.name, MP.unit, MP.sensorId, MP.id
+          FROM measuredPhenomenon MP
+          WHERE MP.name = ${measuredPhenomenonName}
+          AND MP.sensorId = ${id}
+      """.map(MeasuredPhenomenonSql.fromRs(_, clock)).single().apply().get
   }
 }
 
 object SensorSql {
   val fromRs: ((WrappedResultSet, Clock) => SensorSql) =
-    (rs, clock) => new SensorSql(
+    (rs, clock) => SensorSql(
       name = rs.string("name"),
-      measuredPhenomenon = rs.string("measuredPhenomenon"),
-      unit = rs.string("unit"),
-      id = rs.string("id"),
-      location = new LocationSql(
-        rs.string("address"),
-        rs.string("label")
+      location = LocationSql(
+        address = rs.string("address"),
+        label = rs.string("label")
       ),
+      rs.string("id"),
       clock
     )
 
@@ -129,8 +84,6 @@ object SensorSql {
     def writes(s: SensorSql): JsValue = {
       Json.obj(
         "name" -> s.name,
-        "measuredPhenomenon" -> s.measuredPhenomenon,
-        "unit" -> s.unit,
         "location" -> Json.toJson(s.location)(LocationSql.writes)
       )
     }

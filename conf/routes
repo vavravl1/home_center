@@ -21,10 +21,10 @@ GET           /watering/ibisek                        controllers.WateringContro
 POST          /watering/ibisek/manual-watering        controllers.WateringController.manualWatering
 
 # Big clown
-GET           /bc/:locationAddress/:measuredPhenomenon         controllers.BigClownController.getSensorReading(locationAddress, measuredPhenomenon, timeGranularity:String ?= "ByHour", big:String ?= "false")
-DELETE        /bc/:locationAddress/:measuredPhenomenon         controllers.BigClownController.cleanSensor(locationAddress, measuredPhenomenon)
-GET           /bc/                                    controllers.BigClownController.getAvailableBcSensors
+GET           /bc/:locationAddress/:sensorName         controllers.BigClownController.getSensorReading(locationAddress, sensorName, timeGranularity:String ?= "Hour", big:String ?= "false")
+DELETE        /bc/:locationAddress/:sensorName         controllers.BigClownController.cleanSensor(locationAddress, sensorName)
+GET           /bc/                                     controllers.BigClownController.getAvailableBcSensors
 
 GET           /settings/bc/sensorLocation             controllers.SettingsController.getBcSensorLocation()
 POST          /settings/bc/sensorLocation             controllers.SettingsController.updateBcSensorLocation
-DELETE        /settings/bc/:locationAddress        controllers.SettingsController.deleteLocation(locationAddress)
+DELETE        /settings/bc/:locationAddress           controllers.SettingsController.deleteLocation(locationAddress)

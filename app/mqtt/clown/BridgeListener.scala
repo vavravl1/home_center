@@ -25,16 +25,13 @@ class BridgeListener(sensorRepository: SensorRepository, locationRepository: Loc
               locationRepository.findOrCreateLocation(locationAddress)
               val foundSensor = sensorRepository.findOrCreateSensor(
                 locationAddress = locationAddress,
-                name = sensor,
-                measuredPhenomenon = msg.phenomenon,
-                unit = msg.unit
+                name = sensor
               )
               val measurement = Measurement(
                 measureTimestamp = clock.instant(),
-                value = msg.value,
-                aggregated = false
+                value = msg.value
               )
-              foundSensor.addMeasurement(measurement)
+              foundSensor.addMeasurement(measurement, msg.phenomenon, msg.unit)
             })
           case JsError(_) => Logger.error(s"Parsing $json failed");
         }

@@ -2,9 +2,9 @@ package controllers
 
 import com.mohiva.play.silhouette.api.Silhouette
 import dao.TimeGranularity
-import model.{AggregatedValue, SensorRepository}
+import model.{Measurement, SensorRepository}
 import play.api.libs.json.Json
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{Action, AnyContent, Controller}
 import security.utils.auth.DefaultEnv
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -16,12 +16,13 @@ import scala.concurrent.Future
 class BigClownController(
                           sensorRepository: SensorRepository,
                           silhouette: Silhouette[DefaultEnv]) extends Controller {
-  def getSensorReading(locationAddress: String, measuredPhenomenon: String, timeGranularity: String, big: String) = Action.async {
+  def getSensorReading(locationAddress: String, sensorName: String, timeGranularity: String, big: String): Action[AnyContent] = Action.async {
     Future {
-      val data:Seq[AggregatedValue] =
+      val data:Seq[Measurement] =
         sensorRepository
-        .find(locationAddress, measuredPhenomenon)
-        .map(sensor => sensor.getAggregatedValues(TimeGranularity.parse(timeGranularity, big.toBoolean)))
+        .find(locationAddress, sensorName)
+        .map(sensor => sensor.measuredPhenomenons.head)
+        .map(measuredPhenomenon => measuredPhenomenon.measurements(TimeGranularity.parse(timeGranularity, big.toBoolean)))
         .getOrElse(Seq.empty)
       Ok(Json.toJson(data))
     }
@@ -35,11 +36,11 @@ class BigClownController(
     }
   }
 
-  def cleanSensor(locationAddress: String, measuredPhenomenon: String) = silhouette.SecuredAction.async { implicit request =>
+  def cleanSensor(locationAddress: String, sensorName: String) = silhouette.SecuredAction.async { implicit request =>
     Future {
       if (request.identity.admin) {
         sensorRepository
-          .find(locationAddress, measuredPhenomenon)
+          .find(locationAddress, sensorName)
           .foreach(sensor => sensorRepository.delete(sensor))
         NoContent
       } else {

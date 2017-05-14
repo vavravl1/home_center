@@ -22,12 +22,12 @@ class SensorSqlTest extends WordSpec with Matchers with DbTest with MockFactory 
 
       sensorRepository.findAll()
         .foreach(s => sensorRepository.delete(s))
-      val sensor = sensorRepository.findOrCreateSensor("remote/0", "thermometer", "temperature", "C")
-      sensor.addMeasurement(Measurement(10, i, false))
-      sensor.addMeasurement(Measurement(20, i.plus(30, MINUTES), false))
-      sensor.addMeasurement(Measurement(30, i.plus(70, MINUTES), false))
-      sensor.addMeasurement(Measurement(30, i.plus(80, MINUTES), false))
-      sensor.addMeasurement(Measurement(60, i.plus(90, MINUTES), false))
+      val sensor = sensorRepository.findOrCreateSensor("remote/0", "thermometer")
+      sensor.addMeasurement(Measurement(10, i), "temperature", "C")
+      sensor.addMeasurement(Measurement(20, i.plus(30, MINUTES)), "temperature", "C")
+      sensor.addMeasurement(Measurement(30, i.plus(70, MINUTES)), "temperature", "C")
+      sensor.addMeasurement(Measurement(30, i.plus(80, MINUTES)), "temperature", "C")
+      sensor.addMeasurement(Measurement(60, i.plus(90, MINUTES)), "temperature", "C")
 
       "correctly samples the temperatures" in {
         (clock.instant _).expects().returning(i).anyNumberOfTimes
@@ -35,18 +35,18 @@ class SensorSqlTest extends WordSpec with Matchers with DbTest with MockFactory 
         sensor.location.address shouldBe "remote/0"
         sensor.location.label shouldBe "upstairs corridor"
         sensor.name shouldBe "thermometer"
-        sensor.measuredPhenomenon shouldBe "temperature"
-        sensor.unit shouldBe "C"
+        sensor.measuredPhenomenons.head.name shouldBe "temperature"
+        sensor.measuredPhenomenons.head.unit shouldBe "C"
 
-        sensor.getAggregatedValues(ByHour)(0).min shouldBe 10
-        sensor.getAggregatedValues(ByHour)(0).max shouldBe 20
-        sensor.getAggregatedValues(ByHour)(0).average shouldBe 15
-        sensor.getAggregatedValues(ByHour)(0).measureTimestamp shouldBe i.plus(30, MINUTES)
+        sensor.measuredPhenomenons.head.measurements(ByHour)(0).min shouldBe 10
+        sensor.measuredPhenomenons.head.measurements(ByHour)(0).max shouldBe 20
+        sensor.measuredPhenomenons.head.measurements(ByHour)(0).average shouldBe 15
+        sensor.measuredPhenomenons.head.measurements(ByHour)(0).measureTimestamp shouldBe i.plus(30, MINUTES)
 
-        sensor.getAggregatedValues(ByHour)(1).min shouldBe 30
-        sensor.getAggregatedValues(ByHour)(1).max shouldBe 60
-        sensor.getAggregatedValues(ByHour)(1).average shouldBe 40
-        sensor.getAggregatedValues(ByHour)(1).measureTimestamp shouldBe i.plus(90, MINUTES)
+        sensor.measuredPhenomenons.head.measurements(ByHour)(1).min shouldBe 30
+        sensor.measuredPhenomenons.head.measurements(ByHour)(1).max shouldBe 60
+        sensor.measuredPhenomenons.head.measurements(ByHour)(1).average shouldBe 40
+        sensor.measuredPhenomenons.head.measurements(ByHour)(1).measureTimestamp shouldBe i.plus(90, MINUTES)
 
         DB.autoCommit(implicit session => {
           sql"""SELECT COUNT(*) FROM measurement""".map(rs => rs.int(1)).single.apply() shouldBe Some(5)
@@ -57,15 +57,15 @@ class SensorSqlTest extends WordSpec with Matchers with DbTest with MockFactory 
         (clock.instant _).expects().returning(i.plus(3, HOURS)).anyNumberOfTimes
         sensor.aggregateOldMeasurements()
 
-        sensor.getAggregatedValues(ByHour)(0).min shouldBe 15
-        sensor.getAggregatedValues(ByHour)(0).max shouldBe 15
-        sensor.getAggregatedValues(ByHour)(0).average shouldBe 15
-        sensor.getAggregatedValues(ByHour)(0).measureTimestamp shouldBe i.plus(30, MINUTES)
+        sensor.measuredPhenomenons.head.measurements(ByHour)(0).min shouldBe 15
+        sensor.measuredPhenomenons.head.measurements(ByHour)(0).max shouldBe 15
+        sensor.measuredPhenomenons.head.measurements(ByHour)(0).average shouldBe 15
+        sensor.measuredPhenomenons.head.measurements(ByHour)(0).measureTimestamp shouldBe i.plus(30, MINUTES)
 
-        sensor.getAggregatedValues(ByHour)(1).min shouldBe 40
-        sensor.getAggregatedValues(ByHour)(1).max shouldBe 40
-        sensor.getAggregatedValues(ByHour)(1).average shouldBe 40
-        sensor.getAggregatedValues(ByHour)(1).measureTimestamp shouldBe i.plus(90, MINUTES)
+        sensor.measuredPhenomenons.head.measurements(ByHour)(1).min shouldBe 40
+        sensor.measuredPhenomenons.head.measurements(ByHour)(1).max shouldBe 40
+        sensor.measuredPhenomenons.head.measurements(ByHour)(1).average shouldBe 40
+        sensor.measuredPhenomenons.head.measurements(ByHour)(1).measureTimestamp shouldBe i.plus(90, MINUTES)
 
         DB.autoCommit(implicit session => {
           sql"""SELECT COUNT(*) FROM measurement""".map(rs => rs.int(1)).single.apply() shouldBe Some(2)
