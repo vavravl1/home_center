@@ -7,6 +7,7 @@ import akka.testkit.TestActorRef
 import com.softwaremill.macwire.wire
 import dao.WateringDao
 import entities.watering.WateringMessage
+import model.{LocationRepository, SensorRepository}
 import mqtt.MqttListenerMessage.ConsumeMessage
 import mqtt.clown.BridgeListener
 import org.scalamock.scalatest.MockFactory
@@ -22,6 +23,8 @@ class WateringMqttListenerTest extends WordSpec with Matchers with MockFactory {
     implicit val system = ActorSystem()
     val clock = mock[Clock]
     val wateringDao = mock[WateringDaoWithCtor]
+    val locationRepository = mock[LocationRepository]
+    val sensorRepository = mock[SensorRepository]
     val wateringListener = TestActorRef[BridgeListener](Props(wire[WateringListener]))
 
     "receives the message" should {

@@ -14,12 +14,12 @@ import scalikejdbc._
   *
   */
 case class MeasuredPhenomenonSql(
-                             override val name:String,
-                             override val unit:String,
-                             val id:String,
-                             val sensorId:String,
-                             val _clock: Clock
-                           ) extends MeasuredPhenomenon {
+                                  override val name: String,
+                                  override val unit: String,
+                                  val id: String,
+                                  val sensorId: String,
+                                  val _clock: Clock
+                                ) extends MeasuredPhenomenon {
   implicit val clock = _clock
 
   override def measurements(timeGranularity: TimeGranularity): Seq[Measurement] =
@@ -86,7 +86,7 @@ case class MeasuredPhenomenonSql(
     }
   })
 
-  private def measurementFromRs(rs:WrappedResultSet) = Measurement(
+  private def measurementFromRs(rs: WrappedResultSet) = Measurement(
     average = rs.double("avg"),
     min = rs.double("min"),
     max = rs.double("max"),
@@ -101,7 +101,7 @@ object MeasuredPhenomenonSql {
       unit = rs.string("unit"),
       id = rs.string("id"),
       sensorId = rs.string("sensorId"),
-      _clock =  clock
+      _clock = clock
     )
 
   implicit val writes: Writes[MeasuredPhenomenonSql] = new Writes[MeasuredPhenomenonSql] {
@@ -110,4 +110,13 @@ object MeasuredPhenomenonSql {
       "unit" -> mp.unit
     )
   }
+
+    def writesWithMeasurements(timeGranularity: TimeGranularity): Writes[Seq[MeasuredPhenomenonSql]] = new Writes[Seq[MeasuredPhenomenonSql]] {
+      def writes(mps: Seq[MeasuredPhenomenonSql]): JsValue =
+        JsArray(mps.map(mp => Json.obj(
+        "name" -> mp.name,
+        "unit" -> mp.unit,
+        "measurements" -> mp.measurements(timeGranularity)
+      )))
+    }
 }

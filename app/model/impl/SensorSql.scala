@@ -85,7 +85,7 @@ object SensorSql {
       Json.obj(
         "name" -> s.name,
         "location" -> Json.toJson(s.location)(LocationSql.writes),
-        "measuredPhenomenons" -> Json.toJson(s.measuredPhenomenons)//(MeasuredPhenomenonSql.writes)
+        "measuredPhenomenons" -> Json.toJson(s.measuredPhenomenons)
       )
     }
   }

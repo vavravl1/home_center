@@ -1,6 +1,8 @@
 package model
 
 import dao.TimeGranularity
+import model.impl.MeasuredPhenomenonSql
+import play.api.libs.json.{JsValue, Writes}
 
 /**
   * Represents one measured phenomenon, e.g. temperature.
@@ -10,21 +12,31 @@ trait MeasuredPhenomenon {
   /**
     * Name of the measured phenomenon, e.g. temperature
     */
-  val name:String
+  val name: String
 
   /**
     * Unit of the measured phenomenon, e.g. Celsius
     */
-  val unit:String
+  val unit: String
 
   /**
     * Returns all measurements aggregated by the given time granularity
     */
-  def measurements(timeGranularity: TimeGranularity):Seq[Measurement]
+  def measurements(timeGranularity: TimeGranularity): Seq[Measurement]
 
   /**
     * Remove old un-aggregated measurements and replace them by aggregated one.
     * Aggregation is done by hours.
     */
   def aggregateOldMeasurements()
+}
+
+object MeasuredPhenomenon {
+  def writesWithMeasurements(timeGranularity: TimeGranularity): Writes[Seq[MeasuredPhenomenon]] =
+    new Writes[Seq[MeasuredPhenomenon]] {
+      def writes(mps: Seq[MeasuredPhenomenon]): JsValue = mps match {
+        case sql:Seq[MeasuredPhenomenonSql]  =>
+          MeasuredPhenomenonSql.writesWithMeasurements(timeGranularity).writes(sql)
+      }
+    }
 }
