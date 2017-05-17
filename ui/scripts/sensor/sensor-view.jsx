@@ -22,10 +22,15 @@ class SensorView extends React.Component {
     };
 
     valueChartData = function () {
-        let average = this.props.data.map(t => t.average);
-        let min = this.props.data.map(t => t.min);
-        let max = this.props.data.map(t => t.max);
-        let dates = this.props.data
+        if (this.props.data.length == 0) {
+            return {
+                labels: '',
+                times: '',
+                datasets: [],
+            };
+        }
+
+        let dates = this.props.data[0].measurements
             .map(t => t.measureTimestamp)
             .map(t => {
                 if (this.isTimGranularityByDay()) {
@@ -34,34 +39,59 @@ class SensorView extends React.Component {
                     return moment(t).add(1, 'minute').startOf('minute').format("HH:mm")
                 }
             });
-        let times = this.props.data
+
+        let times = this.props.data[0].measurements
             .map(t => moment(t.measureTimestamp).add(1, 'minute').format("DD.MM.YYYY HH:mm"));
+
+        const colors = [
+            [50, 50, 50],
+            [100, 40, 200],
+            [200, 0, 90]
+        ];
 
         let datasets = [];
         if (this.isTimGranularityByDay()) {
-            datasets = [{
-                label: 'Average',
-                backgroundColor: 'rgba(240, 247, 254, 0.5)',
-                borderColor: 'rgb(0, 0, 0)',
-                data: average,
-            }, {
-                label: 'Min',
-                backgroundColor: 'rgba(240, 247, 254, 0.5)',
-                borderColor: 'rgb(0, 0, 255)',
-                data: min,
-            }, {
-                label: 'Max',
-                backgroundColor: 'rgba(240, 247, 254, 0.5)',
-                borderColor: 'rgb(255, 0, 0)',
-                data: max,
-            }]
+            datasets = this.props.data.map(measuredPhenomenon => {
+                const averages = measuredPhenomenon.measurements.map(t => t.average);
+                const maxes = measuredPhenomenon.measurements.map(t => t.max);
+                const mines = measuredPhenomenon.measurements.map(t => t.min);
+                const index = this.props.data.indexOf(measuredPhenomenon);
+                const red = colors[index % 3][0];
+                const green = colors[index % 3][1];
+                const blue = colors[index % 3][2];
+                return [{
+                    label: 'average ' + measuredPhenomenon.name,
+                    backgroundColor: 'rgba(240, 247, 254, 0.5)',
+                    borderColor: 'rgb(' + red+ ',' + green + ',' + blue + ')',
+                    data: averages,
+                },{
+                    label: 'max ' + measuredPhenomenon.name,
+                    backgroundColor: 'rgba(240, 247, 254, 0.5)',
+                    borderColor: 'rgb(' + (red + 50)+ ',' + (green + 50) + ',' + (blue + 50) + ')',
+                    data: maxes,
+                },{
+                    label: 'min ' + measuredPhenomenon.name,
+                    backgroundColor: 'rgba(240, 247, 254, 0.5)',
+                    borderColor: 'rgb(' + (red - 50)+ ',' + (green - 50) + ',' + (blue - 50) + ')',
+                    data: mines,
+                }]
+            }).reduce(function(a, b){
+                return a.concat(b);
+            });
         } else {
-            datasets = [{
-                label: 'Average',
-                backgroundColor: 'rgba(240, 247, 254, 0.5)',
-                borderColor: 'rgb(0, 0, 0)',
-                data: average,
-            }]
+            datasets = this.props.data.map(measuredPhenomenon => {
+                const averages = measuredPhenomenon.measurements.map(t => t.average);
+                const index = this.props.data.indexOf(measuredPhenomenon);
+                const red = colors[index % 3][0];
+                const green = colors[index % 3][1];
+                const blue = colors[index % 3][2];
+                return {
+                    label: measuredPhenomenon.name,
+                    backgroundColor: 'rgba(240, 247, 254, 0.5)',
+                    borderColor: 'rgb(' + red+ ',' + green + ',' + blue + ')',
+                    data: averages,
+                }
+            });
         }
 
         return {
@@ -82,7 +112,7 @@ class SensorView extends React.Component {
                 }]
             },
             legend: {
-                display: this.isTimGranularityByDay()
+                display: true
             },
             tooltips: {
                 callbacks: {
@@ -100,7 +130,7 @@ class SensorView extends React.Component {
     };
 
     makeBigOrSmallCallback = function () {
-        if(!!this.props.makeSmallCallback) {
+        if (!!this.props.makeSmallCallback) {
             this.props.makeSmallCallback();
         } else {
             this.props.makeBigCallback(this.props.sensor);
@@ -114,19 +144,40 @@ class SensorView extends React.Component {
         this.setState(newState);
     };
 
-    render = () => {
-        let lastMeasure;
+    prepareLastMeasuredTimestamp = () => {
+        let lastTimestamp = <tr/>;
         if (this.props.data.length > 0) {
-            lastMeasure = this.props.data[this.props.data.length - 1];
-        } else {
-            lastMeasure = {
-                sensor: this.props.measuredPhenomenon,
-                measureTimestamp: "n/a",
-                measuredPhenomenon: "n/a",
-                unit: "",
-                average: "n/a",
+            const lastMeasuredPhenomenon = this.props.data[this.props.data.length - 1];
+            const measurements = lastMeasuredPhenomenon.measurements;
+            const lastMeasurement = measurements[measurements.length - 1];
+            if (measurements.length > 0) {
+                lastTimestamp = <tr>
+                    <td>Last update</td>
+                    <td><Time value={new Date(lastMeasurement.measureTimestamp)} format="HH:mm:ss"/></td>
+                </tr>
             }
         }
+        return lastTimestamp;
+    };
+
+    prepareLastMeasuredValues = () => {
+        return this.props.data.map(measuredPhenomenon => {
+            const measurements = measuredPhenomenon.measurements;
+            if (measurements.length > 0) {
+                const lastMeasurement = measurements[measurements.length - 1];
+                return <tr>
+                    <td scope="row">Actual {measuredPhenomenon.name}</td>
+                    <td>{lastMeasurement.average} {measuredPhenomenon.unit}</td>
+                </tr>
+            } else {
+                return <tr/>
+            }
+        });
+    };
+
+    render = () => {
+        const overviews = this.prepareLastMeasuredValues();
+        let lastTimestamp = this.prepareLastMeasuredTimestamp();
         return <Jumbotron bsClass="bc-measurement-box">
             <h2 className="capital" style={{display: 'inline'}}>{this.props.sensor.name}</h2>
             <ButtonToolbar className="pull-right">
@@ -136,33 +187,27 @@ class SensorView extends React.Component {
             <h3>{this.props.sensor.location.label}</h3>
             <table className="table table-hover table-bordered table-condensed table-responsive">
                 <tbody>
-                <tr>
-                    <td scope="row">Last update</td>
-                    <td><Time value={new Date(lastMeasure.measureTimestamp)} format="HH:mm:ss"/></td>
-                </tr>
-                <tr>
-                    <td scope="row">Actual {this.props.sensor.measuredPhenomenon}</td>
-                    <td>{lastMeasure.average} {this.props.sensor.unit}</td>
-                </tr>
+                {lastTimestamp}
+                {overviews}
                 </tbody>
             </table>
             <Line data={this.valueChartData()} options={this.humidityChartOptions()}/>
-                    <CheckBox
-                        className="pull-left"
-                        bsSize="xsmall"
-                        checked={this.state.startAtZero}
-                        onChange={this.handleStartAtZero.bind(this)}>Start at zero?</CheckBox>
-                <ButtonToolbar className="pull-right">
-                    <Button bsSize="xsmall"
-                            bsStyle={this.props.timeGranularity === 'ByMinute' ? "primary" : "default"}
-                            onClick={this.handleTimeGranularity.bind(this, "ByMinute")}>By Minute</Button>
-                    <Button bsSize="xsmall"
-                            bsStyle={this.props.timeGranularity === 'ByHour' ? "primary" : "default"}
-                            onClick={this.handleTimeGranularity.bind(this, "ByHour")}>By Hour</Button>
-                    <Button bsSize="xsmall"
-                            bsStyle={this.props.timeGranularity === 'ByDay' ? "primary" : "default"}
-                            onClick={this.handleTimeGranularity.bind(this, "ByDay")}>By Day</Button>
-                </ButtonToolbar>
+            <CheckBox
+                className="pull-left"
+                bsSize="xsmall"
+                checked={this.state.startAtZero}
+                onChange={this.handleStartAtZero.bind(this)}>Start at zero?</CheckBox>
+            <ButtonToolbar className="pull-right">
+                <Button bsSize="xsmall"
+                        bsStyle={this.props.timeGranularity === 'ByMinute' ? "primary" : "default"}
+                        onClick={this.handleTimeGranularity.bind(this, "ByMinute")}>By Minute</Button>
+                <Button bsSize="xsmall"
+                        bsStyle={this.props.timeGranularity === 'ByHour' ? "primary" : "default"}
+                        onClick={this.handleTimeGranularity.bind(this, "ByHour")}>By Hour</Button>
+                <Button bsSize="xsmall"
+                        bsStyle={this.props.timeGranularity === 'ByDay' ? "primary" : "default"}
+                        onClick={this.handleTimeGranularity.bind(this, "ByDay")}>By Day</Button>
+            </ButtonToolbar>
         </Jumbotron>
     };
 }
