@@ -20,7 +20,7 @@ case class SensorSql(
   override def addMeasurement(measurement: Measurement, measuredPhenomenonName: String, unit:String): Unit = {
     DB.localTx(implicit session => {
       val mp = measuredPhenomenons
-        .find(mp => mp.name == measuredPhenomenonName && mp.unit == unit)
+        .find(mp => mp.name == measuredPhenomenonName && mp.sensorId == id)
         .getOrElse(saveMeasuredPhenomenon(measuredPhenomenonName, unit))
 
       sql"""
