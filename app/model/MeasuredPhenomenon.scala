@@ -20,6 +20,11 @@ trait MeasuredPhenomenon {
   val unit: String
 
   /**
+    * Describes how the measured values should be aggregated
+    */
+  val aggregationStrategy: MeasurementAggregationStrategy
+
+  /**
     * Returns all measurements aggregated by the given time granularity
     */
   def measurements(timeGranularity: TimeGranularity): Seq[Measurement]

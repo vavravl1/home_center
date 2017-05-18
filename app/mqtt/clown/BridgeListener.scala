@@ -3,7 +3,7 @@ package mqtt.clown
 import java.time.Clock
 
 import akka.actor.Actor
-import model.{LocationRepository, Measurement, SensorRepository}
+import model.{LocationRepository, Measurement, NoneMeasurementAggregationStrategy, SensorRepository}
 import mqtt.MqttListenerMessage.{ConsumeMessage, Ping}
 import play.api.Logger
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
@@ -31,7 +31,11 @@ class BridgeListener(sensorRepository: SensorRepository, locationRepository: Loc
                 measureTimestamp = clock.instant(),
                 value = msg.value
               )
-              foundSensor.addMeasurement(measurement, msg.phenomenon, msg.unit)
+              //              foundSensor.addMeasurement(measurement, msg.phenomenon, msg.unit)
+
+              foundSensor.addMeasurement(measurement, foundSensor.loadOrCreatePhenomenon(
+                msg.phenomenon, msg.unit, NoneMeasurementAggregationStrategy
+              ))
             })
           case JsError(_) => Logger.error(s"Parsing $json failed");
         }

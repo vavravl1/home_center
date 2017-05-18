@@ -3,7 +3,7 @@ package model.impl
 import java.time.Clock
 
 import _root_.play.api.libs.json._
-import model.{Measurement, Sensor}
+import model._
 import scalikejdbc.{WrappedResultSet, _}
 
 /**
@@ -17,11 +17,15 @@ case class SensorSql(
                ) extends Sensor {
   implicit val clock = _clock
 
-  override def addMeasurement(measurement: Measurement, measuredPhenomenonName: String, unit:String): Unit = {
+  override def addMeasurement(measurement: Measurement, measuredPhenomenon:MeasuredPhenomenon): Unit = {
     DB.localTx(implicit session => {
       val mp = measuredPhenomenons
-        .find(mp => mp.name == measuredPhenomenonName && mp.sensorId == id)
-        .getOrElse(saveMeasuredPhenomenon(measuredPhenomenonName, unit))
+        .find(mp => mp.name == measuredPhenomenon.name && mp.sensorId == id)
+        .getOrElse(saveMeasuredPhenomenon(
+          measuredPhenomenon.name,
+          measuredPhenomenon.unit,
+          measuredPhenomenon.aggregationStrategy
+        ))
 
       sql"""
           INSERT INTO measurement (value, measureTimestamp, measuredPhenomenonId, aggregated)
@@ -42,7 +46,7 @@ case class SensorSql(
   override def measuredPhenomenons: Seq[MeasuredPhenomenonSql] = {
     DB.readOnly(implicit session => {
       sql"""
-            SELECT MP.name, MP.unit, MP.id, MP.sensorId
+            SELECT MP.name, MP.unit, MP.id, MP.sensorId, MP.aggregationStrategy
             FROM measuredPhenomenon MP
             WHERE MP.sensorId = ${id}
             """
@@ -54,15 +58,30 @@ case class SensorSql(
     measuredPhenomenons.foreach(mp => mp.aggregateOldMeasurements())
   }
 
-  private def saveMeasuredPhenomenon(measuredPhenomenonName: String, unit:String)(implicit session: DBSession):MeasuredPhenomenonSql = {
+  /**
+    * Create or load measured phenomenon according to the given parameters
+    */
+  override def loadOrCreatePhenomenon(name: String, unit: String, aggregationStrategy: MeasurementAggregationStrategy): MeasuredPhenomenon = {
+    DB.localTx(implicit session => {
+      return measuredPhenomenons
+        .find(mp => mp.name == name && mp.sensorId == id)
+        .getOrElse(saveMeasuredPhenomenon(name, unit, aggregationStrategy))
+    })
+  }
+
+  private def saveMeasuredPhenomenon(name: String, unit:String, aggregationStrategy: MeasurementAggregationStrategy)(implicit session: DBSession):MeasuredPhenomenonSql = {
+    val aggregationStrategyName = aggregationStrategy match {
+      case NoneMeasurementAggregationStrategy => "none"
+      case BooleanMeasurementAggregationStrategy => "boolean"
+    }
     sql"""
-         INSERT INTO measuredPhenomenon(name, unit, sensorId)
-         VALUES (${measuredPhenomenonName}, ${unit}, ${id})
+         INSERT INTO measuredPhenomenon(name, unit, aggregationStrategy, sensorId)
+         VALUES (${name}, ${unit}, ${aggregationStrategyName}, ${id})
       """.update().apply()
     sql"""
-          SELECT MP.name, MP.unit, MP.sensorId, MP.id
+          SELECT MP.name, MP.unit, MP.sensorId, MP.id, MP.aggregationStrategy
           FROM measuredPhenomenon MP
-          WHERE MP.name = ${measuredPhenomenonName}
+          WHERE MP.name = ${name}
           AND MP.sensorId = ${id}
       """.map(MeasuredPhenomenonSql.fromRs(_, clock)).single().apply().get
   }

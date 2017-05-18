@@ -24,9 +24,14 @@ trait Sensor {
   def measuredPhenomenons:Seq[MeasuredPhenomenon]
 
   /**
+    * Create or load measured phenomenon according to the given parameters
+    */
+  def loadOrCreatePhenomenon(name: String, unit:String, aggregationStrategy: MeasurementAggregationStrategy):MeasuredPhenomenon
+
+  /**
     * Add single measurement that is associated with this sensor
     */
-  def addMeasurement(measurement: Measurement, measuredPhenomenonName: String, unit:String)
+  def addMeasurement(measurement: Measurement, measuredPhenomenon:MeasuredPhenomenon)
 
   /**
     * Remove old un-aggregated measurements and replace them by aggregated one.

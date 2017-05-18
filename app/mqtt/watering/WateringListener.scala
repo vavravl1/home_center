@@ -5,7 +5,7 @@ import java.time.Clock
 import akka.actor.Actor
 import dao.WateringDao
 import entities.watering.WateringMessage
-import model.{LocationRepository, Measurement, SensorRepository}
+import model._
 import mqtt.MqttListenerMessage.{ConsumeMessage, Ping}
 import play.api.Logger
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
@@ -37,14 +37,16 @@ class WateringListener(
           foundSensor.addMeasurement(
             Measurement(
               measureTimestamp = clock.instant(),
-              value = value.telemetry.humidity.actual),
-            "humidity", ""
+              value = value.telemetry.humidity.actual
+            ),
+            foundSensor.loadOrCreatePhenomenon("humidity", "", NoneMeasurementAggregationStrategy)
           )
           foundSensor.addMeasurement(
             Measurement(
               measureTimestamp = clock.instant(),
-              value = if(value.telemetry.watering.inProgress) 10.0 else 0.0),
-            "watering", ""
+              value = if(value.telemetry.watering.inProgress) 10.0 else 0.0
+            ),
+            foundSensor.loadOrCreatePhenomenon("watering", "", BooleanMeasurementAggregationStrategy)
           )
         }
         case JsError(_) => Logger.error(s"Parsing $json failed");

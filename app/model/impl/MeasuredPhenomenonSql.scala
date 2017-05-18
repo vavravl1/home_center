@@ -7,7 +7,7 @@ import java.time.{Clock, Instant}
 import _root_.play.Logger
 import _root_.play.api.libs.json.{JsValue, Json, _}
 import dao.TimeGranularity
-import model.{MeasuredPhenomenon, Measurement}
+import model._
 import scalikejdbc._
 
 /**
@@ -16,6 +16,7 @@ import scalikejdbc._
 case class MeasuredPhenomenonSql(
                                   override val name: String,
                                   override val unit: String,
+                                  override val aggregationStrategy: MeasurementAggregationStrategy,
                                   val id: String,
                                   val sensorId: String,
                                   val _clock: Clock
@@ -87,7 +88,7 @@ case class MeasuredPhenomenonSql(
   })
 
   private def measurementFromRs(rs: WrappedResultSet) = Measurement(
-    average = rs.double("avg"),
+    average = aggregationStrategy.singleValue(rs.double("avg")),
     min = rs.double("min"),
     max = rs.double("max"),
     measureTimestamp = Instant.ofEpochMilli(rs.timestamp("ts").millis)
@@ -99,6 +100,10 @@ object MeasuredPhenomenonSql {
     (rs, clock) => new MeasuredPhenomenonSql(
       name = rs.string("name"),
       unit = rs.string("unit"),
+      aggregationStrategy = rs.string("aggregationStrategy") match {
+        case "boolean" => BooleanMeasurementAggregationStrategy
+        case "none" => NoneMeasurementAggregationStrategy
+      },
       id = rs.string("id"),
       sensorId = rs.string("sensorId"),
       _clock = clock
