@@ -169,7 +169,7 @@ class SensorView extends React.Component {
             const measurements = measuredPhenomenon.measurements;
             if (measurements.length > 0) {
                 const lastMeasurement = measurements[measurements.length - 1];
-                return <tr>
+                return <tr key={"lastMeasuredValue-" + measuredPhenomenon.name + "-" + this.props.sensor.name}>
                     <td scope="row">Actual {measuredPhenomenon.name}</td>
                     <td>{lastMeasurement.average} {measuredPhenomenon.unit}</td>
                 </tr>

@@ -52,7 +52,7 @@ class HomeCenterData extends React.Component {
             </Col>
         } else {
             let bcSensorsComponents = this.state.bcSensors.map(oneSensor =>
-                <Col xs={12} md={5} key={oneSensor.location.address + '/' + oneSensor.measuredPhenomenon}>
+                <Col xs={12} md={5} key={oneSensor.location.address+ "-" + oneSensor.name}>
                     <Sensor
                         sensor={oneSensor}
                         measuredPhenomenon={oneSensor.measuredPhenomenon}
