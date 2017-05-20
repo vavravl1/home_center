@@ -14,7 +14,7 @@ import scalikejdbc._
 class SensorSqlTest extends WordSpec with Matchers with DbTest with MockFactory {
   override lazy val clock = mock[Clock]
 
-  "BcMeasureDao" when {
+  "SensorSql" when {
     "filled by measures over last 3 hours" should {
       val i = Instant.ofEpochSecond(0)
       val location = locationRepository.findOrCreateLocation("remote/0")

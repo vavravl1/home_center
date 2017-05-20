@@ -49,6 +49,7 @@ case class SensorSql(
             SELECT MP.name, MP.unit, MP.id, MP.sensorId, MP.aggregationStrategy
             FROM measuredPhenomenon MP
             WHERE MP.sensorId = ${id}
+            ORDER BY MP.name, MP.unit
             """
         .map(MeasuredPhenomenonSql.fromRs(_, clock)).list().apply()
     })

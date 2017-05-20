@@ -1,5 +1,7 @@
 package model
 
+import play.api.libs.json.{JsString, JsValue, Writes}
+
 /**
   * Defines how measurements should be aggregated in the given period of time
   */
@@ -17,4 +19,14 @@ object NoneMeasurementAggregationStrategy extends MeasurementAggregationStrategy
 
 object BooleanMeasurementAggregationStrategy extends MeasurementAggregationStrategy {
   override def singleValue(value: Double): Double = if(value > 0) 10 else 0
+}
+
+object MeasurementAggregationStrategy {
+  implicit val writes: Writes[MeasurementAggregationStrategy] =
+    new Writes[MeasurementAggregationStrategy] {
+      def writes(o: MeasurementAggregationStrategy): JsValue = o match {
+        case NoneMeasurementAggregationStrategy => JsString("none")
+        case BooleanMeasurementAggregationStrategy => JsString("boolean")
+      }
+    }
 }

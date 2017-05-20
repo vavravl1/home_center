@@ -121,7 +121,8 @@ object MeasuredPhenomenonSql {
         JsArray(mps.map(mp => Json.obj(
         "name" -> mp.name,
         "unit" -> mp.unit,
-        "measurements" -> mp.measurements(timeGranularity)
+        "measurements" -> mp.measurements(timeGranularity),
+        "aggregationStrategy" -> Json.toJson(mp.aggregationStrategy)
       )))
     }
 }
