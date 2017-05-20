@@ -3,7 +3,6 @@ package mqtt.watering
 import java.time.Clock
 
 import akka.actor.Actor
-import dao.WateringDao
 import entities.watering.WateringMessage
 import model._
 import mqtt.MqttListenerMessage.{ConsumeMessage, Ping}
@@ -14,7 +13,6 @@ import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
   * Stores messages from watering to dao
   */
 class WateringListener(
-                        dao: WateringDao,
                         locationRepository: LocationRepository,
                         sensorRepository: SensorRepository,
                         clock: Clock
@@ -26,8 +24,6 @@ class WateringListener(
     case ConsumeMessage(receivedTopic: String, json: JsValue) => receivedTopic match {
       case topic() => Json.fromJson(json)(WateringMessage.wmReads) match {
         case JsSuccess(value, _) => {
-          dao.save(value)
-
           val locationAddress = "watering-ibiscus"
           locationRepository.findOrCreateLocation(locationAddress)
           val foundSensor = sensorRepository.findOrCreateSensor(

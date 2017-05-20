@@ -1,16 +1,52 @@
 
-
 # --- !Ups
 
-CREATE TABLE bc_measure (
-  phenomenon VARCHAR(20) NOT NULL,
-  sensor VARCHAR(20) NOT NULL,
-  measure_timestamp   TIMESTAMP NOT NULL,
-  value       INT       NOT NULL,
-  unit        VARCHAR(5) NOT NULL,
-  aggregated BOOLEAN DEFAULT FALSE
+CREATE TABLE location (
+  address VARCHAR(20) PRIMARY KEY,
+  label VARCHAR(40) NOT NULL
 );
 
-CREATE INDEX unique__bc_measure__sensor__measure_timestamp ON bc_measure(sensor, measure_timestamp)
 
-# --- !Downs
+CREATE TABLE sensor (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(20),
+  locationAddress VARCHAR(20)
+);
+CREATE INDEX unique__sensor ON sensor(name, locationAddress);
+ALTER TABLE sensor ADD CONSTRAINT fk_locationAddress
+  FOREIGN KEY (locationAddress) REFERENCES location(address)
+  ON UPDATE CASCADE;
+
+
+CREATE TABLE measuredPhenomenon (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(20),
+  unit VARCHAR(5),
+  aggregationStrategy VARCHAR(20),
+  sensorId BIGINT,
+);
+CREATE INDEX unique__measuredPhenomenon ON measuredPhenomenon(name, sensorId);
+
+ALTER TABLE measuredPhenomenon ADD CONSTRAINT fk_sensorId
+  FOREIGN KEY (sensorId) REFERENCES sensor(id)
+  ON DELETE CASCADE
+  ON UPDATE CASCADE;
+
+
+CREATE TABLE measurement (
+  value DOUBLE,
+  measureTimestamp TIMESTAMP NOT NULL,
+  measuredPhenomenonId BIGINT,
+  aggregated BOOLEAN DEFAULT FALSE,
+);
+ALTER TABLE measurement ADD CONSTRAINT fk_measuredPhenomenonId
+  FOREIGN KEY (measuredPhenomenonId) REFERENCES measuredPhenomenon(id)
+  ON DELETE CASCADE
+  ON UPDATE CASCADE;
+
+
+
+
+
+
+
