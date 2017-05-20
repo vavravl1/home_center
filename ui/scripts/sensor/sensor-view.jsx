@@ -155,7 +155,7 @@ class SensorView extends React.Component {
             const measurements = lastMeasuredPhenomenon.measurements;
             const lastMeasurement = measurements[measurements.length - 1];
             if (measurements.length > 0) {
-                lastTimestamp = <tr>
+                lastTimestamp = <tr key={"lastMeasuredTimestamp-" + lastMeasuredPhenomenon.name + "-" + lastMeasurement.measureTimestamp + "-" + this.props.sensor.name}>
                     <td>Last update</td>
                     <td><Time value={new Date(lastMeasurement.measureTimestamp)} format="HH:mm:ss"/></td>
                 </tr>
