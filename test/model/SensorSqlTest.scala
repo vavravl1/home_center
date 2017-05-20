@@ -23,11 +23,12 @@ class SensorSqlTest extends WordSpec with Matchers with DbTest with MockFactory 
       sensorRepository.findAll()
         .foreach(s => sensorRepository.delete(s))
       val sensor = sensorRepository.findOrCreateSensor("remote/0", "thermometer")
-      sensor.addMeasurement(Measurement(10, i), "temperature", "C")
-      sensor.addMeasurement(Measurement(20, i.plus(30, MINUTES)), "temperature", "C")
-      sensor.addMeasurement(Measurement(30, i.plus(70, MINUTES)), "temperature", "C")
-      sensor.addMeasurement(Measurement(30, i.plus(80, MINUTES)), "temperature", "C")
-      sensor.addMeasurement(Measurement(60, i.plus(90, MINUTES)), "temperature", "C")
+      val phenomenon = sensor.findOrCreatePhenomenon("temperature", "C", NoneMeasurementAggregationStrategy)
+      sensor.addMeasurement(Measurement(10, i), phenomenon)
+      sensor.addMeasurement(Measurement(20, i.plus(30, MINUTES)), phenomenon)
+      sensor.addMeasurement(Measurement(30, i.plus(70, MINUTES)), phenomenon)
+      sensor.addMeasurement(Measurement(30, i.plus(80, MINUTES)), phenomenon)
+      sensor.addMeasurement(Measurement(60, i.plus(90, MINUTES)), phenomenon)
 
       "correctly samples the temperatures" in {
         (clock.instant _).expects().returning(i).anyNumberOfTimes

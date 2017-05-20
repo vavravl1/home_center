@@ -33,7 +33,7 @@ class BridgeListener(sensorRepository: SensorRepository, locationRepository: Loc
               )
               //              foundSensor.addMeasurement(measurement, msg.phenomenon, msg.unit)
 
-              foundSensor.addMeasurement(measurement, foundSensor.loadOrCreatePhenomenon(
+              foundSensor.addMeasurement(measurement, foundSensor.findOrCreatePhenomenon(
                 msg.phenomenon, msg.unit, NoneMeasurementAggregationStrategy
               ))
             })

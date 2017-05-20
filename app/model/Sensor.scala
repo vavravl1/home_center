@@ -26,7 +26,7 @@ trait Sensor {
   /**
     * Create or load measured phenomenon according to the given parameters
     */
-  def loadOrCreatePhenomenon(name: String, unit:String, aggregationStrategy: MeasurementAggregationStrategy):MeasuredPhenomenon
+  def findOrCreatePhenomenon(name: String, unit:String, aggregationStrategy: MeasurementAggregationStrategy):MeasuredPhenomenon
 
   /**
     * Add single measurement that is associated with this sensor

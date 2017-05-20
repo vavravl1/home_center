@@ -39,14 +39,14 @@ class WateringListener(
               measureTimestamp = clock.instant(),
               value = value.telemetry.humidity.actual
             ),
-            foundSensor.loadOrCreatePhenomenon("humidity", "", NoneMeasurementAggregationStrategy)
+            foundSensor.findOrCreatePhenomenon("humidity", "", NoneMeasurementAggregationStrategy)
           )
           foundSensor.addMeasurement(
             Measurement(
               measureTimestamp = clock.instant(),
               value = if(value.telemetry.watering.inProgress) 10.0 else 0.0
             ),
-            foundSensor.loadOrCreatePhenomenon("watering", "", BooleanMeasurementAggregationStrategy)
+            foundSensor.findOrCreatePhenomenon("watering", "", BooleanMeasurementAggregationStrategy)
           )
         }
         case JsError(_) => Logger.error(s"Parsing $json failed");
