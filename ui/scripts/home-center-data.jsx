@@ -1,5 +1,4 @@
 import React from "react";
-import WateringComponent from "./watering-component.jsx";
 import Sensor from "./sensor/sensor.jsx";
 import Col from "react-bootstrap/lib/Col";
 import axios from "axios";
@@ -16,10 +15,10 @@ class HomeCenterData extends React.Component {
     };
 
     componentDidMount = () => {
-        let bcSensorReading = document.getElementById('bcSensorReading').value;
+        let sensorReadingUrl = document.getElementById('bcSensorReading').value;
         let t = this;
         axios
-            .get(bcSensorReading)
+            .get(sensorReadingUrl)
             .then(function (bcSensors) {
                 const newState = update(t.state, {
                     bcSensors: {$set: bcSensors.data},
@@ -28,7 +27,7 @@ class HomeCenterData extends React.Component {
             })
     };
 
-    makeBcSensorBig = (sensor) => {
+    makeSensorBig = (sensor) => {
         const newState = update(this.state, {
             bigBcSensor: {$set: sensor},
         });
@@ -51,20 +50,17 @@ class HomeCenterData extends React.Component {
                 />
             </Col>
         } else {
-            let bcSensorsComponents = this.state.bcSensors.map(oneSensor =>
+            let sensorsComponents = this.state.bcSensors.map(oneSensor =>
                 <Col xs={12} md={5} key={oneSensor.location.address+ "-" + oneSensor.name}>
                     <Sensor
                         sensor={oneSensor}
                         measuredPhenomenon={oneSensor.measuredPhenomenon}
-                        makeBigCallback={this.makeBcSensorBig}
+                        makeBigCallback={this.makeSensorBig}
                     />
                 </Col>
             );
             return <div>
-                {bcSensorsComponents}
-                <Col xs={12} md={5}>
-                    <WateringComponent />
-                </Col>
+                {sensorsComponents}
             </div>
         }
     }

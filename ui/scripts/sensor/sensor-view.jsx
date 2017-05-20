@@ -182,10 +182,10 @@ class SensorView extends React.Component {
     render = () => {
         const overviews = this.prepareLastMeasuredValues();
         let lastTimestamp = this.prepareLastMeasuredTimestamp();
-        return <Jumbotron bsClass="bc-measurement-box">
+        return <Jumbotron bsClass="sensor-measurement-box">
             <h2 className="capital" style={{display: 'inline'}}>{this.props.sensor.name}</h2>
             <ButtonToolbar className="pull-right">
-                <Button bsSize="xsmall" className="bcSensorMakeBig"
+                <Button bsSize="xsmall" className="sensorMakeBig"
                         onClick={this.makeBigOrSmallCallback.bind(this)}>o</Button>
             </ButtonToolbar>
             <h3>{this.props.sensor.location.label}</h3>

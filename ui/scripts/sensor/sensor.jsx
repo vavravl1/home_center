@@ -29,10 +29,10 @@ class Sensor extends React.Component {
 
     tick = () => {
         let t = this;
-        let bcSensorReading = document.getElementById('bcSensorReading').value;
+        let sensorReading = document.getElementById('bcSensorReading').value;
         axios
             .get(
-                bcSensorReading + this.props.sensor.location.address + "/" +
+                sensorReading + this.props.sensor.location.address + "/" +
                 this.props.sensor.name + "?timeGranularity=" + this.state.timeGranularity +
                 ((!!this.props.makeSmallCallback) ? "&big=true" : "&big=false"), {
                     cancelToken: this.state.source.token
