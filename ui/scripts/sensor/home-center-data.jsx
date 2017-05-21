@@ -1,5 +1,5 @@
 import React from "react";
-import Sensor from "./sensor/sensor.jsx";
+import Sensor from "./sensor.jsx";
 import Col from "react-bootstrap/lib/Col";
 import axios from "axios";
 import update from "react-addons-update";

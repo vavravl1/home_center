@@ -3,13 +3,11 @@ import Navbar from "react-bootstrap/lib/Navbar";
 import LinkContainer from "react-router-bootstrap/lib/LinkContainer";
 import Nav from "react-bootstrap/lib/Nav";
 import NavItem from "react-bootstrap/lib/NavItem";
-// import {IndexRoute, Link, Route, Router} from "react-router"; //hashHistory
 import {BrowserRouter, Link, Match, Route, Switch} from "react-router-dom";
-import HomeCenterData from "./home-center-data.jsx";
-import SignIn from "./home-center-sign-in.jsx";
-import HomeCenterSettings from "./settings/home-center-settings.jsx";
+import HomeCenterData from "../sensor/home-center-data.jsx";
+import SignIn from "../signIn/home-center-sign-in.jsx";
+import HomeCenterSettings from "../settings/home-center-settings.jsx";
 import axios from "axios";
-
 
 class HomeCenterLayout extends React.Component {
     constructor(props) {

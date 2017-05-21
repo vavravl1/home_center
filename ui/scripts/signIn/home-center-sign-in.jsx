@@ -5,8 +5,15 @@ import Button from "react-bootstrap/lib/Button";
 import FormControl from "react-bootstrap/lib/FormControl";
 import Checkbox from "react-bootstrap/lib/Checkbox";
 import ControlLabel from "react-bootstrap/lib/ControlLabel";
+import {withRouter} from "react-router-dom";
 
 class SignIn extends React.Component {
+
+    componentDidMount = () => {
+        if (document.getElementById('router_path').value) {
+            this.props.history.push(document.getElementById('router_path').value);
+        }
+    };
 
     render = () => {
         let csrfTokenName = document.getElementById('csrf_token_name').value;
@@ -17,7 +24,7 @@ class SignIn extends React.Component {
         const params = new URLSearchParams(this.props.location.search);
         const errorParam = params.get('error'); // bar
 
-        if(errorParam === 'invalid.credentials') {
+        if (errorParam === 'invalid.credentials') {
             validationState = "error"
         }
 
@@ -49,4 +56,4 @@ class SignIn extends React.Component {
     }
 }
 
-export default SignIn
+export default withRouter(SignIn)
