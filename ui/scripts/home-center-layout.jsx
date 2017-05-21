@@ -3,13 +3,28 @@ import Navbar from "react-bootstrap/lib/Navbar";
 import LinkContainer from "react-router-bootstrap/lib/LinkContainer";
 import Nav from "react-bootstrap/lib/Nav";
 import NavItem from "react-bootstrap/lib/NavItem";
-import { Link } from 'react-router';
+// import {IndexRoute, Link, Route, Router} from "react-router"; //hashHistory
+import {BrowserRouter, Link, Match, Route, Switch} from "react-router-dom";
+import HomeCenterData from "./home-center-data.jsx";
+import SignIn from "./home-center-sign-in.jsx";
+import HomeCenterSettings from "./settings/home-center-settings.jsx";
+import axios from "axios";
+
 
 class HomeCenterLayout extends React.Component {
     constructor(props) {
         super(props);
         this.state = {};
     };
+
+    componentDidMount = () => {
+        let csrfTokenName = document.getElementById('csrf_token_name').value;
+        let csrfTokenValue = document.getElementById('csrf_token_value').value;
+
+        axios.defaults.params = {};
+        axios.defaults.params[csrfTokenName] = csrfTokenValue;
+    };
+
 
     render = () => {
         let userNavItem = null;
@@ -26,23 +41,32 @@ class HomeCenterLayout extends React.Component {
                     <LinkContainer to="/signIn"><NavItem>Login</NavItem></LinkContainer>
                 </Nav>
         }
-        return <div>
-            <Navbar>
-                <Navbar.Header>
-                    <Navbar.Brand>
-                        <Link to='data' className='navbar-brand'>Home center</Link>
-                    </Navbar.Brand>
-                </Navbar.Header>
-                <Nav>
-                    <LinkContainer to="/data"><NavItem>Sensors</NavItem></LinkContainer>
-                </Nav>
-                <Nav>
-                    <LinkContainer to="/settings"><NavItem>Settings</NavItem></LinkContainer>
-                </Nav>
-                {userNavItem}
-            </Navbar>
-            {this.props.children}
-        </div>
+        return <BrowserRouter>
+            <div>
+                <Navbar>
+                    <Navbar.Header>
+                        <Navbar.Brand>
+                            <Link to='data' className='navbar-brand'>Home center</Link>
+                        </Navbar.Brand>
+                    </Navbar.Header>
+                    <Nav>
+                        <LinkContainer to="/data"><NavItem>Sensors</NavItem></LinkContainer>
+                    </Nav>
+                    <Nav>
+                        <LinkContainer to="/settings"><NavItem>Settings</NavItem></LinkContainer>
+                    </Nav>
+                    {userNavItem}
+                </Navbar>
+
+                <Switch>
+                    <Route exact path="/" component={HomeCenterData}/>
+                    <Route path="/data" component={HomeCenterData}/>
+                    <Route path="/signIn" component={SignIn}/>
+                    <Route path="/settings" component={HomeCenterSettings}/>
+                </Switch>
+
+            </div>
+        </BrowserRouter>
     }
 }
 

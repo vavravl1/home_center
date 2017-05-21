@@ -1,7 +1,8 @@
-import React, {Component, PropTypes} from "react";
+import React, {Component} from "react";
 import axios from "axios";
 import update from "react-addons-update";
 import SensorView from "./sensor-view.jsx";
+import PropTypes from "prop-types";
 
 class Sensor extends React.Component {
 
@@ -78,7 +79,7 @@ class Sensor extends React.Component {
     };
 }
 
-Sensor.PropTypes = {
+Sensor.propTypes = {
     sensor: PropTypes.object.isRequired,
     makeBigCallback: PropTypes.func,
     makeSmallCallback: PropTypes.func

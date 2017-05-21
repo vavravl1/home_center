@@ -1,4 +1,4 @@
-import React, {Component, PropTypes} from "react";
+import React, {Component} from "react";
 import Time from "react-time";
 import {Line} from "react-chartjs-2";
 import moment from "moment";
@@ -7,6 +7,7 @@ import Button from "react-bootstrap/lib/Button";
 import CheckBox from "react-bootstrap/lib/CheckBox";
 import Jumbotron from "react-bootstrap/lib/Jumbotron";
 import update from "react-addons-update";
+import PropTypes from "prop-types";
 
 class SensorView extends React.Component {
 
@@ -216,7 +217,7 @@ class SensorView extends React.Component {
     };
 }
 
-SensorView.PropTypes = {
+SensorView.propTypes = {
     sensor: PropTypes.object.isRequired,
     timeGranularity: PropTypes.string.isRequired,
     timeGranularityChangedCallback: PropTypes.func.isRequired,

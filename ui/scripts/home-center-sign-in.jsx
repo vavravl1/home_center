@@ -13,7 +13,11 @@ class SignIn extends React.Component {
         let csrfTokenValue = document.getElementById('csrf_token_value').value;
 
         let validationState = null;
-        if(this.props.location.query.error === 'invalid.credentials') {
+
+        const params = new URLSearchParams(this.props.location.search);
+        const errorParam = params.get('error'); // bar
+
+        if(errorParam === 'invalid.credentials') {
             validationState = "error"
         }
 
