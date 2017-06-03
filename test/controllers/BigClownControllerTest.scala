@@ -24,7 +24,7 @@ class BigClownControllerTest extends WordSpec with Matchers with IntegrationTest
     val location = appComponents.locationRepository.findOrCreateLocation("remote-0")
     location.updateLabel("location-label")
 
-    val sensor = appComponents.sensorRepository.findOrCreateSensor("remote-0", "thermometer")
+    val sensor = appComponents.sensorRepository.findOrCreateSensor(location, "thermometer")
     val phenomenon = sensor.findOrCreatePhenomenon("temperature", "C", NoneMeasurementAggregationStrategy)
 
     "when there are old measures" should {

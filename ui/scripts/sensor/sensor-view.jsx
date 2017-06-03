@@ -1,4 +1,4 @@
-import React, {Component} from "react";
+import React from "react";
 import Time from "react-time";
 import {Line} from "react-chartjs-2";
 import moment from "moment";
@@ -65,19 +65,19 @@ class SensorView extends React.Component {
                     backgroundColor: 'rgb(' + red+ ',' + green + ',' + blue + ')',
                     borderColor: 'rgb(0, 0, 0)',
                     data: averages,
-                    type: measuredPhenomenon.aggregationStrategy == 'none' ? 'line':'bar'
+                    type: measuredPhenomenon.aggregationStrategy === 'none' ? 'line':'bar'
                 },{
                     label: 'max ' + measuredPhenomenon.name,
                     backgroundColor: 'rgb(' + (red - 60)+ ',' + (green - 60) + ',' + (blue - 60) + ')',
                     borderColor: 'rgb(0, 0, 0)',
                     data: maxes,
-                    type: measuredPhenomenon.aggregationStrategy == 'none' ? 'line':'bar'
+                    type: (measuredPhenomenon.aggregationStrategy === 'none') ? 'line':'bar'
                 },{
                     label: 'min ' + measuredPhenomenon.name,
                     backgroundColor: 'rgb(' + (red - 120) + ',' + (green - 120) + ',' + (blue - 120) + ')',
                     borderColor: 'rgb(0, 0, 0)',
                     data: mines,
-                    type: measuredPhenomenon.aggregationStrategy == 'none' ? 'line':'bar'
+                    type: measuredPhenomenon.aggregationStrategy === 'none' ? 'line':'bar'
                 }]
             }).reduce(function(a, b){
                 return a.concat(b);
@@ -94,7 +94,7 @@ class SensorView extends React.Component {
                     backgroundColor: 'rgb(' + red+ ',' + green + ',' + blue + ')',
                     borderColor: 'rgb(0, 0, 0)',
                     data: averages,
-                    type: measuredPhenomenon.aggregationStrategy == 'none' ? 'line':'bar'
+                    type: measuredPhenomenon.aggregationStrategy === 'none' ? 'line':'line'
                 }
             });
         }

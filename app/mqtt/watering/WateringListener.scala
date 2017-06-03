@@ -7,7 +7,7 @@ import entities.watering.WateringMessage
 import model._
 import mqtt.MqttListenerMessage.{ConsumeMessage, Ping}
 import play.api.Logger
-import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
+import play.api.libs.json.{JsError, JsSuccess, Json}
 
 /**
   * Stores messages from watering to dao
@@ -21,13 +21,13 @@ class WateringListener(
 
   override def receive(): Receive = {
     case Ping => ()
-    case ConsumeMessage(receivedTopic: String, json: JsValue) => receivedTopic match {
-      case topic() => Json.fromJson(json)(WateringMessage.wmReads) match {
+    case ConsumeMessage(receivedTopic: String, message: String) => receivedTopic match {
+      case topic() => Json.fromJson(Json.parse(message))(WateringMessage.wmReads) match {
         case JsSuccess(value, _) => {
           val locationAddress = "watering-ibiscus"
-          locationRepository.findOrCreateLocation(locationAddress)
+          val location = locationRepository.findOrCreateLocation(locationAddress)
           val foundSensor = sensorRepository.findOrCreateSensor(
-            locationAddress = locationAddress,
+            location = location,
             name = "watering"
           )
           foundSensor.addMeasurement(
@@ -45,7 +45,7 @@ class WateringListener(
             foundSensor.findOrCreatePhenomenon("watering", "", BooleanMeasurementAggregationStrategy)
           )
         }
-        case JsError(_) => Logger.error(s"Parsing $json failed");
+        case JsError(_) => Logger.error(s"Parsing $message failed");
       }
       case _ => {}
     }

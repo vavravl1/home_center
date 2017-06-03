@@ -9,12 +9,12 @@ trait SensorRepository {
     * Find a sensor with the given locationAddress and name. If there is no such sensor
     * a new one will be created according to the params.
     */
-  def findOrCreateSensor(locationAddress:String, name:String): Sensor
+  def findOrCreateSensor(location:Location, name:String): Sensor
 
   /**
-    * Find a sensor by its locationAddress and name.
+    * Find a sensor by its location and name.
     */
-  def find(locationAddress:String, name:String): Option[Sensor]
+  def find(location:Location, name:String): Option[Sensor]
 
   /**
     * Find all sensors ordered by their locationAddress

@@ -2,7 +2,7 @@ package controllers
 
 import com.mohiva.play.silhouette.api.Silhouette
 import dao.TimeGranularity
-import model.{MeasuredPhenomenon, SensorRepository}
+import model.{LocationRepository, MeasuredPhenomenon, SensorRepository}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, Controller}
 import security.utils.auth.DefaultEnv
@@ -14,12 +14,13 @@ import scala.concurrent.Future
   * Controller for the BigClown sensors
   */
 class BigClownController(
+                          locationRepository: LocationRepository,
                           sensorRepository: SensorRepository,
                           silhouette: Silhouette[DefaultEnv]) extends Controller {
   def getSensorReading(locationAddress: String, sensorName: String, timeGranularity: String, big: String): Action[AnyContent] = Action.async {
     Future {
       val data = sensorRepository
-          .find(locationAddress, sensorName)
+          .find(locationRepository.findOrCreateLocation(locationAddress), sensorName)
           .map(sensor => sensor.measuredPhenomenons)
           .getOrElse(Seq.empty)
       Ok(Json.toJson(data)
@@ -40,7 +41,7 @@ class BigClownController(
     Future {
       if (request.identity.admin) {
         sensorRepository
-          .find(locationAddress, sensorName)
+          .find(locationRepository.findOrCreateLocation(locationAddress), sensorName)
           .foreach(sensor => sensorRepository.delete(sensor))
         NoContent
       } else {

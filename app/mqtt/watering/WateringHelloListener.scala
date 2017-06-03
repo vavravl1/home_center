@@ -7,7 +7,6 @@ import akka.actor.Actor
 import entities.watering._
 import mqtt.MqttListenerMessage.{ConsumeMessage, Ping}
 import play.api.Logger
-import play.api.libs.json.JsValue
 
 /**
   * Listens for hello messages and sets default settings of watering
@@ -17,7 +16,7 @@ class WateringHelloListener(wateringCommander: WateringCommander, clock: Clock) 
 
   override def receive(): Receive = {
     case Ping => ()
-    case ConsumeMessage(receivedTopic: String, json: JsValue) => receivedTopic match {
+    case ConsumeMessage(receivedTopic: String, _: String) => receivedTopic match {
       case topic() =>
         Logger.info("Ibisek watering says hello")
         val wc = WateringCommand(Set(

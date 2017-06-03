@@ -5,7 +5,6 @@ import config.HomeControllerConfiguration
 import mqtt.MqttListenerMessage.{ConsumeMessage, Ping}
 import org.eclipse.paho.client.mqttv3._
 import play.api.Logger
-import play.api.libs.json.JsValue
 
 import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
@@ -26,9 +25,9 @@ class MqttRepeater(
 
   override def receive(): Receive = {
     case Ping => mqttConnector.reconnect.run()
-    case ConsumeMessage(receivedTopic: String, json: JsValue) => receivedTopic match {
+    case ConsumeMessage(receivedTopic: String, json: String) => receivedTopic match {
       case MqttRepeater.commandTopic() => Unit // Don't replay watering commands
-      case _ => Try(mqttConnector.sendRaw(receivedTopic, json.toString())) match {
+      case _ => Try(mqttConnector.sendRaw(receivedTopic, json)) match {
         case Success(_) =>
         case Failure(exception) => Logger.warn("Unable to repeat message", exception)
       }

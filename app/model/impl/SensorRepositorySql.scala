@@ -2,7 +2,7 @@ package model.impl
 
 import java.time.Clock
 
-import model.{Sensor, SensorRepository}
+import model.{Location, Sensor, SensorRepository}
 import scalikejdbc._
 
 /**
@@ -12,22 +12,22 @@ class SensorRepositorySql(
                            locationRepository: LocationRepositorySql,
                            val clock: Clock) extends SensorRepository {
 
-  override def findOrCreateSensor(locationAddress: String, name: String): Sensor = {
+  override def findOrCreateSensor(location: Location, name: String): Sensor = {
 
     DB.localTx(implicit session => {
-      val maybeSensorSql: Option[SensorSql] = getSensor(locationAddress, name)
+      val maybeSensorSql: Option[SensorSql] = getSensor(location, name)
 
       if (maybeSensorSql.isEmpty) {
-        storeSensor(locationAddress, name)
-        getSensor(locationAddress, name).get
+        storeSensor(location, name)
+        getSensor(location, name).get
       } else {
         maybeSensorSql.get
       }
     })
   }
 
-  override def find(locationAddress: String, name: String): Option[Sensor] = DB.autoCommit(implicit session => {
-    getSensor(locationAddress, name)
+  override def find(location: Location, name: String): Option[Sensor] = DB.autoCommit(implicit session => {
+    getSensor(location, name)
   })
 
   override def findAll(): Seq[Sensor] = DB.autoCommit(implicit session => {
@@ -48,20 +48,20 @@ class SensorRepositorySql(
         """.update().apply()
     })
 
-  private def getSensor(locationAddress: String, name: String)(implicit session: DBSession): Option[SensorSql] = {
+  private def getSensor(location: Location, name: String)(implicit session: DBSession): Option[SensorSql] = {
     sql"""
            SELECT S.id, S.name, L.address, L.label
            FROM sensor S
            JOIN location L ON S.locationAddress = L.address
-           WHERE S.locationAddress = ${locationAddress} AND S.name = ${name}
+           WHERE S.locationAddress = ${location.address} AND S.name = ${name}
         """
       .map(SensorSql.fromRs(_, clock)).single().apply()
   }
 
-  private def storeSensor(locationAddress: String, name: String)(implicit session: DBSession) = {
+  private def storeSensor(location: Location, name: String)(implicit session: DBSession) = {
     sql"""
               INSERT INTO sensor(name, locationAddress)
-              VALUES (${name}, ${locationAddress})
+              VALUES (${name}, ${location.address})
           """.update.apply()
   }
 }

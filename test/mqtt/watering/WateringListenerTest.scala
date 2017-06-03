@@ -6,11 +6,10 @@ import akka.actor.{ActorSystem, Props}
 import akka.testkit.TestActorRef
 import com.softwaremill.macwire.wire
 import model._
-import model.impl.{LocationRepositorySql, SensorRepositorySql}
+import model.impl.{LocationRepositorySql, LocationSql, SensorRepositorySql}
 import mqtt.MqttListenerMessage.ConsumeMessage
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, WordSpec}
-import play.api.libs.json.Json
 
 /**
   *
@@ -31,9 +30,10 @@ class WateringListenerTest extends WordSpec with Matchers with MockFactory {
         val sensor = mock[Sensor]
         val humidityPhenomenon = mock[MeasuredPhenomenon]
         val wateringPhenomenon = mock[MeasuredPhenomenon]
+        val location = LocationSql("watering-ibiscus", "label")
 
-        (locationRepository.findOrCreateLocation _).expects("watering-ibiscus")
-        (sensorRepository.findOrCreateSensor _).expects("watering-ibiscus", "watering").returning(sensor)
+        (locationRepository.findOrCreateLocation _).expects("watering-ibiscus").returning(location)
+        (sensorRepository.findOrCreateSensor _).expects(location, "watering").returning(sensor)
 
         (sensor.findOrCreatePhenomenon _).expects( "humidity", "", NoneMeasurementAggregationStrategy).returning(humidityPhenomenon)
         (sensor.addMeasurement _).expects(Measurement(86, Instant.ofEpochSecond(22)), humidityPhenomenon)
@@ -41,7 +41,7 @@ class WateringListenerTest extends WordSpec with Matchers with MockFactory {
         (sensor.findOrCreatePhenomenon _).expects( "watering", "", BooleanMeasurementAggregationStrategy).returning(wateringPhenomenon)
         (sensor.addMeasurement _).expects(Measurement(10, Instant.ofEpochSecond(22)), wateringPhenomenon)
 
-        val correctJson = Json.parse(""" {"ts":8119,"tm":{"hu":{"a":86,"bl":512,"md":1000,"bs":10,"pd":30},"wa":{"ip":true,"wp":20000,"wt":5000},"wlh":true}}""")
+        val correctJson = """ {"ts":8119,"tm":{"hu":{"a":86,"bl":512,"md":1000,"bs":10,"pd":30},"wa":{"ip":true,"wp":20000,"wt":5000},"wlh":true}}"""
         listener ! ConsumeMessage("home/watering/ibisek/telemetry", correctJson)
       }
     }
