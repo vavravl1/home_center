@@ -34,12 +34,33 @@ class BridgeListenerTest extends WordSpec with Matchers with MockFactory {
 
         (locationRepository.findOrCreateLocation _).expects("836d19833c33").returning(location)
         (sensorRepository.findOrCreateSensor _).expects(location, "thermometer").returning(sensor)
-        (sensor.findOrCreatePhenomenon _).expects("temperature", "\u2103", NoneMeasurementAggregationStrategy).returning(phenomenon)
+        (sensor.findOrCreatePhenomenon _).expects(  "temperature", "\u2103", NoneMeasurementAggregationStrategy).returning(phenomenon)
         (sensor.addMeasurement _).expects(Measurement(19.19, Instant.ofEpochSecond(22)),phenomenon)
 
         listener ! ConsumeMessage(
           "node/836d19833c33/thermometer/0:0/temperature",
           "19.19"
+        )
+      }
+    }
+
+    "in default state" should {
+      "receive messages from co2-meter" in {
+        val locationRepository = mock[LocationRepositorySql]
+        val sensorRepository = mock[SensorRepositorySqlWithCtor]
+        val listener = TestActorRef[BridgeListener](Props(wire[BridgeListener]))
+        val sensor = mock[Sensor]
+        val phenomenon = mock[MeasuredPhenomenon]
+        val location = LocationSql("836d19833c33", "label")
+
+        (locationRepository.findOrCreateLocation _).expects("836d19833c33").returning(location)
+        (sensorRepository.findOrCreateSensor _).expects(location, "co2-meter").returning(sensor)
+        (sensor.findOrCreatePhenomenon _).expects("concentration", "ppm", NoneMeasurementAggregationStrategy).returning(phenomenon)
+        (sensor.addMeasurement _).expects(Measurement(1001, Instant.ofEpochSecond(22)),phenomenon)
+
+        listener ! ConsumeMessage(
+          "node/836d19833c33/co2-meter/-/concentration",
+          "1001"
         )
       }
     }
