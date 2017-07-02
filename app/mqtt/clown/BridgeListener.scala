@@ -3,7 +3,8 @@ package mqtt.clown
 import java.time.Clock
 
 import akka.actor.Actor
-import model.{LocationRepository, Measurement, NoneMeasurementAggregationStrategy, SensorRepository}
+import model.LocationRepository
+import model.sensor.{Measurement, NoneMeasurementAggregationStrategy, SensorRepository}
 import mqtt.MqttListenerMessage.{ConsumeMessage, Ping}
 
 /**
@@ -26,11 +27,11 @@ class BridgeListener(sensorRepository: SensorRepository, locationRepository: Loc
     case _ => {}
   }
 
-  private def storeSensorMeasurement(message: String, nodeId: String, sensor: String, measuredPhenomenon: String) = {
+  private def storeSensorMeasurement(message: String, nodeId: String, sensorName: String, measuredPhenomenon: String) = {
     val location = locationRepository.findOrCreateLocation(nodeId)
     val foundSensor = sensorRepository.findOrCreateSensor(
       location = location,
-      name = sensor
+      name = sensorName
     )
     foundSensor.addMeasurement(
       Measurement(
@@ -38,7 +39,9 @@ class BridgeListener(sensorRepository: SensorRepository, locationRepository: Loc
         value = MeasuredPhenomenonScale(measuredPhenomenon) * message.toDouble
       ),
       foundSensor.findOrCreatePhenomenon(
-        measuredPhenomenon, MeasuredPhenomenonToUnit(measuredPhenomenon), NoneMeasurementAggregationStrategy
+        name = measuredPhenomenon,
+        unit = MeasuredPhenomenonToUnit(measuredPhenomenon),
+        aggregationStrategy = NoneMeasurementAggregationStrategy
       ))
   }
 }

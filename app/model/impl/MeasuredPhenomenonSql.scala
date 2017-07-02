@@ -7,7 +7,7 @@ import java.time.{Clock, Instant}
 import _root_.play.Logger
 import _root_.play.api.libs.json.{JsValue, Json, _}
 import dao.TimeGranularity
-import model._
+import model.sensor._
 import scalikejdbc._
 
 /**

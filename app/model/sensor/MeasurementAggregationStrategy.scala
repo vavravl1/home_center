@@ -1,4 +1,4 @@
-package model
+package model.sensor
 
 import play.api.libs.json.{JsString, JsValue, Writes}
 

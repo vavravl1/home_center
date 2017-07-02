@@ -1,4 +1,4 @@
-package model
+package model.sensor
 
 import java.time.Instant
 

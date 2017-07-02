@@ -1,4 +1,4 @@
-package model
+package model.sensor
 
 import dao.TimeGranularity
 import model.impl.MeasuredPhenomenonSql

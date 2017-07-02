@@ -1,5 +1,6 @@
-package model
+package model.sensor
 
+import model.Location
 
 /**
   * Repository for Sensor

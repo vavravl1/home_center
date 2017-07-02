@@ -4,6 +4,7 @@ import java.time.temporal.ChronoUnit._
 import java.time.{Clock, Instant}
 
 import dao.{ByHour, DbTest}
+import model.sensor.{Measurement, NoneMeasurementAggregationStrategy}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, WordSpec}
 import scalikejdbc._

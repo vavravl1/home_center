@@ -3,7 +3,7 @@ package model.impl
 import java.time.Clock
 
 import _root_.play.api.libs.json._
-import model._
+import model.sensor._
 import scalikejdbc.{WrappedResultSet, _}
 
 /**

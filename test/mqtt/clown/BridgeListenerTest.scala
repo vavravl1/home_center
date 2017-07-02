@@ -5,8 +5,8 @@ import java.time.{Clock, Instant}
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.TestActorRef
 import com.softwaremill.macwire.wire
-import model._
 import model.impl.{LocationRepositorySql, LocationSql, SensorRepositorySql}
+import model.sensor.{MeasuredPhenomenon, Measurement, NoneMeasurementAggregationStrategy, Sensor}
 import mqtt.MqttListenerMessage.ConsumeMessage
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, WordSpec}
@@ -21,10 +21,11 @@ class BridgeListenerTest extends WordSpec with Matchers with MockFactory {
     implicit val system = ActorSystem()
     val clock = mock[Clock]
     val instant = Instant.ofEpochSecond(22)
-    (clock.instant _).expects().returning(instant).atLeastOnce()
 
     "in default state" should {
       "receive messages from thermometer" in {
+        (clock.instant _).expects().returning(instant).anyNumberOfTimes()
+
         val locationRepository = mock[LocationRepositorySql]
         val sensorRepository = mock[SensorRepositorySqlWithCtor]
         val listener = TestActorRef[BridgeListener](Props(wire[BridgeListener]))
@@ -46,6 +47,7 @@ class BridgeListenerTest extends WordSpec with Matchers with MockFactory {
 
     "in default state" should {
       "receive messages from co2-meter" in {
+        (clock.instant _).expects().returning(instant).anyNumberOfTimes()
         val locationRepository = mock[LocationRepositorySql]
         val sensorRepository = mock[SensorRepositorySqlWithCtor]
         val listener = TestActorRef[BridgeListener](Props(wire[BridgeListener]))

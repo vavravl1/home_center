@@ -1,6 +1,7 @@
-package model
+package model.sensor
 
 import _root_.play.api.libs.json._
+import model._
 import model.impl.SensorSql
 
 /**

@@ -2,7 +2,8 @@ package model.impl
 
 import java.time.Clock
 
-import model.{Location, Sensor, SensorRepository}
+import model.Location
+import model.sensor.{Sensor, SensorRepository}
 import scalikejdbc._
 
 /**

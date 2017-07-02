@@ -3,7 +3,7 @@ package controllers
 import java.time.Instant
 import java.time.temporal.ChronoUnit.MINUTES
 
-import model.{Measurement, NoneMeasurementAggregationStrategy}
+import model.sensor.{Measurement, NoneMeasurementAggregationStrategy}
 import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.json.{JsArray, JsObject, Json}
 import play.api.test.FakeRequest
