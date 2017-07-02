@@ -4,7 +4,6 @@ import java.time.temporal.ChronoUnit
 import java.time.{Clock, Duration}
 
 import akka.actor.Actor
-import entities.watering._
 import mqtt.MqttListenerMessage.{ConsumeMessage, Ping}
 import play.api.Logger
 

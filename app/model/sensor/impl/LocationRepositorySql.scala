@@ -1,4 +1,4 @@
-package model.impl
+package model.sensor.impl
 
 import model.{Location, LocationRepository}
 import scalikejdbc._

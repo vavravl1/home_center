@@ -2,7 +2,7 @@ package model.sensor
 
 import _root_.play.api.libs.json._
 import model._
-import model.impl.SensorSql
+import model.sensor.impl.SensorSql
 
 /**
   * Represents single sensor, e.g. Big Clown temperature tag.

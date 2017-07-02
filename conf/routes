@@ -16,9 +16,6 @@ GET           /settings                               controllers.HomeController
 POST          /signIn                                 controllers.SignInController.submit
 GET           /signOut                                controllers.SignInController.signOut
 
-# Ibisek watering
-POST          /watering/ibisek/manual-watering        controllers.WateringController.manualWatering
-
 # Big clown
 GET           /bc/:locationAddress/:sensorName         controllers.BigClownController.getSensorReading(locationAddress, sensorName, timeGranularity:String ?= "Hour", big:String ?= "false")
 DELETE        /bc/:locationAddress/:sensorName         controllers.BigClownController.cleanSensor(locationAddress, sensorName)

@@ -3,6 +3,7 @@ package entities.watering
 import java.time.temporal.ChronoUnit
 import java.time.{Duration, Instant}
 
+import mqtt.watering.{Humidity, Watering, WateringMessage, WateringTelemetry}
 import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.json.Json
 

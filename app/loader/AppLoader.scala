@@ -6,7 +6,7 @@ import akka.actor.{ActorRef, Props}
 import com.softwaremill.macwire._
 import config.HomeControllerConfiguration
 import controllers._
-import model.impl.{LocationRepositorySql, SensorRepositorySql}
+import model.sensor.impl.{LocationRepositorySql, SensorRepositorySql}
 import mqtt.clown.BridgeListener
 import mqtt.watering.{WateringCommander, WateringHelloListener, WateringListener}
 import mqtt.{MqttConnector, MqttDispatchingListener, MqttListenerMessage, MqttRepeater}
@@ -116,7 +116,6 @@ trait FiltersConfig extends BuiltInComponents with CSRFComponents {
 
 trait Controllers extends BuiltInComponents with SqlH2Config with SilhouetteAppModule with MqttConfig {
   lazy val homeController = wire[HomeController]
-  lazy val wateringController = wire[WateringController]
   lazy val bigClownController = wire[BigClownController]
   lazy val signinController: SignInController = wire[SignInController]
   lazy val settingsController: SettingsController = wire[SettingsController]

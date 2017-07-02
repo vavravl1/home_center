@@ -1,7 +1,7 @@
 package model.sensor
 
 import dao.TimeGranularity
-import model.impl.MeasuredPhenomenonSql
+import model.sensor.impl.MeasuredPhenomenonSql
 import play.api.libs.json.{JsValue, Writes}
 
 /**

@@ -1,4 +1,4 @@
-package model.impl
+package model.sensor.impl
 
 import _root_.play.api.libs.functional.syntax._
 import _root_.play.api.libs.json._

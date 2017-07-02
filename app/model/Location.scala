@@ -1,6 +1,6 @@
 package model
 
-import model.impl.LocationSql
+import model.sensor.impl.LocationSql
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 

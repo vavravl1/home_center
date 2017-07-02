@@ -1,6 +1,5 @@
 package mqtt.watering
 
-import entities.watering.WateringCommand
 import mqtt.JsonSender
 import play.api.Logger
 

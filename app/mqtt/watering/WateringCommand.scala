@@ -1,4 +1,4 @@
-package entities.watering
+package mqtt.watering
 
 import java.time.{Duration, Instant}
 

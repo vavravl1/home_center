@@ -1,4 +1,4 @@
-package model.impl
+package model.sensor.impl
 
 import java.sql.Timestamp
 import java.time.temporal.ChronoUnit
