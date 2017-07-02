@@ -23,7 +23,7 @@ class WateringListener(
     case Ping => ()
     case ConsumeMessage(receivedTopic: String, message: String) => receivedTopic match {
       case topic() => Json.fromJson(Json.parse(message))(WateringMessage.wmReads) match {
-        case JsSuccess(value, _) => {
+        case JsSuccess(value, _) =>
           val locationAddress = "watering-ibiscus"
           val location = locationRepository.findOrCreateLocation(locationAddress)
           val foundSensor = sensorRepository.findOrCreateSensor(
@@ -44,10 +44,16 @@ class WateringListener(
             ),
             foundSensor.findOrCreatePhenomenon("watering", "", BooleanMeasurementAggregationStrategy)
           )
-        }
+          foundSensor.addMeasurement(
+            Measurement(
+              measureTimestamp = clock.instant(),
+              value = value.telemetry.humidity.baseLine
+            ),
+            foundSensor.findOrCreatePhenomenon("baseLine", "", NoneMeasurementAggregationStrategy)
+          )
         case JsError(_) => Logger.error(s"Parsing $message failed");
       }
-      case _ => {}
+      case _ =>
     }
   }
 }

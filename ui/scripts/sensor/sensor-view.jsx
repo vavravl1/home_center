@@ -6,6 +6,7 @@ import ButtonToolbar from "react-bootstrap/lib/ButtonToolbar";
 import Button from "react-bootstrap/lib/Button";
 import CheckBox from "react-bootstrap/lib/CheckBox";
 import Jumbotron from "react-bootstrap/lib/Jumbotron";
+import DropdownButton from "react-bootstrap/lib/DropdownButton";
 import update from "react-addons-update";
 import PropTypes from "prop-types";
 
@@ -52,51 +53,55 @@ class SensorView extends React.Component {
 
         let datasets = [];
         if (this.isTimGranularityByDay()) {
-            datasets = this.props.data.map(measuredPhenomenon => {
-                const averages = measuredPhenomenon.measurements.map(t => t.average);
-                const maxes = measuredPhenomenon.measurements.map(t => t.max);
-                const mines = measuredPhenomenon.measurements.map(t => t.min);
-                const index = this.props.data.indexOf(measuredPhenomenon);
-                const red = colors[index % 3][0];
-                const green = colors[index % 3][1];
-                const blue = colors[index % 3][2];
-                return [{
-                    label: 'average ' + measuredPhenomenon.name,
-                    backgroundColor: 'rgb(' + red+ ',' + green + ',' + blue + ')',
-                    borderColor: 'rgb(0, 0, 0)',
-                    data: averages,
-                    type: measuredPhenomenon.aggregationStrategy === 'none' ? 'line':'bar'
-                },{
-                    label: 'max ' + measuredPhenomenon.name,
-                    backgroundColor: 'rgb(' + (red - 60)+ ',' + (green - 60) + ',' + (blue - 60) + ')',
-                    borderColor: 'rgb(0, 0, 0)',
-                    data: maxes,
-                    type: (measuredPhenomenon.aggregationStrategy === 'none') ? 'line':'bar'
-                },{
-                    label: 'min ' + measuredPhenomenon.name,
-                    backgroundColor: 'rgb(' + (red - 120) + ',' + (green - 120) + ',' + (blue - 120) + ')',
-                    borderColor: 'rgb(0, 0, 0)',
-                    data: mines,
-                    type: measuredPhenomenon.aggregationStrategy === 'none' ? 'line':'bar'
-                }]
-            }).reduce(function(a, b){
-                return a.concat(b);
-            });
+            datasets = this.props.data
+                .filter(measuredPhenomenon => this.props.hiddenMeasuredPhenomenons.indexOf(measuredPhenomenon.name) == -1)
+                .map(measuredPhenomenon => {
+                    const averages = measuredPhenomenon.measurements.map(t => t.average);
+                    const maxes = measuredPhenomenon.measurements.map(t => t.max);
+                    const mines = measuredPhenomenon.measurements.map(t => t.min);
+                    const index = this.props.data.indexOf(measuredPhenomenon);
+                    const red = colors[index % 3][0];
+                    const green = colors[index % 3][1];
+                    const blue = colors[index % 3][2];
+                    return [{
+                        label: 'average ' + measuredPhenomenon.name,
+                        backgroundColor: 'rgba(' + red + ',' + green + ',' + blue + ', 0.2)',
+                        borderColor: 'rgb(0, 0, 0)',
+                        data: averages,
+                        type: measuredPhenomenon.aggregationStrategy === 'none' ? 'line' : 'bar'
+                    }, {
+                        label: 'min ' + measuredPhenomenon.name,
+                        backgroundColor: 'rgba(' + ((red + 30) % 255) + ',' + (green + 10) + ',' + (blue - 120) + ', 0.2)',
+                        borderColor: 'rgb(0, 0, 0)',
+                        data: mines,
+                        type: measuredPhenomenon.aggregationStrategy === 'none' ? 'line' : 'bar'
+                    }, {
+                        label: 'max ' + measuredPhenomenon.name,
+                        backgroundColor: 'rgba(' + ((red - 60) % 255) + ',' + ((green + 60) % 255) + ',' + ((blue - 100) % 255) + ', 0.2)',
+                        borderColor: 'rgb(0, 0, 0)',
+                        data: maxes,
+                        type: (measuredPhenomenon.aggregationStrategy === 'none') ? 'line' : 'bar'
+                    }]
+                }).reduce(function (a, b) {
+                    return a.concat(b);
+                });
         } else {
-            datasets = this.props.data.map(measuredPhenomenon => {
-                const averages = measuredPhenomenon.measurements.map(t => t.average);
-                const index = this.props.data.indexOf(measuredPhenomenon);
-                const red = colors[index % 3][0];
-                const green = colors[index % 3][1];
-                const blue = colors[index % 3][2];
-                return {
-                    label: measuredPhenomenon.name,
-                    backgroundColor: 'rgb(' + red+ ',' + green + ',' + blue + ')',
-                    borderColor: 'rgb(0, 0, 0)',
-                    data: averages,
-                    type: measuredPhenomenon.aggregationStrategy === 'none' ? 'line':'line'
-                }
-            });
+            datasets = this.props.data
+                .filter(measuredPhenomenon => this.props.hiddenMeasuredPhenomenons.indexOf(measuredPhenomenon.name) == -1)
+                .map(measuredPhenomenon => {
+                    const averages = measuredPhenomenon.measurements.map(t => t.average);
+                    const index = this.props.data.indexOf(measuredPhenomenon);
+                    const red = colors[index % 3][0];
+                    const green = colors[index % 3][1];
+                    const blue = colors[index % 3][2];
+                    return {
+                        label: measuredPhenomenon.name,
+                        backgroundColor: 'rgb(' + red + ',' + green + ',' + blue + ')',
+                        borderColor: 'rgb(0, 0, 0)',
+                        data: averages,
+                        type: measuredPhenomenon.aggregationStrategy === 'none' ? 'line' : 'line'
+                    }
+                });
         }
 
         return {
@@ -134,6 +139,10 @@ class SensorView extends React.Component {
         this.props.timeGranularityChangedCallback(value);
     };
 
+    showHidePhenomenonInternal = function (phenomenon) {
+        this.props.showHideMeasuredPhenomenon(phenomenon)
+    };
+
     makeBigOrSmallCallback = function () {
         if (!!this.props.makeSmallCallback) {
             this.props.makeSmallCallback();
@@ -156,10 +165,11 @@ class SensorView extends React.Component {
             const measurements = lastMeasuredPhenomenon.measurements;
             const lastMeasurement = measurements[measurements.length - 1];
             if (measurements.length > 0) {
-                lastTimestamp = <tr key={"lastMeasuredTimestamp-" + lastMeasuredPhenomenon.name + "-" + lastMeasurement.measureTimestamp + "-" + this.props.sensor.name}>
-                    <td>Last update</td>
-                    <td><Time value={new Date(lastMeasurement.measureTimestamp)} format="HH:mm:ss"/></td>
-                </tr>
+                lastTimestamp =
+                    <tr key={"lastMeasuredTimestamp-" + lastMeasuredPhenomenon.name + "-" + lastMeasurement.measureTimestamp + "-" + this.props.sensor.name}>
+                        <td>Last update</td>
+                        <td><Time value={new Date(lastMeasurement.measureTimestamp)} format="HH:mm:ss"/></td>
+                    </tr>
             }
         }
         return lastTimestamp;
@@ -180,9 +190,21 @@ class SensorView extends React.Component {
         });
     };
 
+    prepareMeasuredPhenomenons = () => {
+        return this.props.data.map(measuredPhenomenon =>
+            <CheckBox
+                onChange={this.showHidePhenomenonInternal.bind(this, measuredPhenomenon.name)}
+                checked={this.props.hiddenMeasuredPhenomenons.indexOf(measuredPhenomenon.name) == -1}
+            >
+                {measuredPhenomenon.name}
+            </CheckBox>
+        );
+    };
+
     render = () => {
         const overviews = this.prepareLastMeasuredValues();
         let lastTimestamp = this.prepareLastMeasuredTimestamp();
+        const measuredPhenomenonCheckBoxs = this.prepareMeasuredPhenomenons();
         return <Jumbotron bsClass="sensor-measurement-box">
             <h2 className="capital" style={{display: 'inline'}}>{this.props.sensor.name}</h2>
             <ButtonToolbar className="pull-right">
@@ -202,7 +224,12 @@ class SensorView extends React.Component {
                 bsSize="xsmall"
                 checked={this.state.startAtZero}
                 onChange={this.handleStartAtZero.bind(this)}>Start at zero?</CheckBox>
+
             <ButtonToolbar className="pull-right">
+                <DropdownButton bsSize="xsmall" title="Phenomenons" id="bg-vertical-dropdown-2">
+                    {measuredPhenomenonCheckBoxs}
+                </DropdownButton>
+
                 <Button bsSize="xsmall"
                         bsStyle={this.props.timeGranularity === 'ByMinute' ? "primary" : "default"}
                         onClick={this.handleTimeGranularity.bind(this, "ByMinute")}>By Minute</Button>
@@ -224,6 +251,8 @@ SensorView.propTypes = {
     data: PropTypes.arrayOf(PropTypes.object).isRequired,
     makeBigCallback: PropTypes.func,
     makeSmallCallback: PropTypes.func,
+    showHideMeasuredPhenomenon: PropTypes.func,
+    hiddenMeasuredPhenomenons: PropTypes.arrayOf(PropTypes.string).isRequired
 };
 
 

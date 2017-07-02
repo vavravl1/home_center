@@ -23,9 +23,9 @@ class WateringHelloListener(wateringCommander: WateringCommander, clock: Clock) 
           TimeCommand(clock.instant()),
           HumidityMeasuringDelay(Duration.of(5, ChronoUnit.SECONDS)),
           HumidityMeasurePowerDelay(Duration.of(100, ChronoUnit.MILLIS)),
-          HumidityBaseline(200),
+          HumidityBaseline(150),
           HumidityMeasureBufferSize(13),
-          WateringPause(Duration.of(30, ChronoUnit.MINUTES))
+          WateringPause(Duration.of(15, ChronoUnit.MINUTES))
         ))
         wateringCommander.sendCommand(wc)
       case _ => {}
