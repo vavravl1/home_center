@@ -7,6 +7,7 @@ import {BrowserRouter, Link, Match, Route, Switch} from "react-router-dom";
 import HomeCenterData from "../sensor/home-center-data.jsx";
 import SignIn from "../signIn/home-center-sign-in.jsx";
 import HomeCenterSettings from "../settings/home-center-settings.jsx";
+import Actuator from "../actuator/actuator.jsx";
 import axios from "axios";
 
 class HomeCenterLayout extends React.Component {
@@ -51,6 +52,9 @@ class HomeCenterLayout extends React.Component {
                         <LinkContainer to="/data"><NavItem>Sensors</NavItem></LinkContainer>
                     </Nav>
                     <Nav>
+                        <LinkContainer to="/actions"><NavItem>Actuators</NavItem></LinkContainer>
+                    </Nav>
+                    <Nav>
                         <LinkContainer to="/settings"><NavItem>Settings</NavItem></LinkContainer>
                     </Nav>
                     {userNavItem}
@@ -59,6 +63,7 @@ class HomeCenterLayout extends React.Component {
                 <Switch>
                     <Route exact path="/" component={HomeCenterData}/>
                     <Route path="/data" component={HomeCenterData}/>
+                    <Route path="/actions" component={Actuator}/>
                     <Route path="/signIn" component={SignIn}/>
                     <Route path="/settings" component={HomeCenterSettings}/>
                 </Switch>

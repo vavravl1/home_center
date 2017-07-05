@@ -1,6 +1,5 @@
 import React from "react";
 import Col from "react-bootstrap/lib/Col";
-import {BootstrapTable, TableHeaderColumn} from "react-bootstrap-table";
 import ActiveSensorsSettings from "./active-sensors-settings.jsx";
 import LocationSettings from "./location-settings.jsx";
 

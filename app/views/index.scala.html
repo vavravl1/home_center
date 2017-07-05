@@ -12,6 +12,7 @@
     <body>
         <input type="hidden" id="bcSensorReading" value="@routes.BigClownController.getSensorReading("","").url.replace("//","/")">
         <input type="hidden" id="settingsBackendUrl" value="@routes.SettingsController.updateBcSensorLocation()">
+        <input type="hidden" id="actuatorsUrl" value="@routes.ActuatorController.getAvailableActuators()">
         <input type="hidden" id="settingsDeleteLocation" value="@routes.SettingsController.deleteLocation("")">
         <input type="hidden" id="username" value="@user.map(u=>u.email)">
         <input type="hidden" id="admin" value="@user.map(u=>u.admin).getOrElse(false)">

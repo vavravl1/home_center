@@ -6,6 +6,7 @@ import akka.actor.{ActorRef, Props}
 import com.softwaremill.macwire._
 import config.HomeControllerConfiguration
 import controllers._
+import model.actuator.impl.ActuatorRepositoryNaive
 import model.sensor.impl.{LocationRepositorySql, SensorRepositorySql}
 import mqtt.clown.BridgeListener
 import mqtt.watering.{WateringCommander, WateringHelloListener, WateringListener}
@@ -94,6 +95,7 @@ trait MqttConfig extends BuiltInComponents with DaoConfig with ClockConfig {
     )
   ))
 
+  lazy val actuatorRepository:ActuatorRepositoryNaive = wire[ActuatorRepositoryNaive]
 
   def initializeListeners():Unit = {
     mqttConnector.reconnect.run()
@@ -119,6 +121,7 @@ trait Controllers extends BuiltInComponents with SqlH2Config with SilhouetteAppM
   lazy val bigClownController = wire[BigClownController]
   lazy val signinController: SignInController = wire[SignInController]
   lazy val settingsController: SettingsController = wire[SettingsController]
+  lazy val actuatorController: ActuatorController = wire[ActuatorController]
 }
 
 trait PlayCoreComponents extends BuiltInComponents with Controllers {
