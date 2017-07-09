@@ -13,7 +13,7 @@ sealed trait MeasurementAggregationStrategy {
   def singleValue(value: Double): Double
 }
 
-object NoneMeasurementAggregationStrategy extends MeasurementAggregationStrategy {
+object IdentityMeasurementAggregationStrategy extends MeasurementAggregationStrategy {
   override def singleValue(value: Double): Double = value
 }
 
@@ -25,7 +25,7 @@ object MeasurementAggregationStrategy {
   implicit val writes: Writes[MeasurementAggregationStrategy] =
     new Writes[MeasurementAggregationStrategy] {
       def writes(o: MeasurementAggregationStrategy): JsValue = o match {
-        case NoneMeasurementAggregationStrategy => JsString("none")
+        case IdentityMeasurementAggregationStrategy => JsString("none")
         case BooleanMeasurementAggregationStrategy => JsString("boolean")
       }
     }

@@ -4,7 +4,7 @@ import java.time.Clock
 
 import akka.actor.Actor
 import model._
-import model.sensor.{BooleanMeasurementAggregationStrategy, Measurement, NoneMeasurementAggregationStrategy, SensorRepository}
+import model.sensor.{BooleanMeasurementAggregationStrategy, IdentityMeasurementAggregationStrategy, Measurement, SensorRepository}
 import mqtt.MqttListenerMessage.{ConsumeMessage, Ping}
 import play.api.Logger
 import play.api.libs.json.{JsError, JsSuccess, Json}
@@ -35,7 +35,7 @@ class WateringListener(
               measureTimestamp = clock.instant(),
               value = value.telemetry.humidity.actual
             ),
-            foundSensor.findOrCreatePhenomenon("humidity", "", NoneMeasurementAggregationStrategy)
+            foundSensor.findOrCreatePhenomenon("humidity", "", IdentityMeasurementAggregationStrategy)
           )
           foundSensor.addMeasurement(
             Measurement(
@@ -49,7 +49,7 @@ class WateringListener(
               measureTimestamp = clock.instant(),
               value = value.telemetry.humidity.baseLine
             ),
-            foundSensor.findOrCreatePhenomenon("baseLine", "", NoneMeasurementAggregationStrategy)
+            foundSensor.findOrCreatePhenomenon("baseLine", "", IdentityMeasurementAggregationStrategy)
           )
         case JsError(_) => Logger.error(s"Parsing $message failed");
       }

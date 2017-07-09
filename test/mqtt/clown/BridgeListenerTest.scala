@@ -6,7 +6,7 @@ import akka.actor.{ActorSystem, Props}
 import akka.testkit.TestActorRef
 import com.softwaremill.macwire.wire
 import model.sensor.impl.{LocationRepositorySql, LocationSql, SensorRepositorySql}
-import model.sensor.{MeasuredPhenomenon, Measurement, NoneMeasurementAggregationStrategy, Sensor}
+import model.sensor.{IdentityMeasurementAggregationStrategy, MeasuredPhenomenon, Measurement, Sensor}
 import mqtt.MqttListenerMessage.ConsumeMessage
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, WordSpec}
@@ -35,7 +35,7 @@ class BridgeListenerTest extends WordSpec with Matchers with MockFactory {
 
         (locationRepository.findOrCreateLocation _).expects("836d19833c33").returning(location)
         (sensorRepository.findOrCreateSensor _).expects(location, "thermometer").returning(sensor)
-        (sensor.findOrCreatePhenomenon _).expects(  "temperature", "\u2103", NoneMeasurementAggregationStrategy).returning(phenomenon)
+        (sensor.findOrCreatePhenomenon _).expects(  "temperature", "\u2103", IdentityMeasurementAggregationStrategy).returning(phenomenon)
         (sensor.addMeasurement _).expects(Measurement(19.19, Instant.ofEpochSecond(22)),phenomenon)
 
         listener ! ConsumeMessage(
@@ -57,7 +57,7 @@ class BridgeListenerTest extends WordSpec with Matchers with MockFactory {
 
         (locationRepository.findOrCreateLocation _).expects("836d19833c33").returning(location)
         (sensorRepository.findOrCreateSensor _).expects(location, "co2-meter").returning(sensor)
-        (sensor.findOrCreatePhenomenon _).expects("concentration", "ppm", NoneMeasurementAggregationStrategy).returning(phenomenon)
+        (sensor.findOrCreatePhenomenon _).expects("concentration", "ppm", IdentityMeasurementAggregationStrategy).returning(phenomenon)
         (sensor.addMeasurement _).expects(Measurement(1001, Instant.ofEpochSecond(22)),phenomenon)
 
         listener ! ConsumeMessage(

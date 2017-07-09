@@ -7,6 +7,7 @@ import Col from "react-bootstrap/lib/Col";
 import FormGroup from "react-bootstrap/lib/FormGroup";
 import FormControl from "react-bootstrap/lib/FormControl";
 import ControlLabel from "react-bootstrap/lib/ControlLabel";
+import Form from "react-bootstrap/lib/Form";
 
 class Actuator extends React.Component {
 
@@ -36,28 +37,60 @@ class Actuator extends React.Component {
         });
     };
 
+    execute = (locationAddress, actuatorName, commandName) => {
+        const commandParameterField = document.getElementById(
+            'input_value_' +
+            commandName + '_' +
+            locationAddress + '_' +
+            actuatorName
+        );
+        console.log(JSON.stringify(commandParameterField));
+        window.alert(JSON.stringify(commandParameterField));
+
+        let t = this;
+        let postUrl = document.getElementById('actuatorsUrl').value + locationAddress + '/' + actuatorName;
+        axios.post(postUrl, {name: commandName, requiredArguments: !!commandParameterField?[commandParameterField]:[]})
+            .then(function () {
+                t.loadData();
+            });
+
+        return false;
+    };
+
     componentWillUnmount = () => {
     };
 
-    requiredArgumentsRenderer = (cell, data, rowIndex) => {
-        if(data.requiredArguments.length == 0) {
+    requiredArgumentsRenderer = (actuator, cell, command, rowIndex) => {
+        if (command.requiredArguments.length == 0) {
             return <button
                 type="button"
-                // onClick={this.onCleanData.bind(
-                //     this,
-                //     data.address,
-                //     data.name
-                // )}
-            >
-                {data.name}
+                onClick={
+                    this.execute.bind(
+                        this,
+                        actuator.location.address,
+                        actuator.name,
+                        command.name
+                    )
+                }>
+                {command.name}
             </button>
         } else {
-            return <form>
+            return <Form onSubmit={
+                this.execute.bind(
+                    this,
+                    actuator.location.address,
+                    actuator.name,
+                    command.name
+                )
+            }>
                 <FormGroup>
-                    <ControlLabel>{data.requiredArguments[0].name} [{data.requiredArguments[0].unit}]</ControlLabel>
-                    <FormControl placeholder={data.requiredArguments[0].value} />
+                    <ControlLabel>{command.requiredArguments[0].name} [{command.requiredArguments[0].unit}]</ControlLabel>
+                    <FormControl
+                        id={'input_value_' + command.name + '_' + actuator.location.address + '_' + actuator.name}
+                        placeholder={command.requiredArguments[0].value}
+                    />
                 </FormGroup>
-            </form>
+            </Form>
         }
     };
 
@@ -72,7 +105,7 @@ class Actuator extends React.Component {
                 <TableHeaderColumn isKey dataField='name'>Name</TableHeaderColumn>
                 <TableHeaderColumn
                     dataField='requiredArguments'
-                    dataFormat={this.requiredArgumentsRenderer.bind(this)}
+                    dataFormat={this.requiredArgumentsRenderer.bind(this, actuator)}
                     hiddenHeader={true}
                 />
             </BootstrapTable>

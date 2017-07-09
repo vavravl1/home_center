@@ -35,7 +35,7 @@ class WateringListenerTest extends WordSpec with Matchers with MockFactory {
         (locationRepository.findOrCreateLocation _).expects("watering-ibiscus").returning(location)
         (sensorRepository.findOrCreateSensor _).expects(location, "watering").returning(sensor)
 
-        (sensor.findOrCreatePhenomenon _).expects( "humidity", "", NoneMeasurementAggregationStrategy).returning(humidityPhenomenon)
+        (sensor.findOrCreatePhenomenon _).expects( "humidity", "", IdentityMeasurementAggregationStrategy).returning(humidityPhenomenon)
         (sensor.addMeasurement _).expects(Measurement(86, Instant.ofEpochSecond(22)), humidityPhenomenon)
 
         (sensor.findOrCreatePhenomenon _).expects( "watering", "", BooleanMeasurementAggregationStrategy).returning(wateringPhenomenon)

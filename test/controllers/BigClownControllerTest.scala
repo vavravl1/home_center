@@ -3,7 +3,7 @@ package controllers
 import java.time.Instant
 import java.time.temporal.ChronoUnit.MINUTES
 
-import model.sensor.{Measurement, NoneMeasurementAggregationStrategy}
+import model.sensor.{IdentityMeasurementAggregationStrategy, Measurement}
 import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.json.{JsArray, JsObject, Json}
 import play.api.test.FakeRequest
@@ -25,7 +25,7 @@ class BigClownControllerTest extends WordSpec with Matchers with IntegrationTest
     location.updateLabel("location-label")
 
     val sensor = appComponents.sensorRepository.findOrCreateSensor(location, "thermometer")
-    val phenomenon = sensor.findOrCreatePhenomenon("temperature", "C", NoneMeasurementAggregationStrategy)
+    val phenomenon = sensor.findOrCreatePhenomenon("temperature", "C", IdentityMeasurementAggregationStrategy)
 
     "when there are old measures" should {
       sensor.addMeasurement(Measurement(10, now), phenomenon)

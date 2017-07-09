@@ -102,7 +102,7 @@ object MeasuredPhenomenonSql {
       unit = rs.string("unit"),
       aggregationStrategy = rs.string("aggregationStrategy") match {
         case "boolean" => BooleanMeasurementAggregationStrategy
-        case "none" => NoneMeasurementAggregationStrategy
+        case "none" => IdentityMeasurementAggregationStrategy
       },
       id = rs.string("id"),
       sensorId = rs.string("sensorId"),

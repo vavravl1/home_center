@@ -4,7 +4,7 @@ import java.time.temporal.ChronoUnit._
 import java.time.{Clock, Instant}
 
 import dao.{ByHour, DbTest}
-import model.sensor.{Measurement, NoneMeasurementAggregationStrategy}
+import model.sensor.{IdentityMeasurementAggregationStrategy, Measurement}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, WordSpec}
 import scalikejdbc._
@@ -24,7 +24,7 @@ class SensorSqlTest extends WordSpec with Matchers with DbTest with MockFactory 
       sensorRepository.findAll()
         .foreach(s => sensorRepository.delete(s))
       val sensor = sensorRepository.findOrCreateSensor(location, "thermometer")
-      val phenomenon = sensor.findOrCreatePhenomenon("temperature", "C", NoneMeasurementAggregationStrategy)
+      val phenomenon = sensor.findOrCreatePhenomenon("temperature", "C", IdentityMeasurementAggregationStrategy)
       sensor.addMeasurement(Measurement(10, i), phenomenon)
       sensor.addMeasurement(Measurement(20, i.plus(30, MINUTES)), phenomenon)
       sensor.addMeasurement(Measurement(30, i.plus(70, MINUTES)), phenomenon)
