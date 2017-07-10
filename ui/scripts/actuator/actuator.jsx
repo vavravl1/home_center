@@ -33,22 +33,22 @@ class Actuator extends React.Component {
         });
     };
 
-    execute = (locationAddress, actuatorName, commandName) => {
+    execute = (actuator, command) => {
         const commandParameterField = document.getElementById(
             'input_value_' +
-            commandName + '_' +
-            locationAddress + '_' +
-            actuatorName
+            command.name + '_' +
+            actuator.location.address + '_' +
+            actuator.name
         );
 
         let t = this;
-        let postUrl = document.getElementById('actuatorsUrl').value + locationAddress + '/' + actuatorName;
+        let postUrl = document.getElementById('actuatorsUrl').value + actuator.location.address + '/' + actuator.name;
         axios.post(postUrl, {
-            name: commandName,
+            name: command.name,
             requiredArguments: !!commandParameterField ?
                 [{
-                    name: 'param',
-                    unit: 'x',
+                    name: command.requiredArguments[0].name,
+                    unit: command.requiredArguments[0].unit,
                     value: commandParameterField.value
                 }] : []
         })
@@ -59,9 +59,9 @@ class Actuator extends React.Component {
         return false;
     };
 
-    handlePressedEnterOnText = (locationAddress, actuatorName, commandName, target) => {
+    handlePressedEnterOnText = (actuator, command, target) => {
         if (target.charCode == 13) {
-            this.execute(locationAddress, actuatorName, commandName);
+            this.execute(actuator, command);
         }
     };
 
@@ -75,9 +75,8 @@ class Actuator extends React.Component {
                 onClick={
                     this.execute.bind(
                         this,
-                        actuator.location.address,
-                        actuator.name,
-                        command.name
+                        actuator,
+                        command
                     )
                 }>
                 {command.name}
@@ -90,9 +89,8 @@ class Actuator extends React.Component {
                 onKeyPress={
                     this.handlePressedEnterOnText.bind(
                         this,
-                        actuator.location.address,
-                        actuator.name,
-                        command.name
+                        actuator,
+                        command
                     )
                 }
             />
