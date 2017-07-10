@@ -4,10 +4,6 @@ import update from "react-addons-update";
 import {BootstrapTable, TableHeaderColumn} from "react-bootstrap-table";
 import Jumbotron from "react-bootstrap/lib/Jumbotron";
 import Col from "react-bootstrap/lib/Col";
-import FormGroup from "react-bootstrap/lib/FormGroup";
-import FormControl from "react-bootstrap/lib/FormControl";
-import ControlLabel from "react-bootstrap/lib/ControlLabel";
-import Form from "react-bootstrap/lib/Form";
 
 class Actuator extends React.Component {
 
@@ -44,17 +40,29 @@ class Actuator extends React.Component {
             locationAddress + '_' +
             actuatorName
         );
-        console.log(JSON.stringify(commandParameterField));
-        window.alert(JSON.stringify(commandParameterField));
 
         let t = this;
         let postUrl = document.getElementById('actuatorsUrl').value + locationAddress + '/' + actuatorName;
-        axios.post(postUrl, {name: commandName, requiredArguments: !!commandParameterField?[commandParameterField]:[]})
+        axios.post(postUrl, {
+            name: commandName,
+            requiredArguments: !!commandParameterField ?
+                [{
+                    name: 'param',
+                    unit: 'x',
+                    value: commandParameterField.value
+                }] : []
+        })
             .then(function () {
                 t.loadData();
             });
 
         return false;
+    };
+
+    handlePressedEnterOnText = (locationAddress, actuatorName, commandName, target) => {
+        if (target.charCode == 13) {
+            this.execute(locationAddress, actuatorName, commandName);
+        }
     };
 
     componentWillUnmount = () => {
@@ -75,22 +83,19 @@ class Actuator extends React.Component {
                 {command.name}
             </button>
         } else {
-            return <Form onSubmit={
-                this.execute.bind(
-                    this,
-                    actuator.location.address,
-                    actuator.name,
-                    command.name
-                )
-            }>
-                <FormGroup>
-                    <ControlLabel>{command.requiredArguments[0].name} [{command.requiredArguments[0].unit}]</ControlLabel>
-                    <FormControl
-                        id={'input_value_' + command.name + '_' + actuator.location.address + '_' + actuator.name}
-                        placeholder={command.requiredArguments[0].value}
-                    />
-                </FormGroup>
-            </Form>
+            return <input
+                id={'input_value_' + command.name + '_' + actuator.location.address + '_' + actuator.name}
+                type='text'
+                placeholder={command.requiredArguments[0].value}
+                onKeyPress={
+                    this.handlePressedEnterOnText.bind(
+                        this,
+                        actuator.location.address,
+                        actuator.name,
+                        command.name
+                    )
+                }
+            />
         }
     };
 

@@ -25,11 +25,11 @@ trait Actuator {
 
   /**
     * Execute given command on this actuator. Only commands returned by supportedCommands
-    * can be processed. Argument has to be the same as specified by the requiredArguments
+    * can be processed.
     *
     * @param command to be executed
     */
-  def execute(command:Command, arguments:Seq[String]): Unit
+  def execute(command:Command): Unit
 }
 
 object Actuator {

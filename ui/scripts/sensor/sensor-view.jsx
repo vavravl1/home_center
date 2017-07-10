@@ -46,9 +46,9 @@ class SensorView extends React.Component {
             .map(t => moment(t.measureTimestamp).add(1, 'minute').format("DD.MM.YYYY HH:mm"));
 
         const colors = [
-            [166, 166, 166],
-            [179, 224, 255],
-            [153, 255, 153]
+            [255, 0, 0],
+            [0, 255, 0],
+            [0, 0, 255]
         ];
 
         let datasets = [];
@@ -65,20 +65,20 @@ class SensorView extends React.Component {
                     const blue = colors[index % 3][2];
                     return [{
                         label: 'average ' + measuredPhenomenon.name,
-                        backgroundColor: 'rgba(' + red + ',' + green + ',' + blue + ', 0.2)',
-                        borderColor: 'rgb(0, 0, 0)',
+                        borderColor: 'rgb(' + red + ',' + green + ',' + blue + ')',
+                        // borderColor: 'rgb(0, 0, 0)',
                         data: averages,
                         type: measuredPhenomenon.aggregationStrategy === 'none' ? 'line' : 'bar'
                     }, {
                         label: 'min ' + measuredPhenomenon.name,
-                        backgroundColor: 'rgba(' + ((red + 30) % 255) + ',' + (green + 10) + ',' + (blue - 120) + ', 0.2)',
-                        borderColor: 'rgb(0, 0, 0)',
+                        borderColor: 'rgb(' + ((red + 30) % 255) + ',' + (green + 10) + ',' + (blue - 120) + ')',
+                        // borderColor: 'rgb(0, 0, 0)',
                         data: mines,
                         type: measuredPhenomenon.aggregationStrategy === 'none' ? 'line' : 'bar'
                     }, {
                         label: 'max ' + measuredPhenomenon.name,
-                        backgroundColor: 'rgba(' + ((red - 60) % 255) + ',' + ((green + 60) % 255) + ',' + ((blue - 100) % 255) + ', 0.2)',
-                        borderColor: 'rgb(0, 0, 0)',
+                        borderColor: 'rgb(' + ((red - 60) % 255) + ',' + ((green + 60) % 255) + ',' + ((blue - 100) % 255) + ')',
+                        // borderColor: 'rgb(0, 0, 0)',
                         data: maxes,
                         type: (measuredPhenomenon.aggregationStrategy === 'none') ? 'line' : 'bar'
                     }]
@@ -96,8 +96,8 @@ class SensorView extends React.Component {
                     const blue = colors[index % 3][2];
                     return {
                         label: measuredPhenomenon.name,
-                        backgroundColor: 'rgb(' + red + ',' + green + ',' + blue + ')',
-                        borderColor: 'rgb(0, 0, 0)',
+                        borderColor: 'rgb(' + red + ',' + green + ',' + blue + ')',
+                        // backgroundColor: 'rgb(255, 255, 255)',
                         data: averages,
                         type: measuredPhenomenon.aggregationStrategy === 'none' ? 'line' : 'line'
                     }

@@ -28,8 +28,10 @@ class WateringActuator(
     Command("minimal pause between watering", Seq(CommandArgument("pause", "minutes", "15")))
   )
 
-  override def execute(command: Command, arguments: Seq[String]): Unit = {
-    Logger.info(s"Sending watering command ${command} with ${arguments}")
+  override def execute(command: Command): Unit = {
+    Logger.info(s"Sending watering command ${command}")
+
+    val arguments = command.requiredArguments.map(arg => arg.value)
 
     val commandToSend = Json.obj(
       "command" -> JsObject(command.name match {

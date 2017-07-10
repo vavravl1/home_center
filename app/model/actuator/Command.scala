@@ -1,7 +1,6 @@
 package model.actuator
 
-import play.api.libs.functional.syntax.{unlift, _}
-import play.api.libs.json.{JsPath, Writes}
+import play.api.libs.json.Json
 
 /**
   * Represents single command that can be send to an actuator
@@ -9,10 +8,7 @@ import play.api.libs.json.{JsPath, Writes}
 case class Command(val name:String, val requiredArguments:Seq[CommandArgument])
 
 object Command {
-  implicit val writes: Writes[Command] = (
-      (JsPath \ "name").write[String] and
-      (JsPath \ "requiredArguments").write[Seq[CommandArgument]]
-    )(unlift(Command.unapply))
+  implicit val format = Json.format[Command]
 }
 
 
