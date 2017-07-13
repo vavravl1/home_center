@@ -54,7 +54,7 @@ class SensorView extends React.Component {
         let datasets = [];
         if (this.isTimGranularityByDay()) {
             datasets = this.props.data
-                .filter(measuredPhenomenon => this.props.hiddenMeasuredPhenomenons.indexOf(measuredPhenomenon.name) == -1)
+                .filter(measuredPhenomenon => this.isMeasuredPhenomenonVisible(measuredPhenomenon))
                 .map(measuredPhenomenon => {
                     const averages = measuredPhenomenon.measurements.map(t => t.average);
                     const maxes = measuredPhenomenon.measurements.map(t => t.max);
@@ -110,6 +110,10 @@ class SensorView extends React.Component {
             datasets: datasets,
         };
     };
+
+    isMeasuredPhenomenonVisible(measuredPhenomenon) {
+        return this.props.hiddenMeasuredPhenomenons.indexOf(measuredPhenomenon.name) != -1;
+    }
 
     humidityChartOptions = () => {
         return {

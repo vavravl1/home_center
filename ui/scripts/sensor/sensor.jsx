@@ -66,13 +66,7 @@ class Sensor extends React.Component {
                 const tickHandler = setTimeout(t.tick.bind(t), 1000);
                 const newState = update(t.state, {
                     data: {
-                        $set: measurement.data.sort((a, b) => {
-                            if (a.measurements.length > 0 && b.measurements.length > 0) {
-                                return a.measurements[0].average - b.measurements[0].average;
-                            } else {
-                                return 0;
-                            }
-                        })
+                        $set: measurement.data
                     },
                     tickHandler: {$set: tickHandler}
                 });
