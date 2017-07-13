@@ -75,26 +75,26 @@ class SensorView extends React.Component {
                         borderColor: 'rgb(' + red + ',' + green + ',' + blue + ')',
                         // borderColor: 'rgb(0, 0, 0)',
                         data: averages,
-                        type: measuredPhenomenon.aggregationStrategy === 'none' ? 'line' : 'bar'
+                        // type: measuredPhenomenon.aggregationStrategy === 'none' ? 'line' : 'bar'
                     }, {
                         label: 'min ' + measuredPhenomenon.name,
                         borderColor: 'rgb(' + ((red + 30) % 255) + ',' + (green + 10) + ',' + (blue - 120) + ')',
                         // borderColor: 'rgb(0, 0, 0)',
                         data: mines,
-                        type: measuredPhenomenon.aggregationStrategy === 'none' ? 'line' : 'bar'
+                        // type: measuredPhenomenon.aggregationStrategy === 'none' ? 'line' : 'bar'
                     }, {
                         label: 'max ' + measuredPhenomenon.name,
                         borderColor: 'rgb(' + ((red - 60) % 255) + ',' + ((green + 60) % 255) + ',' + ((blue - 100) % 255) + ')',
                         // borderColor: 'rgb(0, 0, 0)',
                         data: maxes,
-                        type: (measuredPhenomenon.aggregationStrategy === 'none') ? 'line' : 'bar'
+                        // type: (measuredPhenomenon.aggregationStrategy === 'none') ? 'line' : 'bar'
                     }]
                 }).reduce(function (a, b) {
                     return a.concat(b);
                 });
         } else {
             datasets = this.props.data
-                .filter(measuredPhenomenon => this.props.hiddenMeasuredPhenomenons.indexOf(measuredPhenomenon.name) == -1)
+                .filter(measuredPhenomenon => this.isMeasuredPhenomenonVisible(measuredPhenomenon))
                 .map(measuredPhenomenon => {
                     const averages = measuredPhenomenon.measurements.map(t => t.average);
                     const index = this.props.data.indexOf(measuredPhenomenon);
@@ -104,9 +104,9 @@ class SensorView extends React.Component {
                     return {
                         label: measuredPhenomenon.name,
                         borderColor: 'rgb(' + red + ',' + green + ',' + blue + ')',
-                        // backgroundColor: 'rgb(255, 255, 255)',
+                        // backgroundColor: 'rgb(0, 0, 0)',
                         data: averages,
-                        type: measuredPhenomenon.aggregationStrategy === 'none' ? 'line' : 'line'
+                        // type: (measuredPhenomenon.aggregationStrategy === 'none') ? 'line' : 'bar'
                     }
                 });
         }
@@ -119,7 +119,7 @@ class SensorView extends React.Component {
     };
 
     isMeasuredPhenomenonVisible(measuredPhenomenon) {
-        return this.props.hiddenMeasuredPhenomenons.indexOf(measuredPhenomenon.name) != -1;
+        return this.props.hiddenMeasuredPhenomenons.indexOf(measuredPhenomenon.name) == -1;
     }
 
     humidityChartOptions = () => {
@@ -135,6 +135,7 @@ class SensorView extends React.Component {
             legend: {
                 display: true
             },
+            animation : false,
             tooltips: {
                 callbacks: {
                     title: function (array, data) {
