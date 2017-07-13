@@ -51,16 +51,3 @@ class WateringActuator(
     )
   }
 }
-
-
-object WateringActuator {
-  implicit val writes = new Writes[WateringActuator] {
-    def writes(wa: WateringActuator): JsValue = {
-      Json.obj(
-        "name" -> wa.name,
-        "location" -> Json.toJson(wa.location)(Location.writes),
-        "supportedCommands" -> Json.toJson(wa.supportedCommands)
-      )
-    }
-  }
-}

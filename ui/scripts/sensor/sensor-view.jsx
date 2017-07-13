@@ -23,6 +23,11 @@ class SensorView extends React.Component {
         return this.props.timeGranularity === 'ByDay'
     };
 
+    isTimGranularityBySecond = function () {
+        return this.props.timeGranularity === 'BySecond'
+    };
+
+
     valueChartData = function () {
         if (this.props.data.length == 0) {
             return {
@@ -37,6 +42,8 @@ class SensorView extends React.Component {
             .map(t => {
                 if (this.isTimGranularityByDay()) {
                     return moment(t).startOf('day').format("DD/MM")
+                } else if (this.isTimGranularityBySecond()) {
+                    return moment(t).format("mm:ss")
                 } else {
                     return moment(t).add(1, 'minute').startOf('minute').format("HH:mm")
                 }
@@ -234,6 +241,9 @@ class SensorView extends React.Component {
                     {measuredPhenomenonCheckBoxs}
                 </DropdownButton>
 
+                <Button bsSize="xsmall"
+                        bsStyle={this.props.timeGranularity === 'BySecond' ? "primary" : "default"}
+                        onClick={this.handleTimeGranularity.bind(this, "BySecond")}>By Second</Button>
                 <Button bsSize="xsmall"
                         bsStyle={this.props.timeGranularity === 'ByMinute' ? "primary" : "default"}
                         onClick={this.handleTimeGranularity.bind(this, "ByMinute")}>By Minute</Button>

@@ -3,7 +3,6 @@ import axios from "axios";
 import update from "react-addons-update";
 import {BootstrapTable, TableHeaderColumn} from "react-bootstrap-table";
 import Jumbotron from "react-bootstrap/lib/Jumbotron";
-import Col from "react-bootstrap/lib/Col";
 
 class Actuator extends React.Component {
 
@@ -117,11 +116,7 @@ class Actuator extends React.Component {
     };
 
     render = () => {
-        return <div>
-            <Col xs={6} md={5}>
-                {this.state.actuators.map(actuator => this.actuatorView(actuator))}
-            </Col>
-        </div>
+        return <div>{this.state.actuators.map(actuator => this.actuatorView(actuator))}</div>
     };
 }
 

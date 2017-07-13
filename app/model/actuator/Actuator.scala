@@ -1,8 +1,7 @@
 package model.actuator
 
 import model.Location
-import model.actuator.impl.WateringActuator
-import play.api.libs.json.{JsValue, Writes}
+import play.api.libs.json.{JsValue, Json, Writes}
 
 /**
   * Represents actuator that can accept commands and do physical reactions
@@ -33,10 +32,13 @@ trait Actuator {
 }
 
 object Actuator {
-  implicit val writes: Writes[Actuator] =
-    new Writes[Actuator] {
-      def writes(o: Actuator): JsValue = o match {
-        case s: WateringActuator => WateringActuator.writes.writes(s)
-      }
+  implicit val writes = new Writes[Actuator] {
+    def writes(actuator: Actuator): JsValue = {
+      Json.obj(
+        "name" -> actuator.name,
+        "location" -> Json.toJson(actuator.location)(Location.writes),
+        "supportedCommands" -> Json.toJson(actuator.supportedCommands)
+      )
     }
+  }
 }

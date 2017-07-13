@@ -10,6 +10,7 @@ object MeasuredPhenomenonToUnit {
     case "pressure" => "kPa"
     case "altitude" => "m"
     case "concentration" => "ppm"
+    case _ => sensor
   }
 }
 

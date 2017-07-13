@@ -2,7 +2,6 @@ package mqtt.watering
 
 import java.time.Instant
 
-import entities.watering._
 import mqtt.JsonSender
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, WordSpec}
@@ -14,7 +13,7 @@ class WateringCommanderTest extends WordSpec with Matchers with MockFactory {
     val wateringCommander = new WateringCommander(jsonSender)
 
     "sends generic command" should {
-      "correctly process setting actula time" in {
+      "correctly process setting actual time" in {
         val wc = WateringCommand(Set(
           TimeCommand(Instant.ofEpochSecond(42))
         ))

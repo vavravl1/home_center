@@ -12,7 +12,8 @@ import mqtt.MqttListenerMessage.{ConsumeMessage, Ping}
   */
 class BridgeListener(sensorRepository: SensorRepository, locationRepository: LocationRepository, clock: Clock) extends Actor {
   //node/836d19833c33/thermometer/0:0/temperature received 24.56
-  val bcSensorTopic = """node/([\w-]+)/([\w-]+)/(\d):(\d)/(\w+)""".r
+  //node/836d19833c33/relay/0:0/state/set
+  val bcSensorTopic = """node/([\w-]+)/([\w-]+)/(\d):(\d)/(\w+)/?\w?""".r
   val bcSensorTopicWithoutI2d = """node/([\w-]+)/([\w-]+)/-/([\w-]+)""".r
 
   override def receive(): Receive = {
@@ -36,7 +37,11 @@ class BridgeListener(sensorRepository: SensorRepository, locationRepository: Loc
     foundSensor.addMeasurement(
       Measurement(
         measureTimestamp = clock.instant(),
-        value = MeasuredPhenomenonScale(measuredPhenomenon) * message.toDouble
+        value = MeasuredPhenomenonScale(measuredPhenomenon) * (message match {
+          case "true" => 10
+          case "false" => 0
+          case _ => message.toDouble
+        })
       ),
       foundSensor.findOrCreatePhenomenon(
         name = measuredPhenomenon,
