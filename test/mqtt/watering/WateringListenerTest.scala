@@ -5,8 +5,9 @@ import java.time.{Clock, Instant}
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.TestActorRef
 import com.softwaremill.macwire.wire
+import model.location.impl.{LocationRepositorySql, LocationSql}
 import model.sensor._
-import model.sensor.impl.{LocationRepositorySql, LocationSql, SensorRepositorySql}
+import model.sensor.impl.SensorRepositorySql
 import mqtt.MqttListenerMessage.ConsumeMessage
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, WordSpec}

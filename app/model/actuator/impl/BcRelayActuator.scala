@@ -2,8 +2,8 @@ package model.actuator.impl
 
 import dao.BySecond
 import model.actuator.{Actuator, Command}
+import model.location.{Location, LocationRepository}
 import model.sensor.{BooleanMeasurementAggregationStrategy, SensorRepository}
-import model.{Location, LocationRepository}
 import mqtt.JsonSender
 
 /**

@@ -3,7 +3,7 @@ package mqtt.clown
 import java.time.Clock
 
 import akka.actor.Actor
-import model.LocationRepository
+import model.location.LocationRepository
 import model.sensor.{IdentityMeasurementAggregationStrategy, Measurement, SensorRepository}
 import mqtt.MqttListenerMessage.{ConsumeMessage, Ping}
 

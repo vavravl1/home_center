@@ -1,4 +1,4 @@
-package model
+package model.location
 
 /**
   * Repository for Locations

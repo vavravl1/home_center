@@ -1,6 +1,6 @@
 package model.sensor
 
-import model.Location
+import model.location.Location
 
 /**
   * Repository for Sensor

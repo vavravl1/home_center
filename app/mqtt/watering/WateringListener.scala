@@ -3,7 +3,7 @@ package mqtt.watering
 import java.time.Clock
 
 import akka.actor.Actor
-import model._
+import model.location.LocationRepository
 import model.sensor.{BooleanMeasurementAggregationStrategy, IdentityMeasurementAggregationStrategy, Measurement, SensorRepository}
 import mqtt.MqttListenerMessage.{ConsumeMessage, Ping}
 import play.api.Logger

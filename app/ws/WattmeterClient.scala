@@ -2,7 +2,7 @@ package ws
 
 import java.time.Clock
 
-import model.LocationRepository
+import model.location.LocationRepository
 import model.sensor.{IdentityMeasurementAggregationStrategy, Measurement, SensorRepository}
 import play.api.Logger
 import play.api.libs.ws.{WSClient, WSRequest}

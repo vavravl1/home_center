@@ -1,8 +1,8 @@
-package model.sensor.impl
+package model.location.impl
 
 import _root_.play.api.libs.functional.syntax._
 import _root_.play.api.libs.json._
-import model.Location
+import model.location.Location
 import scalikejdbc._
 
 /**

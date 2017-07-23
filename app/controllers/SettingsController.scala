@@ -1,7 +1,7 @@
 package controllers
 
 import com.mohiva.play.silhouette.api.Silhouette
-import model.{Location, LocationRepository}
+import model.location.{Location, LocationRepository}
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc._

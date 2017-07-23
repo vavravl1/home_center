@@ -1,8 +1,8 @@
 package controllers
 
 import com.mohiva.play.silhouette.api.Silhouette
-import model.LocationRepository
 import model.actuator.{ActuatorRepository, Command}
+import model.location.LocationRepository
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, Controller}

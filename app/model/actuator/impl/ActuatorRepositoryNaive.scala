@@ -1,8 +1,8 @@
 package model.actuator.impl
 
 import model.actuator.{Actuator, ActuatorRepository}
+import model.location.{Location, LocationRepository}
 import model.sensor.SensorRepository
-import model.{Location, LocationRepository}
 import mqtt.JsonSender
 
 /**

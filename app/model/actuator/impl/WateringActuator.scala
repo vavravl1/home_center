@@ -1,7 +1,7 @@
 package model.actuator.impl
 
 import model.actuator.{Actuator, Command, CommandArgument}
-import model.{Location, LocationRepository}
+import model.location.{Location, LocationRepository}
 import mqtt.JsonSender
 import play.api.Logger
 import play.api.libs.json._

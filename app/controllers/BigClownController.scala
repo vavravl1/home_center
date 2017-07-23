@@ -2,7 +2,7 @@ package controllers
 
 import com.mohiva.play.silhouette.api.Silhouette
 import dao.TimeGranularity
-import model.LocationRepository
+import model.location.LocationRepository
 import model.sensor.{MeasuredPhenomenon, SensorRepository}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, Controller}

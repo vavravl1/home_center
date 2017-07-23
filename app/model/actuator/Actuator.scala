@@ -1,6 +1,6 @@
 package model.actuator
 
-import model.Location
+import model.location.Location
 import play.api.libs.json.{JsValue, Json, Writes}
 
 /**
