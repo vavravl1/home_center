@@ -51,6 +51,13 @@ class WateringListener(
             ),
             foundSensor.findOrCreatePhenomenon("baseLine", "", IdentityMeasurementAggregationStrategy)
           )
+          foundSensor.addMeasurement(
+            Measurement(
+              measureTimestamp = clock.instant(),
+              value = if(value.telemetry.waterLevelHigh) 10.0 else 0.0
+            ),
+            foundSensor.findOrCreatePhenomenon("waterLevel", "", IdentityMeasurementAggregationStrategy)
+          )
         case JsError(_) => Logger.error(s"Parsing $message failed");
       }
       case _ =>

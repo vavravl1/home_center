@@ -55,7 +55,8 @@ class SensorView extends React.Component {
         const colors = [
             [255, 0, 0],
             [0, 255, 0],
-            [0, 0, 255]
+            [0, 0, 255],
+            [127, 0, 127]
         ];
 
         let datasets = [];
@@ -67,9 +68,9 @@ class SensorView extends React.Component {
                     const maxes = measuredPhenomenon.measurements.map(t => t.max);
                     const mines = measuredPhenomenon.measurements.map(t => t.min);
                     const index = this.props.data.indexOf(measuredPhenomenon);
-                    const red = colors[index % 3][0];
-                    const green = colors[index % 3][1];
-                    const blue = colors[index % 3][2];
+                    const red = colors[index % 4][0];
+                    const green = colors[index % 4][1];
+                    const blue = colors[index % 4][2];
                     return [{
                         label: 'average ' + measuredPhenomenon.name,
                         borderColor: 'rgb(' + red + ',' + green + ',' + blue + ')',
@@ -98,9 +99,9 @@ class SensorView extends React.Component {
                 .map(measuredPhenomenon => {
                     const averages = measuredPhenomenon.measurements.map(t => t.average);
                     const index = this.props.data.indexOf(measuredPhenomenon);
-                    const red = colors[index % 3][0];
-                    const green = colors[index % 3][1];
-                    const blue = colors[index % 3][2];
+                    const red = colors[index % 4][0];
+                    const green = colors[index % 4][1];
+                    const blue = colors[index % 4][2];
                     return {
                         label: measuredPhenomenon.name,
                         borderColor: 'rgb(' + red + ',' + green + ',' + blue + ')',

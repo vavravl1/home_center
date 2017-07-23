@@ -26,6 +26,7 @@ class WattmeterClient(
       val l1Power = (response.xml \ "I1" \ "P").text.toDouble
       val l2Power = (response.xml \ "I2" \ "P").text.toDouble
       val l3Power = (response.xml \ "I3" \ "P").text.toDouble
+      val boiler = (response.xml \ "O1" \ "P").text.toDouble
 
       Logger.debug(s"Received response from wattmeter L1:${l1Power} W, L2: ${l2Power} W, L3: ${l3Power} W")
 
@@ -38,17 +39,22 @@ class WattmeterClient(
 
       sensor.addMeasurement(
         measurement = Measurement(l1Power, now),
-        measuredPhenomenon = sensor.findOrCreatePhenomenon("L1 Power", "W", IdentityMeasurementAggregationStrategy)
+        measuredPhenomenon = sensor.findOrCreatePhenomenon("L1 Power", "kW", IdentityMeasurementAggregationStrategy)
       )
 
       sensor.addMeasurement(
         measurement = Measurement(l2Power, now),
-        measuredPhenomenon = sensor.findOrCreatePhenomenon("L2 Power", "W", IdentityMeasurementAggregationStrategy)
+        measuredPhenomenon = sensor.findOrCreatePhenomenon("L2 Power", "kW", IdentityMeasurementAggregationStrategy)
       )
 
       sensor.addMeasurement(
         measurement = Measurement(l3Power, now),
-        measuredPhenomenon = sensor.findOrCreatePhenomenon("L3 Power", "W", IdentityMeasurementAggregationStrategy)
+        measuredPhenomenon = sensor.findOrCreatePhenomenon("L3 Power", "kW", IdentityMeasurementAggregationStrategy)
+      )
+
+      sensor.addMeasurement(
+        measurement = Measurement(boiler, now),
+        measuredPhenomenon = sensor.findOrCreatePhenomenon("boiler", "kW", IdentityMeasurementAggregationStrategy)
       )
     })
   }

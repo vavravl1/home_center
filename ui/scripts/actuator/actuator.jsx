@@ -99,6 +99,7 @@ class Actuator extends React.Component {
     actuatorView = (actuator) => {
         return <Jumbotron bsClass="bc-measurement-box">
             <h3>{actuator.name}</h3>
+            <h4>{actuator.location.label}</h4>
             <BootstrapTable data={actuator.supportedCommands}
                             striped
                             hover
