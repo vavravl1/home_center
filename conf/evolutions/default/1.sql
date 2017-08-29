@@ -21,7 +21,7 @@ ALTER TABLE sensor ADD CONSTRAINT fk_locationAddress
 CREATE TABLE measuredPhenomenon (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(20),
-  unit VARCHAR(5),
+  unit VARCHAR(15),
   aggregationStrategy VARCHAR(20),
   sensorId BIGINT,
 );

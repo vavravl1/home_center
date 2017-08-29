@@ -20,7 +20,7 @@ class BigClownController(
                           silhouette: Silhouette[DefaultEnv]) extends Controller {
   def getSensorReading(locationAddress: String, sensorName: String, timeGranularity: String, big: String): Action[AnyContent] = Action.async {
     Future {
-      val data = sensorRepository
+      val data:Seq[MeasuredPhenomenon] = sensorRepository
           .find(locationRepository.findOrCreateLocation(locationAddress), sensorName)
           .map(sensor => sensor.measuredPhenomenons)
           .getOrElse(Seq.empty)

@@ -11,7 +11,7 @@ class Sensor extends React.Component {
         const cancelToken = axios.CancelToken;
         this.state = {
             timeGranularity: "ByHour",
-            data: [],
+            measuredPhenomenons: [],
             tickHandler: null,
             source: cancelToken.source(),
             hiddenMeasuredPhenomenons: []
@@ -62,11 +62,11 @@ class Sensor extends React.Component {
                     cancelToken: this.state.source.token
                 }
             )
-            .then(function (measurement) {
+            .then(function (_measuredPhenomenons) {
                 const tickHandler = setTimeout(t.tick.bind(t), 1000);
                 const newState = update(t.state, {
-                    data: {
-                        $set: measurement.data
+                    measuredPhenomenons: {
+                        $set: _measuredPhenomenons.data
                     },
                     tickHandler: {$set: tickHandler}
                 });
@@ -87,7 +87,7 @@ class Sensor extends React.Component {
     render = () => {
         return <SensorView
             sensor={this.props.sensor}
-            data={this.state.data}
+            measuredPhenomenons={this.state.measuredPhenomenons}
             hiddenMeasuredPhenomenons = {this.state.hiddenMeasuredPhenomenons}
             timeGranularity={this.state.timeGranularity}
             timeGranularityChangedCallback={this.timeGranularityChangedCallback}

@@ -29,7 +29,7 @@ class SensorView extends React.Component {
 
 
     valueChartData = function () {
-        if (this.props.data.length == 0) {
+        if (this.props.measuredPhenomenons.length == 0) {
             return {
                 labels: '',
                 times: '',
@@ -37,7 +37,7 @@ class SensorView extends React.Component {
             };
         }
 
-        let dates = this.props.data[0].measurements
+        let dates = this.props.measuredPhenomenons[0].measurements
             .map(t => t.measureTimestamp)
             .map(t => {
                 if (this.isTimGranularityByDay()) {
@@ -49,7 +49,7 @@ class SensorView extends React.Component {
                 }
             });
 
-        let times = this.props.data[0].measurements
+        let times = this.props.measuredPhenomenons[0].measurements
             .map(t => moment(t.measureTimestamp).add(1, 'minute').format("DD.MM.YYYY HH:mm"));
 
         const colors = [
@@ -61,13 +61,13 @@ class SensorView extends React.Component {
 
         let datasets = [];
         if (this.isTimGranularityByDay()) {
-            datasets = this.props.data
+            datasets = this.props.measuredPhenomenons
                 .filter(measuredPhenomenon => this.isMeasuredPhenomenonVisible(measuredPhenomenon))
                 .map(measuredPhenomenon => {
                     const averages = measuredPhenomenon.measurements.map(t => t.average);
                     const maxes = measuredPhenomenon.measurements.map(t => t.max);
                     const mines = measuredPhenomenon.measurements.map(t => t.min);
-                    const index = this.props.data.indexOf(measuredPhenomenon);
+                    const index = this.props.measuredPhenomenons.indexOf(measuredPhenomenon);
                     const red = colors[index % 4][0];
                     const green = colors[index % 4][1];
                     const blue = colors[index % 4][2];
@@ -94,11 +94,11 @@ class SensorView extends React.Component {
                     return a.concat(b);
                 });
         } else {
-            datasets = this.props.data
+            datasets = this.props.measuredPhenomenons
                 .filter(measuredPhenomenon => this.isMeasuredPhenomenonVisible(measuredPhenomenon))
                 .map(measuredPhenomenon => {
                     const averages = measuredPhenomenon.measurements.map(t => t.average);
-                    const index = this.props.data.indexOf(measuredPhenomenon);
+                    const index = this.props.measuredPhenomenons.indexOf(measuredPhenomenon);
                     const red = colors[index % 4][0];
                     const green = colors[index % 4][1];
                     const blue = colors[index % 4][2];
@@ -173,8 +173,8 @@ class SensorView extends React.Component {
 
     prepareLastMeasuredTimestamp = () => {
         let lastTimestamp = <tr/>;
-        if (this.props.data.length > 0) {
-            const lastMeasuredPhenomenon = this.props.data[this.props.data.length - 1];
+        if (this.props.measuredPhenomenons.length > 0) {
+            const lastMeasuredPhenomenon = this.props.measuredPhenomenons[this.props.measuredPhenomenons.length - 1];
             const measurements = lastMeasuredPhenomenon.measurements;
             const lastMeasurement = measurements[measurements.length - 1];
             if (measurements.length > 0) {
@@ -189,7 +189,7 @@ class SensorView extends React.Component {
     };
 
     prepareLastMeasuredValues = () => {
-        return this.props.data.map(measuredPhenomenon => {
+        return this.props.measuredPhenomenons.map(measuredPhenomenon => {
             const measurements = measuredPhenomenon.measurements;
             if (measurements.length > 0) {
                 const lastMeasurement = measurements[measurements.length - 1];
@@ -204,7 +204,7 @@ class SensorView extends React.Component {
     };
 
     prepareMeasuredPhenomenons = () => {
-        return this.props.data.map(measuredPhenomenon =>
+        return this.props.measuredPhenomenons.map(measuredPhenomenon =>
             <CheckBox
                 onChange={this.showHidePhenomenonInternal.bind(this, measuredPhenomenon.name)}
                 checked={this.props.hiddenMeasuredPhenomenons.indexOf(measuredPhenomenon.name) == -1}
@@ -264,7 +264,7 @@ SensorView.propTypes = {
     sensor: PropTypes.object.isRequired,
     timeGranularity: PropTypes.string.isRequired,
     timeGranularityChangedCallback: PropTypes.func.isRequired,
-    data: PropTypes.arrayOf(PropTypes.object).isRequired,
+    measuredPhenomenons: PropTypes.arrayOf(PropTypes.object).isRequired,
     makeBigCallback: PropTypes.func,
     makeSmallCallback: PropTypes.func,
     showHideMeasuredPhenomenon: PropTypes.func,

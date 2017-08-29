@@ -1,7 +1,8 @@
 package loader
 
 import com.softwaremill.macwire.wire
-import model.sensor.impl.{LocationRepositorySql, SensorRepositorySql}
+import model.location.impl.LocationRepositorySql
+import model.sensor.impl.SensorRepositorySql
 import play.api.BuiltInComponents
 import play.api.libs.concurrent.Execution.Implicits._
 
