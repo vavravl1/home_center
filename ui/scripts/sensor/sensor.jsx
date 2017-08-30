@@ -14,7 +14,6 @@ class Sensor extends React.Component {
             measuredPhenomenons: [],
             tickHandler: null,
             source: cancelToken.source(),
-            hiddenMeasuredPhenomenons: []
         }
     };
 
@@ -27,28 +26,6 @@ class Sensor extends React.Component {
             clearTimeout(this.state.tickHandler);
         }
         this.state.source.cancel("Component is not rendered anymore");
-    };
-
-    showHideMeasuredPhenomenon = (phenomenon) => {
-        let newState = this.state;
-
-        if (this.state.hiddenMeasuredPhenomenons.indexOf(phenomenon) >= 0) {
-            const index = this.state.hiddenMeasuredPhenomenons.indexOf(phenomenon);
-
-            newState = update(this.state, {
-                hiddenMeasuredPhenomenons:{
-                    $splice: [[index, 1]]
-                }
-            });
-        } else {
-            newState = update(this.state, {
-                hiddenMeasuredPhenomenons:{
-                    $push: [phenomenon]
-                }
-            });
-        }
-
-        this.setState(newState);
     };
 
     tick = () => {
@@ -88,12 +65,10 @@ class Sensor extends React.Component {
         return <SensorView
             sensor={this.props.sensor}
             measuredPhenomenons={this.state.measuredPhenomenons}
-            hiddenMeasuredPhenomenons = {this.state.hiddenMeasuredPhenomenons}
             timeGranularity={this.state.timeGranularity}
             timeGranularityChangedCallback={this.timeGranularityChangedCallback}
             makeBigCallback={this.props.makeBigCallback}
             makeSmallCallback={this.props.makeSmallCallback}
-            showHideMeasuredPhenomenon={this.showHideMeasuredPhenomenon}
         />
     };
 }

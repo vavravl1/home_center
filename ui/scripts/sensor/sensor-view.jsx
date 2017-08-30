@@ -6,7 +6,6 @@ import ButtonToolbar from "react-bootstrap/lib/ButtonToolbar";
 import Button from "react-bootstrap/lib/Button";
 import CheckBox from "react-bootstrap/lib/CheckBox";
 import Jumbotron from "react-bootstrap/lib/Jumbotron";
-import DropdownButton from "react-bootstrap/lib/DropdownButton";
 import update from "react-addons-update";
 import PropTypes from "prop-types";
 
@@ -62,7 +61,6 @@ class SensorView extends React.Component {
         let datasets = [];
         if (this.isTimGranularityByDay()) {
             datasets = this.props.measuredPhenomenons
-                .filter(measuredPhenomenon => this.isMeasuredPhenomenonVisible(measuredPhenomenon))
                 .map(measuredPhenomenon => {
                     const averages = measuredPhenomenon.measurements.map(t => t.average);
                     const maxes = measuredPhenomenon.measurements.map(t => t.max);
@@ -95,7 +93,6 @@ class SensorView extends React.Component {
                 });
         } else {
             datasets = this.props.measuredPhenomenons
-                .filter(measuredPhenomenon => this.isMeasuredPhenomenonVisible(measuredPhenomenon))
                 .map(measuredPhenomenon => {
                     const averages = measuredPhenomenon.measurements.map(t => t.average);
                     const index = this.props.measuredPhenomenons.indexOf(measuredPhenomenon);
@@ -118,10 +115,6 @@ class SensorView extends React.Component {
             datasets: datasets,
         };
     };
-
-    isMeasuredPhenomenonVisible(measuredPhenomenon) {
-        return this.props.hiddenMeasuredPhenomenons.indexOf(measuredPhenomenon.name) == -1;
-    }
 
     humidityChartOptions = () => {
         return {
@@ -150,10 +143,6 @@ class SensorView extends React.Component {
 
     handleTimeGranularity = function (value) {
         this.props.timeGranularityChangedCallback(value);
-    };
-
-    showHidePhenomenonInternal = function (phenomenon) {
-        this.props.showHideMeasuredPhenomenon(phenomenon)
     };
 
     makeBigOrSmallCallback = function () {
@@ -203,21 +192,9 @@ class SensorView extends React.Component {
         });
     };
 
-    prepareMeasuredPhenomenons = () => {
-        return this.props.measuredPhenomenons.map(measuredPhenomenon =>
-            <CheckBox
-                onChange={this.showHidePhenomenonInternal.bind(this, measuredPhenomenon.name)}
-                checked={this.props.hiddenMeasuredPhenomenons.indexOf(measuredPhenomenon.name) == -1}
-            >
-                {measuredPhenomenon.name}
-            </CheckBox>
-        );
-    };
-
     render = () => {
         const overviews = this.prepareLastMeasuredValues();
         let lastTimestamp = this.prepareLastMeasuredTimestamp();
-        const measuredPhenomenonCheckBoxs = this.prepareMeasuredPhenomenons();
         return <Jumbotron bsClass="sensor-measurement-box">
             <h2 className="capital" style={{display: 'inline'}}>{this.props.sensor.name}</h2>
             <ButtonToolbar className="pull-right">
@@ -239,10 +216,6 @@ class SensorView extends React.Component {
                 onChange={this.handleStartAtZero.bind(this)}>Start at zero?</CheckBox>
 
             <ButtonToolbar className="pull-right">
-                <DropdownButton bsSize="xsmall" title="Phenomenons" id="bg-vertical-dropdown-2">
-                    {measuredPhenomenonCheckBoxs}
-                </DropdownButton>
-
                 <Button bsSize="xsmall"
                         bsStyle={this.props.timeGranularity === 'BySecond' ? "primary" : "default"}
                         onClick={this.handleTimeGranularity.bind(this, "BySecond")}>By Second</Button>
@@ -267,8 +240,6 @@ SensorView.propTypes = {
     measuredPhenomenons: PropTypes.arrayOf(PropTypes.object).isRequired,
     makeBigCallback: PropTypes.func,
     makeSmallCallback: PropTypes.func,
-    showHideMeasuredPhenomenon: PropTypes.func,
-    hiddenMeasuredPhenomenons: PropTypes.arrayOf(PropTypes.string).isRequired
 };
 
 
