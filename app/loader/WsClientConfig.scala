@@ -12,7 +12,7 @@ import scala.language.postfixOps
 /**
   *
   */
-trait WsClientConfig extends BuiltInComponents with DaoConfig with ClockConfig {
+trait WsClientConfig extends BuiltInComponents with DaoConfig with ClockConfig with MqttConfig {
   lazy val wsClient = AhcWSClient()
   lazy val wattmeterClient = wire[WattmeterClient]
   lazy val solarEdgeClient = new SolarEdgeClient(

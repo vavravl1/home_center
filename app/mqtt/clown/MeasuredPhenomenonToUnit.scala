@@ -10,6 +10,10 @@ object MeasuredPhenomenonToUnit {
     case "pressure" => "kPa"
     case "altitude" => "m"
     case "concentration" => "ppm"
+    case "L1" => "kW"
+    case "L2" => "kW"
+    case "L3" => "kW"
+    case "boiler" => "kW"
     case _ => sensor
   }
 }
