@@ -38,7 +38,7 @@ class SolarEdgeClient(
 
       sensor.addMeasurement(
         measurement = Measurement(actualPower, lastMeasurement),
-        measuredPhenomenon = sensor.findOrCreatePhenomenon("Power", "w", IdentityMeasurementAggregationStrategy)
+        measuredPhenomenon = sensor.findOrCreatePhenomenon("power", "W", IdentityMeasurementAggregationStrategy)
       )
     })
   }

@@ -1,6 +1,6 @@
 package mqtt.clown
 
-import java.time.Clock
+import java.time.{Clock, Instant}
 
 import akka.actor.Actor
 import model.location.LocationRepository
@@ -29,6 +29,7 @@ class BridgeListener(sensorRepository: SensorRepository, locationRepository: Loc
   }
 
   private def storeSensorMeasurement(message: String, nodeId: String, sensorName: String, measuredPhenomenon: String) = {
+    val (value: String, measureTimestamp: Instant) = parseMessage(message)
     val location = locationRepository.findOrCreateLocation(nodeId)
     val foundSensor = sensorRepository.findOrCreateSensor(
       location = location,
@@ -36,21 +37,30 @@ class BridgeListener(sensorRepository: SensorRepository, locationRepository: Loc
     )
     foundSensor.addMeasurement(
       Measurement(
-        measureTimestamp = clock.instant(),
-        value = MeasuredPhenomenonScale(measuredPhenomenon) * (message match {
+        measureTimestamp = measureTimestamp,
+        value = MeasuredPhenomenonScale(measuredPhenomenon) * (value match {
           case "true" => 10
           case "false" => 0
-          case _ => message.toDouble
+          case _ => value.toDouble
         })
       ),
       foundSensor.findOrCreatePhenomenon(
         name = measuredPhenomenon,
         unit = MeasuredPhenomenonToUnit(measuredPhenomenon),
-        aggregationStrategy = message match {
+        aggregationStrategy = value match {
           case "true" => BooleanMeasurementAggregationStrategy
           case "false" => BooleanMeasurementAggregationStrategy
           case _ => IdentityMeasurementAggregationStrategy
         }
       ))
+  }
+
+  private def parseMessage(message: String):(String, Instant) = {
+    val splicedMessage = message.split(",")
+    val value = splicedMessage(0)
+    val measureTimestamp = if (splicedMessage.length == 2)
+      Instant.ofEpochSecond(splicedMessage(1).toLong)
+    else clock.instant()
+    (value, measureTimestamp)
   }
 }

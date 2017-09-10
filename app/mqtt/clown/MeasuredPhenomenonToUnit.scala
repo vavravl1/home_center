@@ -14,6 +14,7 @@ object MeasuredPhenomenonToUnit {
     case "L2" => "kW"
     case "L3" => "kW"
     case "boiler" => "kW"
+    case "power" => "W"
     case _ => sensor
   }
 }

@@ -24,14 +24,14 @@ class BridgeListenerTest extends WordSpec with Matchers with MockFactory {
     val instant = Instant.ofEpochSecond(22)
 
     "in default state" should {
+      val locationRepository = mock[LocationRepositorySql]
+      val sensorRepository = mock[SensorRepositorySqlWithCtor]
+      val listener = TestActorRef[BridgeListener](Props(wire[BridgeListener]))
+      val sensor = mock[Sensor]
+      val phenomenon = mock[MeasuredPhenomenon]
+
       "receive messages from thermometer" in {
         (clock.instant _).expects().returning(instant).anyNumberOfTimes()
-
-        val locationRepository = mock[LocationRepositorySql]
-        val sensorRepository = mock[SensorRepositorySqlWithCtor]
-        val listener = TestActorRef[BridgeListener](Props(wire[BridgeListener]))
-        val sensor = mock[Sensor]
-        val phenomenon = mock[MeasuredPhenomenon]
         val location = LocationSql("836d19833c33", "label")
 
         (locationRepository.findOrCreateLocation _).expects("836d19833c33").returning(location)
@@ -44,16 +44,9 @@ class BridgeListenerTest extends WordSpec with Matchers with MockFactory {
           "19.19"
         )
       }
-    }
 
-    "in default state" should {
       "receive messages from co2-meter" in {
         (clock.instant _).expects().returning(instant).anyNumberOfTimes()
-        val locationRepository = mock[LocationRepositorySql]
-        val sensorRepository = mock[SensorRepositorySqlWithCtor]
-        val listener = TestActorRef[BridgeListener](Props(wire[BridgeListener]))
-        val sensor = mock[Sensor]
-        val phenomenon = mock[MeasuredPhenomenon]
         val location = LocationSql("836d19833c33", "label")
 
         (locationRepository.findOrCreateLocation _).expects("836d19833c33").returning(location)
@@ -64,6 +57,20 @@ class BridgeListenerTest extends WordSpec with Matchers with MockFactory {
         listener ! ConsumeMessage(
           "node/836d19833c33/co2-meter/-/concentration",
           "1001"
+        )
+      }
+
+      "receive messages from pve-inverter" in {
+        val location = LocationSql("garage", "garage")
+
+        (locationRepository.findOrCreateLocation _).expects("garage").returning(location)
+        (sensorRepository.findOrCreateSensor _).expects(location, "pve-inverter").returning(sensor)
+        (sensor.findOrCreatePhenomenon _).expects("power", "W", IdentityMeasurementAggregationStrategy).returning(phenomenon)
+        (sensor.addMeasurement _).expects(Measurement(850, Instant.ofEpochSecond(1200)),phenomenon)
+
+        listener ! ConsumeMessage(
+          "node/garage/pve-inverter/-/power",
+          "850,1200"
         )
       }
     }
