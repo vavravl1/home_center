@@ -4,7 +4,7 @@ import java.time.Clock
 
 import akka.actor.Actor
 import model.location.LocationRepository
-import model.sensor.{IdentityMeasurementAggregationStrategy, Measurement, SensorRepository}
+import model.sensor.{BooleanMeasurementAggregationStrategy, IdentityMeasurementAggregationStrategy, Measurement, SensorRepository}
 import mqtt.MqttListenerMessage.{ConsumeMessage, Ping}
 
 /**
@@ -46,7 +46,11 @@ class BridgeListener(sensorRepository: SensorRepository, locationRepository: Loc
       foundSensor.findOrCreatePhenomenon(
         name = measuredPhenomenon,
         unit = MeasuredPhenomenonToUnit(measuredPhenomenon),
-        aggregationStrategy = IdentityMeasurementAggregationStrategy
+        aggregationStrategy = message match {
+          case "true" => BooleanMeasurementAggregationStrategy
+          case "false" => BooleanMeasurementAggregationStrategy
+          case _ => IdentityMeasurementAggregationStrategy
+        }
       ))
   }
 }

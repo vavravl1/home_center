@@ -5,7 +5,6 @@ import com.softwaremill.macwire.wire
 import config.HomeControllerConfiguration
 import model.actuator.impl.ActuatorRepositoryNaive
 import mqtt.clown.BridgeListener
-import mqtt.watering.{WateringCommander, WateringHelloListener, WateringListener}
 import mqtt.{MqttConnector, MqttDispatchingListener, MqttListenerMessage, MqttRepeater}
 import play.api.BuiltInComponents
 
@@ -22,12 +21,9 @@ trait MqttConfig extends BuiltInComponents with DaoConfig with ClockConfig {
     mqttDispatchingListener,
     actorSystem
   )
-  lazy val wateringCommander = wire[WateringCommander]
 
   lazy val actuatorRepository: ActuatorRepositoryNaive = wire[ActuatorRepositoryNaive]
 
-  lazy val wateringListener: ActorRef = actorSystem.actorOf(Props(wire[WateringListener]))
-  lazy val wateringHelloListener: ActorRef = actorSystem.actorOf(Props(wire[WateringHelloListener]))
   lazy val bcBridgeListenerActor: ActorRef = actorSystem.actorOf(Props(wire[BridgeListener]))
   lazy val mqttRepeaterActor: ActorRef = actorSystem.actorOf(Props(
     new MqttRepeater(
@@ -44,13 +40,9 @@ trait MqttConfig extends BuiltInComponents with DaoConfig with ClockConfig {
     mqttConnector.reconnect.run()
 
     bcBridgeListenerActor ! MqttListenerMessage.Ping
-    wateringListener ! MqttListenerMessage.Ping
-    wateringHelloListener ! MqttListenerMessage.Ping
     mqttRepeaterActor ! MqttListenerMessage.Ping
 
     mqttDispatchingListener.addListener(bcBridgeListenerActor.path)
-    mqttDispatchingListener.addListener(wateringListener.path)
-    mqttDispatchingListener.addListener(wateringHelloListener.path)
     mqttDispatchingListener.addListener(mqttRepeaterActor.path)
   }
 }
