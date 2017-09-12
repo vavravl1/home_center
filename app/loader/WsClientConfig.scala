@@ -20,6 +20,7 @@ trait WsClientConfig extends BuiltInComponents with DaoConfig with ClockConfig w
     sensorRepository = sensorRepository,
     locationRepository = locationRepository,
     clock = clock,
+    jsonSender = mqttConnector,
     apiKey = configuration.getString("home_center.solar_edge.apiKey").orNull,
     siteId = configuration.getString("home_center.solar_edge.siteId").orNull
   )

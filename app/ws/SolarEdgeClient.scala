@@ -4,7 +4,8 @@ import java.time.{Clock, Instant}
 
 import entities.CommonJsonReadWrite
 import model.location.LocationRepository
-import model.sensor.{IdentityMeasurementAggregationStrategy, Measurement, SensorRepository}
+import model.sensor.SensorRepository
+import mqtt.JsonSender
 import play.api.Logger
 import play.api.libs.ws.{WSClient, WSRequest}
 
@@ -18,6 +19,7 @@ class SolarEdgeClient(
                        sensorRepository: SensorRepository,
                        locationRepository: LocationRepository,
                        clock: Clock,
+                       jsonSender: JsonSender,
                        apiKey: String,
                        siteId: String
                      ) {
@@ -26,20 +28,14 @@ class SolarEdgeClient(
 
   def querySolarEdge():Unit = {
     request.get().map(response => {
+      Logger.debug(s"SolarEdge response with status ${response.status}")
       val actualPower = (response.json \ "overview" \ "currentPower" \ "power").as[Double]
       val lastMeasurement = (response.json \ "overview" \ "lastUpdateTime").as[Instant](CommonJsonReadWrite.instantInIso)
 
       Logger.debug(s"Received response from SolarEdge actualPower: ${actualPower} W; lastMeasurement: ${lastMeasurement}")
-
-      val sensor = sensorRepository.findOrCreateSensor(
-        location = locationRepository.findOrCreateLocation("garage"),
-        name = "pve-inverter"
-      )
-
-      sensor.addMeasurement(
-        measurement = Measurement(actualPower, lastMeasurement),
-        measuredPhenomenon = sensor.findOrCreatePhenomenon("power", "W", IdentityMeasurementAggregationStrategy)
-      )
-    })
+      jsonSender.sendRaw("node/garage/pve-inverter/-/power", s"${actualPower},${lastMeasurement.getEpochSecond}")
+    }).onFailure {
+      case t => Logger.warn(s"An error has occured during querying SolarEdge", t)
+    }
   }
 }
