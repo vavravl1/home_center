@@ -39,6 +39,16 @@ trait Sensor {
     * Aggregation is done by hours.
     */
   def aggregateOldMeasurements()
+
+  override def equals(obj: scala.Any): Boolean = {
+    if(!obj.isInstanceOf[Sensor]) {
+      return false
+    } else {
+      val other = obj.asInstanceOf[Sensor]
+      return other.name.equals(this.name) &&
+        other.location.equals(this.location)
+    }
+  }
 }
 
 object Sensor {

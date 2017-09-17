@@ -34,6 +34,17 @@ trait MeasuredPhenomenon {
     * Aggregation is done by hours.
     */
   def aggregateOldMeasurements()
+
+  override def equals(obj: scala.Any): Boolean = {
+    if(!obj.isInstanceOf[MeasuredPhenomenon]) {
+      return false
+    } else {
+      val other = obj.asInstanceOf[MeasuredPhenomenon]
+      return other.name.equals(this.name) &&
+        other.unit.equals(this.unit) &&
+        other.aggregationStrategy.equals(this.aggregationStrategy)
+    }
+  }
 }
 
 object MeasuredPhenomenon {

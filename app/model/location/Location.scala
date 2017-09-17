@@ -26,6 +26,15 @@ trait Location {
     * @return
     */
   def updateLabel(newLabel:String):Location
+
+  override def equals(obj: scala.Any): Boolean = {
+    if(!obj.isInstanceOf[Location]) {
+      return false
+    } else {
+      val other = obj.asInstanceOf[Location]
+      return other.address.equals(this.address)
+    }
+  }
 }
 
 object Location {

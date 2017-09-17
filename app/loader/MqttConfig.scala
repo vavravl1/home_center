@@ -3,7 +3,6 @@ package loader
 import akka.actor.{ActorRef, Props}
 import com.softwaremill.macwire.wire
 import config.HomeControllerConfiguration
-import model.actuator.impl.ActuatorRepositoryNaive
 import mqtt.clown.BridgeListener
 import mqtt.{MqttConnector, MqttDispatchingListener, MqttListenerMessage, MqttRepeater}
 import play.api.BuiltInComponents
@@ -21,8 +20,6 @@ trait MqttConfig extends BuiltInComponents with DaoConfig with ClockConfig {
     mqttDispatchingListener,
     actorSystem
   )
-
-  lazy val actuatorRepository: ActuatorRepositoryNaive = wire[ActuatorRepositoryNaive]
 
   lazy val bcBridgeListenerActor: ActorRef = actorSystem.actorOf(Props(wire[BridgeListener]))
   lazy val mqttRepeaterActor: ActorRef = actorSystem.actorOf(Props(

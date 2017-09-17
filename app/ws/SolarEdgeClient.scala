@@ -27,6 +27,9 @@ class SolarEdgeClient(
   val request: WSRequest = ws.url(s"https://monitoringapi.solaredge.com/site/${siteId}/overview?api_key=${apiKey}")
 
   def querySolarEdge():Unit = {
+    if(apiKey == null | siteId == null) {
+      return
+    }
     request.get().map(response => {
       Logger.debug(s"SolarEdge response with status ${response.status}")
       val actualPower = (response.json \ "overview" \ "currentPower" \ "power").as[Double]

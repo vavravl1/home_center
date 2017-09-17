@@ -42,6 +42,7 @@ trait PlayCoreComponents extends BuiltInComponents with Controllers {
 trait AppComponents extends BuiltInComponents
   with PlayCoreComponents
   with MqttConfig
+  with IfThenConfig
   with FiltersConfig
   with SqlH2Config
   with SilhouetteAppModule
@@ -52,6 +53,7 @@ trait AppComponents extends BuiltInComponents
   initDbAggregation()
   initializeListeners()
   initWsQuerying()
+  initializeIfThens()
 
   applicationLifecycle.addStopHook(() => {
     mqttConnector.disconnect().map(_ =>

@@ -10,7 +10,7 @@ import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
 
 /**
-  * Replays every incoming mqtt message to remove mqtt broker
+  * Replays every incoming mqtt message to remote mqtt broker
   */
 class MqttRepeater(
                     remoteConfiguration: HomeControllerConfiguration,
@@ -43,7 +43,7 @@ object MqttRepeater {
 class RepeatingMqttCallback(localMqttConnector: MqttConnector) extends MqttCallback {
 
   override def messageArrived(receivedTopic: String, message: MqttMessage): Unit = receivedTopic match {
-    case MqttRepeater.commandTopic() => localMqttConnector.sendRaw(receivedTopic, new String(message.getPayload))
+//    case MqttRepeater.commandTopic() => localMqttConnector.sendRaw(receivedTopic, new String(message.getPayload))
     case _ => Unit
   }
 
