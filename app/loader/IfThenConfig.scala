@@ -24,7 +24,7 @@ trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig wit
     clock = clock,
     Seq(
       new IfThen(
-        obj = sensor,
+        objekt = sensor,
         subject = sensor.findOrCreatePhenomenon("event-count", "event-count", IdentityMeasurementAggregationStrategy),
         condition = TrueCondition,
         actuatorRepository.findOrCreateActuator(actuatorLocation, "Relay"),

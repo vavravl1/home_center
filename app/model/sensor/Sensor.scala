@@ -45,8 +45,8 @@ trait Sensor {
       return false
     } else {
       val other = obj.asInstanceOf[Sensor]
-      return other.name.equals(this.name) &&
-        other.location.equals(this.location)
+      return other.name == this.name &&
+        other.location == this.location
     }
   }
 }

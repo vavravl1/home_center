@@ -40,9 +40,9 @@ trait MeasuredPhenomenon {
       return false
     } else {
       val other = obj.asInstanceOf[MeasuredPhenomenon]
-      return other.name.equals(this.name) &&
-        other.unit.equals(this.unit) &&
-        other.aggregationStrategy.equals(this.aggregationStrategy)
+      return other.name == this.name &&
+        other.unit == this.unit &&
+        other.aggregationStrategy == this.aggregationStrategy
     }
   }
 }

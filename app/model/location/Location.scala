@@ -32,7 +32,7 @@ trait Location {
       return false
     } else {
       val other = obj.asInstanceOf[Location]
-      return other.address.equals(this.address)
+      return other.address == this.address
     }
   }
 }
