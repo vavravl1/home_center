@@ -19,16 +19,15 @@ trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig wit
   private lazy val sensor = sensorRepository.findOrCreateSensor(location, "push-button")
   private lazy val actuatorLocation = locationRepository.findOrCreateLocation("836d19833c33")
   lazy val mqttIfThenExecutor = actorSystem.actorOf(Props(new MqttIfThenExecutor(
-    sensorRepository = sensorRepository,
-    locationRepository = locationRepository,
-    clock = clock,
-    Seq(
-      new IfThen(
-        objekt = sensor,
-        subject = sensor.findOrCreatePhenomenon("event-count", "event-count", IdentityMeasurementAggregationStrategy),
-        condition = TrueCondition,
-        actuatorRepository.findOrCreateActuator(actuatorLocation, "Relay"),
-        Command("Toggle", Seq.empty)
+      mqttBigClownParser,
+      Seq(
+        new IfThen(
+          objekt = sensor,
+          subject = sensor.findOrCreatePhenomenon(
+            "event-count", "event-count", IdentityMeasurementAggregationStrategy),
+          condition = TrueCondition,
+          actuatorRepository.findOrCreateActuator(actuatorLocation, "Relay"),
+          Command("Toggle", Seq.empty)
       )
     )
   )))

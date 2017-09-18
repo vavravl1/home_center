@@ -26,7 +26,8 @@ class BridgeListenerTest extends WordSpec with Matchers with MockFactory {
     "in default state" should {
       val locationRepository = mock[LocationRepositorySql]
       val sensorRepository = mock[SensorRepositorySqlWithCtor]
-      val listener = TestActorRef[BridgeListener](Props(wire[BridgeListener]))
+      val mqttBigClownParser = wire[MqttBigClownParser]
+      val listener:TestActorRef[BridgeListener] = TestActorRef[BridgeListener](Props(wire[BridgeListener]))
       val sensor = mock[Sensor]
       val phenomenon = mock[MeasuredPhenomenon]
 
