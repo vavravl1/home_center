@@ -8,5 +8,5 @@ import play.api.BuiltInComponents
   * Defines app clock
   */
 trait ClockConfig extends BuiltInComponents {
-  lazy val clock = Clock.systemUTC()
+  lazy val clock = Clock.systemDefaultZone()
 }

@@ -25,9 +25,9 @@ class MqttRepeater(
 
   override def receive(): Receive = {
     case Ping => mqttConnector.reconnect.run()
-    case ConsumeMessage(receivedTopic: String, json: String) => receivedTopic match {
+    case ConsumeMessage(receivedTopic: String, payload: String) => receivedTopic match {
       case MqttRepeater.commandTopic() => Unit // Don't replay watering commands
-      case _ => Try(mqttConnector.sendRaw(receivedTopic, json)) match {
+      case _ => Try(mqttConnector.sendRaw(receivedTopic, payload)) match {
         case Success(_) =>
         case Failure(exception) => Logger.warn("Unable to repeat message", exception)
       }
