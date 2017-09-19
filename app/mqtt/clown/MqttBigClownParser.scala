@@ -14,7 +14,8 @@ class MqttBigClownParser(
                           clock: Clock
                         ) {
   //node/836d19833c33/thermometer/0:0/temperature received 24.56
-  val bcSensorTopic = """node/([\w-]+)/([\w-]+)/(\d):(\d)/(\w+)/?\w?""".r
+  //node/836d19833c33/hygrometer/0:4/relative-humidity
+  val bcSensorTopic = """node/([\w-]+)/([\w-]+)/(\d):(\d)/([\w-]+)/?\w?""".r
   val bcSensorTopicWithoutI2d = """node/([\w-]+)/([\w-]+)/-/([\w-]+)""".r
 
   def parseMqttMessage(receivedTopic: String, message: String):Option[(Sensor, MeasuredPhenomenon, Measurement)] =

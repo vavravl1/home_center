@@ -61,6 +61,21 @@ class BridgeListenerTest extends WordSpec with Matchers with MockFactory {
         )
       }
 
+      "receive messages from hygrometer" in {
+        (clock.instant _).expects().returning(instant).anyNumberOfTimes()
+        val location = LocationSql("836d19833c33", "label")
+
+        (locationRepository.findOrCreateLocation _).expects("836d19833c33").returning(location)
+        (sensorRepository.findOrCreateSensor _).expects(location, "hygrometer").returning(sensor)
+        (sensor.findOrCreatePhenomenon _).expects("relative-humidity", "%", IdentityMeasurementAggregationStrategy).returning(phenomenon)
+        (sensor.addMeasurement _).expects(Measurement(56.6, Instant.ofEpochSecond(22)),phenomenon)
+
+        listener ! ConsumeMessage(
+          "node/836d19833c33/hygrometer/0:4/relative-humidity",
+          "56.6"
+        )
+      }
+
       "receive messages from pve-inverter" in {
         val location = LocationSql("garage", "garage")
 

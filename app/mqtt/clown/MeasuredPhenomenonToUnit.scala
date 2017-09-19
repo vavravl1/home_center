@@ -10,6 +10,7 @@ object MeasuredPhenomenonToUnit {
     case "pressure" => "kPa"
     case "altitude" => "m"
     case "concentration" => "ppm"
+    case "relative-humidity" => "%"
     case "L1" => "kW"
     case "L2" => "kW"
     case "L3" => "kW"

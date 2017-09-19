@@ -1,5 +1,7 @@
 package mqtt
 
+import java.time.Clock
+
 import akka.actor.{Actor, ActorSystem}
 import config.HomeControllerConfiguration
 import mqtt.MqttListenerMessage.{ConsumeMessage, Ping}
@@ -15,7 +17,8 @@ import scala.util.{Failure, Success, Try}
 class MqttRepeater(
                     remoteConfiguration: HomeControllerConfiguration,
                     actorSystem: ActorSystem,
-                    localMqttConnector: MqttConnector
+                    localMqttConnector: MqttConnector,
+                    clock: Clock
                   ) extends Actor {
   private val mqttConnector = new MqttConnector(
     remoteConfiguration,
@@ -25,20 +28,19 @@ class MqttRepeater(
 
   override def receive(): Receive = {
     case Ping => mqttConnector.reconnect.run()
-    case ConsumeMessage(receivedTopic: String, payload: String) => receivedTopic match {
-      case MqttRepeater.commandTopic() => Unit // Don't replay watering commands
-      case _ => Try(mqttConnector.sendRaw(receivedTopic, payload)) match {
+    case ConsumeMessage(receivedTopic: String, payload: String) =>
+      Try(
+        if(payload.contains(","))
+          mqttConnector.sendRaw(receivedTopic, payload)
+        else
+          mqttConnector.sendRaw(receivedTopic, payload + "," + clock.instant().getEpochSecond)
+      ) match {
         case Success(_) =>
         case Failure(exception) => Logger.warn("Unable to repeat message", exception)
       }
-
-    }
   }
 }
 
-object MqttRepeater {
-  val commandTopic = "home/watering/ibisek/commands".r
-}
 
 class RepeatingMqttCallback(localMqttConnector: MqttConnector) extends MqttCallback {
 

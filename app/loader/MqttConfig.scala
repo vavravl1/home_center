@@ -30,7 +30,8 @@ trait MqttConfig extends BuiltInComponents with DaoConfig with ClockConfig {
         configuration.getString("home_center.mqtt_repeater.clientId").orNull
       ),
       actorSystem,
-      mqttConnector
+      mqttConnector,
+      clock = clock
     )
   ))
 
