@@ -12,7 +12,7 @@ CREATE TABLE sensor (
   name VARCHAR(20),
   locationAddress VARCHAR(20)
 );
-CREATE INDEX unique__sensor ON sensor(name, locationAddress);
+ALTER TABLE sensor ADD CONSTRAINT unique__sensor UNIQUE(name, locationAddress);
 ALTER TABLE sensor ADD CONSTRAINT fk_locationAddress
   FOREIGN KEY (locationAddress) REFERENCES location(address)
   ON UPDATE CASCADE;

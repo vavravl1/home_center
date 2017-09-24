@@ -29,10 +29,10 @@ class WattmeterClient(
 
       Logger.debug(s"Received response from wattmeter L1:${l1Power} W, L2: ${l2Power} W, L3: ${l3Power} W")
 
-      jsonSender.sendRaw("node/main-switchboard/wattrouter/-/L1", powerMessage(l1Power))
-      jsonSender.sendRaw("node/main-switchboard/wattrouter/-/L2", powerMessage(l2Power))
-      jsonSender.sendRaw("node/main-switchboard/wattrouter/-/L3", powerMessage(l3Power))
-      jsonSender.sendRaw("node/main-switchboard/wattrouter/-/boiler", powerMessage(boiler))
+      jsonSender.send("node/main-switchboard/wattrouter/-/L1", powerMessage(l1Power))
+      jsonSender.send("node/main-switchboard/wattrouter/-/L2", powerMessage(l2Power))
+      jsonSender.send("node/main-switchboard/wattrouter/-/L3", powerMessage(l3Power))
+      jsonSender.send("node/main-switchboard/wattrouter/-/boiler", powerMessage(boiler))
     })
   }
 

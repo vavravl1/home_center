@@ -15,10 +15,6 @@ class ActuatorRepositoryNaive(
                              ) extends ActuatorRepository {
 
   private val actuators = Seq(
-    new WateringActuator(
-      locationRepository = locationRepository,
-      jsonSender = jsonSender
-    ),
     new BcRelayActuator(
       locationRepository = locationRepository,
       sensorRepository: SensorRepository,

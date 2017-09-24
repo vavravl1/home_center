@@ -3,7 +3,7 @@ package loader
 import akka.actor.{ActorRef, Props}
 import com.softwaremill.macwire.wire
 import config.HomeControllerConfiguration
-import mqtt.clown.{BridgeListener, MqttBigClownParser}
+import mqtt.clown.{BigClownStoringListener, MqttBigClownParser}
 import mqtt.{MqttConnector, MqttDispatchingListener, MqttListenerMessage, MqttRepeater}
 import play.api.BuiltInComponents
 
@@ -22,7 +22,7 @@ trait MqttConfig extends BuiltInComponents with DaoConfig with ClockConfig {
   )
 
   lazy val mqttBigClownParser = wire[MqttBigClownParser]
-  lazy val bcBridgeListenerActor: ActorRef = actorSystem.actorOf(Props(wire[BridgeListener]))
+  lazy val bcBridgeListenerActor: ActorRef = actorSystem.actorOf(Props(wire[BigClownStoringListener]))
   lazy val mqttRepeaterActor: ActorRef = actorSystem.actorOf(Props(
     new MqttRepeater(
       HomeControllerConfiguration(

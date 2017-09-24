@@ -43,6 +43,22 @@ case class MeasuredPhenomenonSql(
         .map(measurementFromRs).toList().apply()
     })
 
+  override def lastNMeasurementsDescendant(n:Int): Seq[Measurement] =
+    DB.readOnly(implicit session => {
+      sql"""
+           SELECT
+            measureTimestamp AS ts,
+            value AS avg,
+            value AS min,
+            value AS max
+           FROM measurement
+           WHERE measuredPhenomenonId = ${id}
+           ORDER BY measureTimestamp DESC
+           LIMIT ${n}
+        """
+        .map(measurementFromRs).toList().apply()
+    })
+
   override def aggregateOldMeasurements(): Unit = DB.localTx(implicit session => {
     val oneHourAgo = clock.instant().truncatedTo(ChronoUnit.HOURS).minus(1, ChronoUnit.HOURS)
     val lastHourTs = new Timestamp(oneHourAgo.toEpochMilli)

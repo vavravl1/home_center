@@ -5,6 +5,8 @@ import model.actuator.{Actuator, Command}
 import model.location.{Location, LocationRepository}
 import model.sensor.{BooleanMeasurementAggregationStrategy, SensorRepository}
 import mqtt.JsonSender
+import play.api.Logger
+import play.api.libs.json.Json
 
 /**
   * Represents Bc Relay module
@@ -28,9 +30,10 @@ case class BcRelayActuator(
     val newState = if(measurements.nonEmpty) measurements.last.average == 0 else fallbackState
     fallbackState = !newState
 
+    Logger.info(s"BcRelayActuator called and newState is ${newState}")
     jsonSender.send(
       "node/836d19833c33/relay/0:0/state/set",
-      newState
+      Json.toJson(newState).toString()
     )
   }
 }

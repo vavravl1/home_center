@@ -1,16 +1,15 @@
 package mqtt
 
-import scala.concurrent.duration._
-import scala.language.postfixOps
 import akka.actor.ActorSystem
 import config.HomeControllerConfiguration
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence
 import org.eclipse.paho.client.mqttv3._
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence
 import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import play.api.libs.json.{Json, Writes}
 
 import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 /**
   * Connector to the mqtt broker
@@ -66,27 +65,13 @@ class MqttConnector(
     }
   }
 
-  override def send[T](topic: String, payload: T)(implicit writes: Writes[T]): Future[Unit] = {
-    Future {
-      mqttClient match {
-        case Some(client) => Logger.debug(s"Publishing ${Json.toJson(payload)(writes).toString()} to $topic")
-          client.publish(
-            topic,
-            new MqttMessage(Json.toJson(payload)(writes).toString().getBytes)
-          )
-        case None => throw new RuntimeException("Mqtt client is not yet connected")
-      }
-    }
-  }
-
-  override def sendRaw(topic: String, payload: String): Unit = {
-      mqttClient match {
-        case Some(client) => Logger.debug(s"Raw publishing $payload to $topic")
+  override def send(topic: String, payload: String): Unit = mqttClient match {
+        case Some(client) =>
           client.publish(
             topic,
             new MqttMessage(payload.getBytes)
           )
-        case None => {}
+          Logger.debug(s"Published $payload to $topic")
+        case None => Logger.warn(s"Unable to send $payload to $topic due to  unconnected client ")
     }
-  }
 }

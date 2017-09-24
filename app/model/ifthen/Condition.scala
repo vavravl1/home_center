@@ -1,14 +1,24 @@
 package model.ifthen
 
-import model.sensor.Measurement
+import model.sensor.{MeasuredPhenomenon, Measurement}
 
 /**
   *
   */
 trait Condition {
-  def apply(measurements:Measurement): Boolean
+  def apply(measuredPhenomenon: MeasuredPhenomenon, measurement:Measurement): Boolean
+}
+
+object AverageValueChanged extends Condition {
+  override def apply(phenomenon: MeasuredPhenomenon, measurement: Measurement): Boolean = {
+    val possiblyLatMeasurement = phenomenon.lastNMeasurementsDescendant(2)
+      .filter(_.measureTimestamp != measurement.measureTimestamp)
+      .take(1)
+      .filter(loaded => loaded.average == measurement.average)
+    return possiblyLatMeasurement.isEmpty
+  }
 }
 
 object TrueCondition extends Condition {
-  override def apply(measurements: Measurement): Boolean = true
+  override def apply(phenomenon: MeasuredPhenomenon, measurement: Measurement): Boolean = true
 }

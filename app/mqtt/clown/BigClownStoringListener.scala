@@ -7,7 +7,7 @@ import mqtt.MqttListenerMessage.{ConsumeMessage, Ping}
 /**
   * Stores messages from big clown
   */
-class BridgeListener(
+class BigClownStoringListener(
                       mqttBigClownParser: MqttBigClownParser
                     ) extends Actor {
   override def receive(): Receive = {

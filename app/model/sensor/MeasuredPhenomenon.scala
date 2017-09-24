@@ -30,6 +30,11 @@ trait MeasuredPhenomenon {
   def measurements(timeGranularity: TimeGranularity): Seq[Measurement]
 
   /**
+    * Returns last n measurements sorted by measured time descendant
+    */
+  def lastNMeasurementsDescendant(n: Int): Seq[Measurement]
+
+  /**
     * Remove old un-aggregated measurements and replace them by aggregated one.
     * Aggregation is done by hours.
     */

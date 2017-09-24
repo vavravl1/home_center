@@ -16,8 +16,8 @@ import org.scalatest.{Matchers, WordSpec}
 /**
   *
   */
-class BridgeListenerTest extends WordSpec with Matchers with MockFactory {
-  "BridgeListener" when {
+class BigClownStoringListenerTest extends WordSpec with Matchers with MockFactory {
+  "BigClownStoringListener" when {
 
     implicit val system = ActorSystem()
     val clock = mock[Clock]
@@ -27,7 +27,7 @@ class BridgeListenerTest extends WordSpec with Matchers with MockFactory {
       val locationRepository = mock[LocationRepositorySql]
       val sensorRepository = mock[SensorRepositorySqlWithCtor]
       val mqttBigClownParser = wire[MqttBigClownParser]
-      val listener:TestActorRef[BridgeListener] = TestActorRef[BridgeListener](Props(wire[BridgeListener]))
+      val listener:TestActorRef[BigClownStoringListener] = TestActorRef[BigClownStoringListener](Props(wire[BigClownStoringListener]))
       val sensor = mock[Sensor]
       val phenomenon = mock[MeasuredPhenomenon]
 

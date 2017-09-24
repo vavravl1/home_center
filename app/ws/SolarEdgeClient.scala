@@ -36,7 +36,7 @@ class SolarEdgeClient(
       val lastMeasurement = (response.json \ "overview" \ "lastUpdateTime").as[Instant](CommonJsonReadWrite.instantInIso)
 
       Logger.debug(s"Received response from SolarEdge actualPower: ${actualPower} W; lastMeasurement: ${lastMeasurement}")
-      jsonSender.sendRaw("node/garage/pve-inverter/-/power", s"${actualPower},${lastMeasurement.getEpochSecond}")
+      jsonSender.send("node/garage/pve-inverter/-/power", s"${actualPower},${lastMeasurement.getEpochSecond}")
     }).onFailure {
       case t => Logger.warn(s"An error has occured during querying SolarEdge", t)
     }

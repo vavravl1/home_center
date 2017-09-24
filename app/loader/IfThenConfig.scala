@@ -4,7 +4,7 @@ import akka.actor.Props
 import com.softwaremill.macwire.wire
 import model.actuator.Command
 import model.actuator.impl.ActuatorRepositoryNaive
-import model.ifthen.{IfThen, MqttIfThenExecutor, TrueCondition}
+import model.ifthen.{AverageValueChanged, IfThen, MqttIfThenExecutor}
 import model.sensor.IdentityMeasurementAggregationStrategy
 import play.api.BuiltInComponents
 
@@ -25,7 +25,7 @@ trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig wit
           objekt = sensor,
           subject = sensor.findOrCreatePhenomenon(
             "event-count", "event-count", IdentityMeasurementAggregationStrategy),
-          condition = TrueCondition,
+          condition = AverageValueChanged,
           actuatorRepository.findOrCreateActuator(actuatorLocation, "Relay"),
           Command("Toggle", Seq.empty)
       )

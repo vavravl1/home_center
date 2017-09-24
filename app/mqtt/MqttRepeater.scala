@@ -30,12 +30,14 @@ class MqttRepeater(
     case Ping => mqttConnector.reconnect.run()
     case ConsumeMessage(receivedTopic: String, payload: String) =>
       Try(
-        if(payload.contains(","))
-          mqttConnector.sendRaw(receivedTopic, payload)
-        else
-          mqttConnector.sendRaw(receivedTopic, payload + "," + clock.instant().getEpochSecond)
+        if(payload.contains(",")) {
+          mqttConnector.send(receivedTopic, payload)
+        } else {
+          val payloadWithTs = payload + "," + clock.instant().getEpochSecond
+          mqttConnector.send(receivedTopic, payloadWithTs)
+        }
       ) match {
-        case Success(_) =>
+        case Success(_) => Logger.debug(s"Repeated $payload to $receivedTopic")
         case Failure(exception) => Logger.warn("Unable to repeat message", exception)
       }
   }
