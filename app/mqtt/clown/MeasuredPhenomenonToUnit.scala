@@ -15,6 +15,10 @@ object MeasuredPhenomenonToUnit {
     case "L2" => "kW"
     case "L3" => "kW"
     case "boiler" => "kW"
+    case "L1-surplus" => "kWh"
+    case "L1-cons" => "kWh"
+    case "L2-cons" => "kWh"
+    case "L3-cons" => "kWh"
     case "power" => "W"
     case _ => sensor
   }

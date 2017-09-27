@@ -74,6 +74,7 @@ case class SensorSql(
   private def saveMeasuredPhenomenon(name: String, unit:String, aggregationStrategy: MeasurementAggregationStrategy)(implicit session: DBSession):MeasuredPhenomenonSql = {
     val aggregationStrategyName = aggregationStrategy match {
       case IdentityMeasurementAggregationStrategy => "none"
+      case SingleValueAggregationStrategy => "singleValue"
       case BooleanMeasurementAggregationStrategy => "boolean"
     }
     sql"""

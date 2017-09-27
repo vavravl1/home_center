@@ -35,13 +35,17 @@ class MqttBigClownParser(
       location = location,
       name = sensorName
     )
+    val unit = MeasuredPhenomenonToUnit(measuredPhenomenon)
     val phenomenon = sensor.findOrCreatePhenomenon(
       name = measuredPhenomenon,
-      unit = MeasuredPhenomenonToUnit(measuredPhenomenon),
+      unit = unit,
       aggregationStrategy = value match {
         case "true" => BooleanMeasurementAggregationStrategy
         case "false" => BooleanMeasurementAggregationStrategy
-        case _ => IdentityMeasurementAggregationStrategy
+        case _ => unit match {
+          case "kWh" => SingleValueAggregationStrategy
+          case _ => IdentityMeasurementAggregationStrategy
+        }
       }
     )
     val measurement = Measurement(

@@ -4,7 +4,7 @@ import com.softwaremill.macwire.wire
 import play.api.BuiltInComponents
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.ws.ahc.AhcWSClient
-import ws.{SolarEdgeClient, WattmeterClient}
+import ws.{SolarEdgeClient, WattrouterClient}
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -14,7 +14,7 @@ import scala.language.postfixOps
   */
 trait WsClientConfig extends BuiltInComponents with DaoConfig with ClockConfig with MqttConfig {
   lazy val wsClient = AhcWSClient()
-  lazy val wattmeterClient = wire[WattmeterClient]
+  lazy val wattmeterClient = wire[WattrouterClient]
   lazy val solarEdgeClient = new SolarEdgeClient(
     ws = wsClient,
     sensorRepository = sensorRepository,
@@ -31,7 +31,16 @@ trait WsClientConfig extends BuiltInComponents with DaoConfig with ClockConfig w
       1 second,
       new Runnable {
         override def run() = {
-          wattmeterClient.queryWattmeter()
+          wattmeterClient.queryMeasurements()
+        }
+      }
+    )
+    actorSystem.scheduler.schedule(
+      1 second,
+      5 minute,
+      new Runnable {
+        override def run() = {
+          wattmeterClient.queryStats()
         }
       }
     )
