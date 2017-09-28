@@ -1,8 +1,7 @@
 package model.ifthen
 
-import akka.actor.Actor
 import model.sensor._
-import mqtt.MqttListenerMessage.{ConsumeMessage, Ping}
+import mqtt.MqttListener
 import mqtt.clown.MqttBigClownParser
 
 /**
@@ -11,14 +10,10 @@ import mqtt.clown.MqttBigClownParser
 class MqttIfThenExecutor(
                     mqttBigClownParser: MqttBigClownParser,
                     ifThens: Seq[IfThen]
-                  ) extends Actor {
-  override def receive(): Receive = {
-    case Ping => ()
-    case ConsumeMessage(receivedTopic: String, message: String) =>
-      mqttBigClownParser.parseMqttMessage(receivedTopic, message)
-        .map({case (sensor, phenomenon, measurement) => evaluateMessage(sensor, phenomenon, measurement)})
-    case _ =>
-  }
+                  ) extends MqttListener {
+  override def messageReceived(receivedTopic: String, message: String): Unit =
+    mqttBigClownParser.parseMqttMessage(receivedTopic, message)
+      .map({case (sensor, phenomenon, measurement) => evaluateMessage(sensor, phenomenon, measurement)})
 
   private def evaluateMessage(sensor: Sensor, phenomenon: MeasuredPhenomenon, measurement: Measurement) = {
     ifThens.foreach(ifThen => ifThen.action(sensor, phenomenon, measurement))

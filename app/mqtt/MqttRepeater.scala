@@ -2,8 +2,7 @@ package mqtt
 
 import java.time.Clock
 
-import akka.actor.{Actor, ActorSystem}
-import mqtt.MqttListenerMessage.{ConsumeMessage, Ping}
+import akka.actor.ActorSystem
 import org.eclipse.paho.client.mqttv3._
 import play.api.Logger
 
@@ -18,22 +17,20 @@ class MqttRepeater(
                     localMqttConnector: MqttConnector,
                     remoteMqttConnector: MqttConnector,
                     clock: Clock
-                  ) extends Actor {
-  override def receive(): Receive = {
-    case Ping => remoteMqttConnector.reconnect.run()
-    case ConsumeMessage(receivedTopic: String, payload: String) =>
-      Try(
-        if(payload.contains(",")) {
-          remoteMqttConnector.send(receivedTopic, payload)
-        } else {
-          val payloadWithTs = payload + "," + clock.instant().getEpochSecond
-          remoteMqttConnector.send(receivedTopic, payloadWithTs)
-        }
-      ) match {
-        case Success(_) => Logger.debug(s"Repeated $payload to $receivedTopic")
-        case Failure(exception) => Logger.warn("Unable to repeat message", exception)
-      }
+                  ) extends MqttListener {
+  override def messageReceived(receivedTopic: String, message: String): Unit = Try(
+    if(message.contains(",")) {
+      remoteMqttConnector.send(receivedTopic, message)
+    } else {
+      val payloadWithTs = message + "," + clock.instant().getEpochSecond
+      remoteMqttConnector.send(receivedTopic, payloadWithTs)
+    }
+  ) match {
+    case Success(_) => Logger.debug(s"Repeated $message to $receivedTopic")
+    case Failure(exception) => Logger.warn("Unable to repeat message", exception)
   }
+
+  override def ping = remoteMqttConnector.reconnect.run()
 }
 
 
