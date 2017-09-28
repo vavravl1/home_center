@@ -26,17 +26,14 @@ class SensorView extends React.Component {
         return this.props.timeGranularity === 'BySecond'
     };
 
+    emptyChartData = {
+        labels: '',
+        times: '',
+        datasets: [],
+    };
 
-    valueChartData = function () {
-        if (this.props.measuredPhenomenons.length == 0) {
-            return {
-                labels: '',
-                times: '',
-                datasets: [],
-            };
-        }
-
-        let dates = this.props.measuredPhenomenons[0].measurements
+    prepareDatesForChart = () => {
+        return this.props.measuredPhenomenons[0].measurements
             .map(t => t.measureTimestamp)
             .map(t => {
                 if (this.isTimGranularityByDay()) {
@@ -47,76 +44,85 @@ class SensorView extends React.Component {
                     return moment(t).add(1, 'minute').startOf('minute').format("HH:mm")
                 }
             });
+    };
 
-        let times = this.props.measuredPhenomenons[0].measurements
+    prepareExactTimesForChart = () => {
+        return this.props.measuredPhenomenons[0].measurements
             .map(t => moment(t.measureTimestamp).add(1, 'minute').format("DD.MM.YYYY HH:mm"));
+    };
 
-        const colors = [
-            [255, 0, 0],
-            [0, 255, 0],
-            [0, 0, 255],
-            [127, 0, 127]
-        ];
+    chartColors = [
+        [255, 0, 0],
+        [0, 255, 0],
+        [0, 0, 255],
+        [127, 0, 127]
+    ];
+
+    prepareDataSetForSimpleLineValue = () => {
+        return this.props.measuredPhenomenons
+            .map(measuredPhenomenon => {
+                const averages = measuredPhenomenon.measurements.map(t => t.average);
+                const maxes = measuredPhenomenon.measurements.map(t => t.max);
+                const index = this.props.measuredPhenomenons.indexOf(measuredPhenomenon);
+                const red = this.chartColors[index % 4][0];
+                const green = this.chartColors[index % 4][1];
+                const blue = this.chartColors[index % 4][2];
+                return {
+                    label: measuredPhenomenon.name,
+                    borderColor: 'rgb(' + red + ',' + green + ',' + blue + ')',
+                    data: measuredPhenomenon.aggregationStrategy === 'none' ? averages : maxes,
+                }
+            });
+    };
+
+    prepareDataSetForByDayValues = () => {
+        return this.props.measuredPhenomenons
+            .map(measuredPhenomenon => {
+                const averages = measuredPhenomenon.measurements.map(t => t.average);
+                const maxes = measuredPhenomenon.measurements.map(t => t.max);
+                const mines = measuredPhenomenon.measurements.map(t => t.min);
+                const index = this.props.measuredPhenomenons.indexOf(measuredPhenomenon);
+                const red = this.chartColors[index % 4][0];
+                const green = this.chartColors[index % 4][1];
+                const blue = this.chartColors[index % 4][2];
+                return [{
+                    label: 'average ' + measuredPhenomenon.name,
+                    borderColor: 'rgb(' + red + ',' + green + ',' + blue + ')',
+                    data: measuredPhenomenon.aggregationStrategy === 'none' ? averages : maxes,
+                }, {
+                    label: 'min ' + measuredPhenomenon.name,
+                    borderColor: 'rgb(' + ((red + 30) % 255) + ',' + (green + 10) + ',' + (blue - 120) + ')',
+                    data: mines,
+                }, {
+                    label: 'max ' + measuredPhenomenon.name,
+                    borderColor: 'rgb(' + ((red - 60) % 255) + ',' + ((green + 60) % 255) + ',' + ((blue - 100) % 255) + ')',
+                    data: maxes,
+                }]
+            }).reduce(function (a, b) {
+                return a.concat(b);
+            });
+    };
+
+    valueChartLineData = function () {
+        if (this.props.measuredPhenomenons.length == 0) {
+            return this.emptyChartData;
+        }
 
         let datasets = [];
         if (this.isTimGranularityByDay()) {
-            datasets = this.props.measuredPhenomenons
-                .map(measuredPhenomenon => {
-                    const averages = measuredPhenomenon.measurements.map(t => t.average);
-                    const maxes = measuredPhenomenon.measurements.map(t => t.max);
-                    const mines = measuredPhenomenon.measurements.map(t => t.min);
-                    const index = this.props.measuredPhenomenons.indexOf(measuredPhenomenon);
-                    const red = colors[index % 4][0];
-                    const green = colors[index % 4][1];
-                    const blue = colors[index % 4][2];
-                    return [{
-                        label: 'average ' + measuredPhenomenon.name,
-                        borderColor: 'rgb(' + red + ',' + green + ',' + blue + ')',
-                        // borderColor: 'rgb(0, 0, 0)',
-                        data: averages,
-                        // type: measuredPhenomenon.aggregationStrategy === 'none' ? 'line' : 'bar'
-                    }, {
-                        label: 'min ' + measuredPhenomenon.name,
-                        borderColor: 'rgb(' + ((red + 30) % 255) + ',' + (green + 10) + ',' + (blue - 120) + ')',
-                        // borderColor: 'rgb(0, 0, 0)',
-                        data: mines,
-                        // type: measuredPhenomenon.aggregationStrategy === 'none' ? 'line' : 'bar'
-                    }, {
-                        label: 'max ' + measuredPhenomenon.name,
-                        borderColor: 'rgb(' + ((red - 60) % 255) + ',' + ((green + 60) % 255) + ',' + ((blue - 100) % 255) + ')',
-                        // borderColor: 'rgb(0, 0, 0)',
-                        data: maxes,
-                        // type: (measuredPhenomenon.aggregationStrategy === 'none') ? 'line' : 'bar'
-                    }]
-                }).reduce(function (a, b) {
-                    return a.concat(b);
-                });
+            datasets = this.prepareDataSetForByDayValues();
         } else {
-            datasets = this.props.measuredPhenomenons
-                .map(measuredPhenomenon => {
-                    const averages = measuredPhenomenon.measurements.map(t => t.average);
-                    const index = this.props.measuredPhenomenons.indexOf(measuredPhenomenon);
-                    const red = colors[index % 4][0];
-                    const green = colors[index % 4][1];
-                    const blue = colors[index % 4][2];
-                    return {
-                        label: measuredPhenomenon.name,
-                        borderColor: 'rgb(' + red + ',' + green + ',' + blue + ')',
-                        // backgroundColor: 'rgb(0, 0, 0)',
-                        data: averages,
-                        // type: (measuredPhenomenon.aggregationStrategy === 'none') ? 'line' : 'bar'
-                    }
-                });
+            datasets = this.prepareDataSetForSimpleLineValue();
         }
 
         return {
-            labels: dates,
-            times: times,
+            labels: this.prepareDatesForChart(),
+            times: this.prepareExactTimesForChart(),
             datasets: datasets,
         };
     };
 
-    humidityChartOptions = () => {
+    chartOptions = () => {
         return {
             responsive: true,
             scales: {
@@ -129,7 +135,7 @@ class SensorView extends React.Component {
             legend: {
                 display: true
             },
-            animation : false,
+            animation: false,
             tooltips: {
                 callbacks: {
                     title: function (array, data) {
@@ -194,7 +200,7 @@ class SensorView extends React.Component {
 
     render = () => {
         const overviews = this.prepareLastMeasuredValues();
-        let lastTimestamp = this.prepareLastMeasuredTimestamp();
+        const lastTimestamp = this.prepareLastMeasuredTimestamp();
         return <Jumbotron bsClass="sensor-measurement-box">
             <h2 className="capital" style={{display: 'inline'}}>{this.props.sensor.name}</h2>
             <ButtonToolbar className="pull-right">
@@ -208,7 +214,7 @@ class SensorView extends React.Component {
                 {overviews}
                 </tbody>
             </table>
-            <Line data={this.valueChartData()} options={this.humidityChartOptions()}/>
+            <Line data={this.valueChartLineData()} options={this.chartOptions()}/>
             <CheckBox
                 className="pull-left"
                 bsSize="xsmall"

@@ -2,7 +2,9 @@ import React from "react";
 import axios from "axios";
 import update from "react-addons-update";
 import SensorView from "./sensor-view.jsx";
+import SensorBarView from "./sensor-bar-view.jsx";
 import PropTypes from "prop-types";
+
 
 class Sensor extends React.Component {
 
@@ -45,7 +47,7 @@ class Sensor extends React.Component {
                     measuredPhenomenons: {
                         $set: _measuredPhenomenons.data
                     },
-                    tickHandler: {$set: tickHandler}
+                    tickHandler: {$set:  tickHandler}
                 });
                 t.setState(newState);
             })
@@ -62,14 +64,27 @@ class Sensor extends React.Component {
     };
 
     render = () => {
-        return <SensorView
-            sensor={this.props.sensor}
-            measuredPhenomenons={this.state.measuredPhenomenons}
-            timeGranularity={this.state.timeGranularity}
-            timeGranularityChangedCallback={this.timeGranularityChangedCallback}
-            makeBigCallback={this.props.makeBigCallback}
-            makeSmallCallback={this.props.makeSmallCallback}
-        />
+        const allDataAreSingleValue = this.state.measuredPhenomenons
+            .every(phenomenon => phenomenon.aggregationStrategy === 'singleValue');
+        if(allDataAreSingleValue) {
+            return <SensorBarView
+                sensor={this.props.sensor}
+                measuredPhenomenons={this.state.measuredPhenomenons}
+                timeGranularity={this.state.timeGranularity}
+                timeGranularityChangedCallback={this.timeGranularityChangedCallback}
+                makeBigCallback={this.props.makeBigCallback}
+                makeSmallCallback={this.props.makeSmallCallback}
+            />
+        } else {
+            return <SensorView
+                sensor={this.props.sensor}
+                measuredPhenomenons={this.state.measuredPhenomenons}
+                timeGranularity={this.state.timeGranularity}
+                timeGranularityChangedCallback={this.timeGranularityChangedCallback}
+                makeBigCallback={this.props.makeBigCallback}
+                makeSmallCallback={this.props.makeSmallCallback}
+            />
+        }
     };
 }
 
