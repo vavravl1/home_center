@@ -23,7 +23,7 @@ class MqttConnector(
 
   val reconnect: Runnable = {
     new Runnable {
-      override def run(): Unit = {
+      override def run(): Unit = this.synchronized {
         mqttClient match {
           case Some(_) => Logger.info("Mqtt client has connected")
           case None if configuration.mqttClientId != null =>
@@ -66,12 +66,12 @@ class MqttConnector(
   }
 
   override def send(topic: String, payload: String): Unit = mqttClient match {
-        case Some(client) =>
-          client.publish(
-            topic,
-            new MqttMessage(payload.getBytes)
-          )
-          Logger.debug(s"Published $payload to $topic")
-        case None => Logger.warn(s"Unable to send $payload to $topic due to  unconnected client ")
-    }
+    case Some(client) =>
+      client.publish(
+        topic,
+        new MqttMessage(payload.getBytes)
+      )
+      Logger.debug(s"Published $payload to $topic")
+    case None => Logger.warn(s"Unable to send $payload to $topic due to  unconnected client ")
+  }
 }
