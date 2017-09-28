@@ -5,12 +5,13 @@ import java.time.Clock
 import java.time.temporal.ChronoUnit.{DAYS, MINUTES, SECONDS}
 
 import scalikejdbc._
+import scalikejdbc.interpolation.SQLSyntax
 
 /**
   * Represents granularity by which the data should be returned
   */
 sealed abstract class TimeGranularity {
-  def toExtractAndTime()(implicit clock: Clock) = {
+  def toExtractAndTime()(implicit clock: Clock):(SQLSyntax, SQLSyntax, Timestamp) = {
     this match {
       case BySecond => (sqls"SECOND", sqls"MINUTE", new Timestamp(clock.instant().minus(30, SECONDS).toEpochMilli))
       case BySecondBig => (sqls"SECOND", sqls"MINUTE", new Timestamp(clock.instant().minus(1, MINUTES).toEpochMilli))
@@ -21,6 +22,8 @@ sealed abstract class TimeGranularity {
       case ByHourUnlimited => (sqls"HOUR", sqls"DAY", new Timestamp(0))
       case ByDay => (sqls"DAY", sqls"MONTH", new Timestamp(clock.instant().minus(14, DAYS).toEpochMilli))
       case ByDayBig => (sqls"DAY", sqls"MONTH", new Timestamp(clock.instant().minus(30, DAYS).toEpochMilli))
+      case ByMonth => (sqls"MONTH", sqls"YEAR", new Timestamp(clock.instant().minus(365, DAYS).toEpochMilli))
+      case ByMonthBig => (sqls"MONTH", sqls"YEAR", new Timestamp(clock.instant().minus(2*365, DAYS).toEpochMilli))
     }
   }
 }
@@ -35,6 +38,8 @@ object TimeGranularity {
     case "ByHour" if big => ByHourBig
     case "ByDay" if !big => ByDay
     case "ByDay" if big => ByDayBig
+    case "ByMonth" if !big => ByMonth
+    case "ByMonth" if big => ByMonthBig
     case _ => ByHour
   }
 }
@@ -48,3 +53,5 @@ object ByHourBig extends TimeGranularity
 object ByHourUnlimited extends TimeGranularity
 object ByDay extends TimeGranularity
 object ByDayBig extends TimeGranularity
+object ByMonth extends TimeGranularity
+object ByMonthBig extends TimeGranularity

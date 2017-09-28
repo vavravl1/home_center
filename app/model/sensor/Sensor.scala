@@ -20,6 +20,13 @@ trait Sensor {
   val location: Location
 
   /**
+    * When all measured phenomenons are single value aggregation, then this value is true. False otherwise.
+    * When there are zero measured phenomenons, return false.
+    *
+    */
+  def areAllMeasuredPhenomenonsSingleValue:Boolean
+
+  /**
     * All measured phenomenons by this sensor
     */
   def measuredPhenomenons:Seq[MeasuredPhenomenon]

@@ -4,7 +4,7 @@ import java.time.temporal.ChronoUnit._
 import java.time.{Clock, Instant}
 
 import dao.{ByHour, DbTest}
-import model.sensor.{IdentityMeasurementAggregationStrategy, Measurement}
+import model.sensor.{IdentityMeasurementAggregationStrategy, Measurement, SingleValueAggregationStrategy}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, WordSpec}
 import scalikejdbc._
@@ -72,6 +72,33 @@ class SensorSqlTest extends WordSpec with Matchers with DbTest with MockFactory 
         DB.autoCommit(implicit session => {
           sql"""SELECT COUNT(*) FROM measurement""".map(rs => rs.int(1)).single.apply() shouldBe Some(2)
         })
+      }
+    }
+
+    "should compute areAllMeasuredPhenomenonsSingleValue" should {
+      val i = Instant.ofEpochSecond(0)
+      val location = locationRepository.findOrCreateLocation("remote/2")
+
+      sensorRepository.find(location, "wattmeter-stats").map(s => sensorRepository.delete(s))
+      sensorRepository.find(location, "hybrid-sensor").map(s => sensorRepository.delete(s))
+
+      "returns true for all measurements of only singleValue only" in {
+        val sensor = sensorRepository.findOrCreateSensor(location, "wattmeter-stats")
+        val phenomenon = sensor.findOrCreatePhenomenon("l1Cons", "kWh", SingleValueAggregationStrategy)
+        sensor.addMeasurement(Measurement(1.2, i), phenomenon)
+        sensor.addMeasurement(Measurement(1.4, i.plus(30, MINUTES)), phenomenon)
+
+        sensor.areAllMeasuredPhenomenonsSingleValue shouldBe true
+      }
+
+      "returns false for several measurement types" in {
+        val sensor = sensorRepository.findOrCreateSensor(location, "hybrid-sensor")
+        val phenomenonA = sensor.findOrCreatePhenomenon("l1Cons", "kWh", SingleValueAggregationStrategy)
+        sensor.addMeasurement(Measurement(1.2, i), phenomenonA)
+        val phenomenonB = sensor.findOrCreatePhenomenon("temperature", "C", IdentityMeasurementAggregationStrategy)
+        sensor.addMeasurement(Measurement(10, i), phenomenonB)
+
+        sensor.areAllMeasuredPhenomenonsSingleValue shouldBe false
       }
     }
   }

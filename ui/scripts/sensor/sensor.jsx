@@ -12,7 +12,7 @@ class Sensor extends React.Component {
         super(props);
         const cancelToken = axios.CancelToken;
         this.state = {
-            timeGranularity: "ByHour",
+            timeGranularity: this.props.sensor.areAllMeasuredPhenomenonsSingleValue ? "ByDay" : "ByHour",
             measuredPhenomenons: [],
             tickHandler: null,
             source: cancelToken.source(),

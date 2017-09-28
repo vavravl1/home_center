@@ -13,12 +13,12 @@ import scalikejdbc.{WrappedResultSet, _}
 case class SensorSql(
                  override val name: String,
                  override val location: LocationSql,
-                 val id: String,
-                 val _clock: Clock
+                 id: String,
+                 _clock: Clock
                ) extends Sensor {
-  implicit val clock = _clock
+  private implicit val clock = _clock
 
-  override def addMeasurement(measurement: Measurement, measuredPhenomenon:MeasuredPhenomenon): Unit = {
+  override def addMeasurement(measurement: Measurement, measuredPhenomenon: MeasuredPhenomenon): Unit = {
     DB.localTx(implicit session => {
       val mp = measuredPhenomenons
         .find(mp => mp.name == measuredPhenomenon.name && mp.sensorId == id)
@@ -71,7 +71,7 @@ case class SensorSql(
     })
   }
 
-  private def saveMeasuredPhenomenon(name: String, unit:String, aggregationStrategy: MeasurementAggregationStrategy)(implicit session: DBSession):MeasuredPhenomenonSql = {
+  private def saveMeasuredPhenomenon(name: String, unit: String, aggregationStrategy: MeasurementAggregationStrategy)(implicit session: DBSession): MeasuredPhenomenonSql = {
     val aggregationStrategyName = aggregationStrategy match {
       case IdentityMeasurementAggregationStrategy => "none"
       case SingleValueAggregationStrategy => "singleValue"
@@ -88,6 +88,22 @@ case class SensorSql(
           AND MP.sensorId = ${id}
       """.map(MeasuredPhenomenonSql.fromRs(_, clock)).single().apply().get
   }
+
+  override def areAllMeasuredPhenomenonsSingleValue: Boolean =
+    DB.readOnly(implicit session => {
+      sql"""
+           SELECT (
+              SELECT count(id) FROM measuredPhenomenon
+              WHERE sensorId = ${id}
+              AND aggregationStrategy = 'singleValue'
+           ) > 0 AND (
+              SELECT count(id) FROM measuredPhenomenon
+              WHERE sensorId = ${id}
+              AND aggregationStrategy != 'singleValue'
+           ) = 0 AS allMeasuredPhenomenonsSingleValue
+
+        """.map(rs => rs.boolean("allMeasuredPhenomenonsSingleValue")).single().apply().get
+    })
 }
 
 object SensorSql {
@@ -107,6 +123,7 @@ object SensorSql {
       Json.obj(
         "name" -> s.name,
         "location" -> Json.toJson(s.location)(LocationSql.writes),
+        "areAllMeasuredPhenomenonsSingleValue" -> Json.toJson(s.areAllMeasuredPhenomenonsSingleValue),
         "measuredPhenomenons" -> Json.toJson(s.measuredPhenomenons)
       )
     }

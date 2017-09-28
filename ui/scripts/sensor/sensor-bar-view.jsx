@@ -23,12 +23,13 @@ class SensorBarView extends React.Component {
     prepareDatesForChart = () => {
         return this.props.measuredPhenomenons[0].measurements
             .map(t => t.measureTimestamp)
-            .map(t => moment(t).startOf('day').format("DD/MM"));
-    };
-
-    prepareExactTimesForChart = () => {
-        return this.props.measuredPhenomenons[0].measurements
-            .map(t => moment(t.measureTimestamp).add(1, 'minute').format("DD.MM.YYYY HH:mm"));
+            .map(t => {
+                if(this.props.timeGranularity === 'ByDay') {
+                    moment(t).startOf('day').format("DD/MM")
+                } else {
+                    moment(t).startOf('month').format("MM YYY")
+                }
+            });
     };
 
     chartColors = [
@@ -60,7 +61,6 @@ class SensorBarView extends React.Component {
 
         return {
             labels: this.prepareDatesForChart(),
-            times: this.prepareExactTimesForChart(),
             datasets: datasets,
         };
     };
@@ -122,6 +122,9 @@ class SensorBarView extends React.Component {
                 <Button bsSize="xsmall"
                         bsStyle={this.props.timeGranularity === 'ByDay' ? "primary" : "default"}
                         onClick={this.handleTimeGranularity.bind(this, "ByDay")}>By Day</Button>
+                <Button bsSize="xsmall"
+                        bsStyle={this.props.timeGranularity === 'ByMonth' ? "primary" : "default"}
+                        onClick={this.handleTimeGranularity.bind(this, "ByMonth")}>By Month</Button>
             </ButtonToolbar>
         </Jumbotron>
     };
