@@ -23,15 +23,13 @@ class MqttConnector(
 
   val reconnect: Runnable = {
     new Runnable {
-      override def run(): Unit = this.synchronized {
-        mqttClient match {
-          case Some(_) => Logger.info("Mqtt client has connected")
+      override def run(): Unit = mqttClient match {
+          case Some(_) => Logger.info(s"Mqtt client ${configuration.mqttClientId} has connected")
           case None if configuration.mqttClientId != null =>
             mqttClient = connect()
             actorSystem.scheduler.scheduleOnce(10 seconds, reconnect)
           case None if configuration.mqttClientId == null => Unit
         }
-      }
     }
   }
 

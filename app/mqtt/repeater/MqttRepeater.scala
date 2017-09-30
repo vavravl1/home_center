@@ -1,8 +1,8 @@
-package mqtt
+package mqtt.repeater
 
 import java.time.Clock
 
-import akka.actor.ActorSystem
+import mqtt.{MqttConnector, MqttListener}
 import org.eclipse.paho.client.mqttv3._
 import play.api.Logger
 
@@ -13,7 +13,6 @@ import scala.util.{Failure, Success, Try}
   * Replays every incoming mqtt message to remote mqtt broker
   */
 class MqttRepeater(
-                    actorSystem: ActorSystem,
                     localMqttConnector: MqttConnector,
                     remoteMqttConnector: MqttConnector,
                     clock: Clock

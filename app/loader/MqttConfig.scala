@@ -3,8 +3,9 @@ package loader
 import akka.actor.{ActorRef, Props}
 import com.softwaremill.macwire.wire
 import config.HomeControllerConfiguration
-import mqtt._
 import mqtt.clown.{BigClownStoringListener, MqttBigClownParser}
+import mqtt.repeater.{MqttRepeaterLimiter, MqttRepeaterSender, RepeatingMqttCallback}
+import mqtt.{MqttListenerMessage, _}
 import play.api.BuiltInComponents
 
 /**
@@ -23,45 +24,52 @@ trait MqttConfig extends BuiltInComponents with DaoConfig with ClockConfig {
 
   lazy val mqttBigClownParser = wire[MqttBigClownParser]
   lazy val bcBridgeListenerActor: ActorRef = actorSystem.actorOf(Props(wire[BigClownStoringListener]))
-  lazy val mqttRepeatersActors = prepareRepeatingMqttClient
+  lazy val mqttRepeater:Option[ActorRef] = prepareMqttRepeater
+
 
   def initializeListeners(): Unit = {
     mqttConnector.reconnect.run()
 
     bcBridgeListenerActor ! MqttListenerMessage.Ping
-    mqttRepeatersActors.foreach(mqttRepeaterActor => mqttRepeaterActor ! MqttListenerMessage.Ping)
+    mqttRepeater.map(_ ! MqttListenerMessage.Ping)
 
     mqttDispatchingListener.addListener(bcBridgeListenerActor.path)
-    mqttRepeatersActors.foreach(mqttRepeaterActor => mqttDispatchingListener.addListener(mqttRepeaterActor.path))
+    mqttRepeater.map(a => mqttDispatchingListener.addListener(a.path))
   }
 
-
-  private def prepareRepeatingMqttClient:Seq[ActorRef] = {
+  private def prepareMqttRepeater():Option[ActorRef] = {
     val remoteMqttUrl = configuration.getString("home_center.mqtt_repeater.url")
     val remoteMqttClientId = configuration.getString("home_center.mqtt_repeater.url")
 
-    if(!remoteMqttClientId.isDefined || !remoteMqttClientId.isDefined) {
-      return Seq()
-    }
-
-    val remoteMqttConnector = new MqttConnector(
-      HomeControllerConfiguration(
-        remoteMqttUrl.get,
-        remoteMqttClientId.get
-      ),
-      new RepeatingMqttCallback(mqttConnector),
-      actorSystem
-    )
-
-    val mqttRepeaterProps = Props(
-      new MqttRepeater(
-        actorSystem = actorSystem,
-        localMqttConnector = mqttConnector,
-        remoteMqttConnector = remoteMqttConnector,
-        clock = clock
+    if(remoteMqttClientId.isDefined && remoteMqttClientId.isDefined) {
+      val remoteMqttConnector = new MqttConnector(
+        HomeControllerConfiguration(
+          remoteMqttUrl.get,
+          remoteMqttClientId.get
+        ),
+        new RepeatingMqttCallback(null),
+        actorSystem
       )
-    )
-    return (1 to 4).map(i => actorSystem.actorOf(mqttRepeaterProps))
+
+      val mqttSenderProps = Props(
+        new MqttRepeaterSender(
+          remoteMqttConnector = remoteMqttConnector,
+          clock = clock
+        )
+      )
+
+      val senders = (1 to 4).map(_ => actorSystem.actorOf(mqttSenderProps))
+
+      Some(actorSystem.actorOf(Props(
+        new MqttRepeaterLimiter(
+          clock = clock,
+          remoteMqttConnector  = remoteMqttConnector,
+          actorSystem = actorSystem,
+          senders = senders.map(_.path)
+      ))))
+    } else {
+      None
+    }
   }
 }
 
