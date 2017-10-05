@@ -63,7 +63,7 @@ case class SensorSql(
   /**
     * Create or load measured phenomenon according to the given parameters
     */
-  override def findOrCreatePhenomenon(name: String, unit: String, aggregationStrategy: MeasurementAggregationStrategy): MeasuredPhenomenon = {
+  override def findOrCreatePhenomenon(name: String, unit: String, aggregationStrategy: MeasurementAggregationStrategy): MeasuredPhenomenonSql = {
     DB.localTx(implicit session => {
       return measuredPhenomenons
         .find(mp => mp.name == name && mp.sensorId == id)

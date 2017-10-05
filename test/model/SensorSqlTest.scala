@@ -3,7 +3,8 @@ package model
 import java.time.temporal.ChronoUnit._
 import java.time.{Clock, Instant}
 
-import dao.{ByHour, DbTest}
+import dao.{ByDay, ByHour, DbTest}
+import model.sensor.impl.MeasuredPhenomenonSql
 import model.sensor.{IdentityMeasurementAggregationStrategy, Measurement, SingleValueAggregationStrategy}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, WordSpec}
@@ -16,22 +17,24 @@ class SensorSqlTest extends WordSpec with Matchers with DbTest with MockFactory 
   override lazy val clock = mock[Clock]
 
   "SensorSql" when {
-    "filled by measures over last 3 hours" should {
-      val i = Instant.ofEpochSecond(0)
-      val location = locationRepository.findOrCreateLocation("remote/0")
-      location.updateLabel("upstairs corridor")
+    val i = Instant.ofEpochSecond(0)
+    val location = locationRepository.findOrCreateLocation("remote/0")
+    location.updateLabel("upstairs corridor")
 
-      sensorRepository.findAll()
-        .foreach(s => sensorRepository.delete(s))
-      val sensor = sensorRepository.findOrCreateSensor(location, "thermometer")
-      val phenomenon = sensor.findOrCreatePhenomenon("temperature", "C", IdentityMeasurementAggregationStrategy)
-      sensor.addMeasurement(Measurement(10, i), phenomenon)
-      sensor.addMeasurement(Measurement(20, i.plus(30, MINUTES)), phenomenon)
-      sensor.addMeasurement(Measurement(30, i.plus(70, MINUTES)), phenomenon)
-      sensor.addMeasurement(Measurement(30, i.plus(80, MINUTES)), phenomenon)
-      sensor.addMeasurement(Measurement(60, i.plus(90, MINUTES)), phenomenon)
+    sensorRepository.findAll()
+      .foreach(s => sensorRepository.delete(s))
+    val sensor = sensorRepository.findOrCreateSensor(location, "thermometer")
+    val temperaturePhenomenon = sensor.findOrCreatePhenomenon("temperature", "C", IdentityMeasurementAggregationStrategy).asInstanceOf[MeasuredPhenomenonSql]
+    val powerStatsPhenomenon = sensor.findOrCreatePhenomenon("zL1-cons", "kWh", SingleValueAggregationStrategy).asInstanceOf[MeasuredPhenomenonSql]
 
-      "correctly samples the temperatures" in {
+    "given several temperatures" should {
+      sensor.addMeasurement(Measurement(10, i), temperaturePhenomenon)
+      sensor.addMeasurement(Measurement(20, i.plus(30, MINUTES)), temperaturePhenomenon)
+      sensor.addMeasurement(Measurement(30, i.plus(70, MINUTES)), temperaturePhenomenon)
+      sensor.addMeasurement(Measurement(30, i.plus(80, MINUTES)), temperaturePhenomenon)
+      sensor.addMeasurement(Measurement(60, i.plus(90, MINUTES)), temperaturePhenomenon)
+
+      "correctly sample the temperatures" in {
         (clock.instant _).expects().returning(i).anyNumberOfTimes
 
         sensor.location.address shouldBe "remote/0"
@@ -49,13 +52,9 @@ class SensorSqlTest extends WordSpec with Matchers with DbTest with MockFactory 
         sensor.measuredPhenomenons.head.measurements(ByHour)(1).max shouldBe 60
         sensor.measuredPhenomenons.head.measurements(ByHour)(1).average shouldBe 40
         sensor.measuredPhenomenons.head.measurements(ByHour)(1).measureTimestamp shouldBe i.plus(90, MINUTES)
-
-        DB.autoCommit(implicit session => {
-          sql"""SELECT COUNT(*) FROM measurement""".map(rs => rs.int(1)).single.apply() shouldBe Some(5)
-        })
       }
 
-      "correctly groups the temperatures" in {
+      "correctly group the temperatures" in {
         (clock.instant _).expects().returning(i.plus(3, HOURS)).anyNumberOfTimes
         sensor.aggregateOldMeasurements()
 
@@ -70,19 +69,45 @@ class SensorSqlTest extends WordSpec with Matchers with DbTest with MockFactory 
         sensor.measuredPhenomenons.head.measurements(ByHour)(1).measureTimestamp shouldBe i.plus(90, MINUTES)
 
         DB.autoCommit(implicit session => {
-          sql"""SELECT COUNT(*) FROM measurement""".map(rs => rs.int(1)).single.apply() shouldBe Some(2)
+          sql"""SELECT COUNT(*) FROM measurement WHERE measuredPhenomenonId=${temperaturePhenomenon.sensorId}""".map(rs => rs.int(1)).single.apply() shouldBe Some(2)
+        })
+      }
+    }
+    
+    "given several singleValueAggregated wattrouter-stats" should {
+      sensor.addMeasurement(Measurement(15, i), powerStatsPhenomenon)
+      sensor.addMeasurement(Measurement(25, i.plus(30, MINUTES)), powerStatsPhenomenon)
+      sensor.addMeasurement(Measurement(30, i.plus(1, DAYS).plus(5, HOURS)), powerStatsPhenomenon)
+      sensor.addMeasurement(Measurement(60, i.plus(1, DAYS).plus(8, HOURS)), powerStatsPhenomenon)
+
+      "correctly group the singleValueAggregated wattrouter-stats" in {
+        (clock.instant _).expects().returning(i.plus(4, DAYS)).anyNumberOfTimes
+        sensor.aggregateOldMeasurements()
+
+        sensor.measuredPhenomenons(1).measurements(ByDay)(0).min shouldBe 25
+        sensor.measuredPhenomenons(1).measurements(ByDay)(0).max shouldBe 25
+        sensor.measuredPhenomenons(1).measurements(ByDay)(0).average shouldBe 25
+        sensor.measuredPhenomenons(1).measurements(ByDay)(0).measureTimestamp shouldBe i.plus(30, MINUTES)
+
+        sensor.measuredPhenomenons(1).measurements(ByDay)(1).min shouldBe 60
+        sensor.measuredPhenomenons(1).measurements(ByDay)(1).max shouldBe 60
+        sensor.measuredPhenomenons(1).measurements(ByDay)(1).average shouldBe 60
+        sensor.measuredPhenomenons(1).measurements(ByDay)(1).measureTimestamp shouldBe i.plus(1, DAYS).plus(8, HOURS)
+
+        DB.autoCommit(implicit session => {
+          sql"""SELECT COUNT(*) FROM measurement WHERE measuredPhenomenonId=${powerStatsPhenomenon.sensorId}""".map(rs => rs.int(1)).single.apply() shouldBe Some(2)
         })
       }
     }
 
-    "should compute areAllMeasuredPhenomenonsSingleValue" should {
+    "computes areAllMeasuredPhenomenonsSingleValue" should {
       val i = Instant.ofEpochSecond(0)
       val location = locationRepository.findOrCreateLocation("remote/2")
 
       sensorRepository.find(location, "wattmeter-stats").map(s => sensorRepository.delete(s))
       sensorRepository.find(location, "hybrid-sensor").map(s => sensorRepository.delete(s))
 
-      "returns true for all measurements of only singleValue only" in {
+      "return true for all measurements of only singleValue only" in {
         val sensor = sensorRepository.findOrCreateSensor(location, "wattmeter-stats")
         val phenomenon = sensor.findOrCreatePhenomenon("l1Cons", "kWh", SingleValueAggregationStrategy)
         sensor.addMeasurement(Measurement(1.2, i), phenomenon)
@@ -91,7 +116,7 @@ class SensorSqlTest extends WordSpec with Matchers with DbTest with MockFactory 
         sensor.areAllMeasuredPhenomenonsSingleValue shouldBe true
       }
 
-      "returns false for several measurement types" in {
+      "return false for several measurement types" in {
         val sensor = sensorRepository.findOrCreateSensor(location, "hybrid-sensor")
         val phenomenonA = sensor.findOrCreatePhenomenon("l1Cons", "kWh", SingleValueAggregationStrategy)
         sensor.addMeasurement(Measurement(1.2, i), phenomenonA)

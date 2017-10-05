@@ -60,6 +60,14 @@ case class MeasuredPhenomenonSql(
     })
 
   override def aggregateOldMeasurements(): Unit = DB.localTx(implicit session => {
+    if(aggregationStrategy == SingleValueAggregationStrategy) {
+      aggregateSingleValueMeasuredPhenomenon
+    } else {
+      aggregateNonSingleValueMeasuredPhenomenon
+    }
+  })
+
+  private def aggregateNonSingleValueMeasuredPhenomenon(implicit session: DBSession): Unit = {
     val oneHourAgo = clock.instant().truncatedTo(ChronoUnit.HOURS).minus(1, ChronoUnit.HOURS)
     val lastHourTs = new Timestamp(oneHourAgo.toEpochMilli)
     val toAggregate =
@@ -80,15 +88,48 @@ case class MeasuredPhenomenonSql(
           """
         .map(measurementFromRs).toList().apply()
     Logger.info(s"Loaded ${toAggregate.size} measures of ${name} to aggregate")
+    deleteNonAggregatedValues(lastHourTs)
+    insertAggregatedMeasurementsToDb(toAggregate)
+  }
+
+
+  private def aggregateSingleValueMeasuredPhenomenon(implicit session: DBSession): Unit = {
+    val lastHourTs = new Timestamp(clock.instant.toEpochMilli)
+    val toAggregate =
+      sql"""
+             SELECT
+              MAX(measureTimestamp) AS ts,
+              MAX(value) AS avg,
+              MAX(value) AS min,
+              MAX(value) AS max
+             FROM measurement
+             WHERE measuredPhenomenonId = ${id}
+              AND aggregated = FALSE
+              AND measureTimestamp < ${lastHourTs}
+             GROUP BY
+              EXTRACT(DAY FROM measureTimestamp),
+              EXTRACT(MONTH FROM measureTimestamp)
+             ORDER BY MAX(measureTimestamp)
+          """
+        .map(measurementFromRs).toList().apply()
+    Logger.info(s"Loaded ${toAggregate.size} single value measures of ${name} to aggregate")
+    deleteNonAggregatedValues(lastHourTs)
+    insertAggregatedMeasurementsToDb(toAggregate)
+  }
+
+  private def deleteNonAggregatedValues(lastHourTs: Timestamp)(implicit session: DBSession) = {
     val updated =
       sql"""
              DELETE FROM measurement
-             WHERE measureTimestamp < ${lastHourTs}
-             AND aggregated = FALSE
+             WHERE aggregated = FALSE
+             AND measureTimestamp < ${lastHourTs}
              AND measuredPhenomenonId = ${id}
            """
         .update.apply()
     Logger.info(s"Removed $updated rows")
+  }
+
+  private def insertAggregatedMeasurementsToDb(toAggregate: List[Measurement])(implicit session: DBSession) = {
     if (toAggregate.size > 0) {
       sql"""
             INSERT INTO measurement (value, measureTimestamp, aggregated, measuredPhenomenonId)
@@ -101,7 +142,7 @@ case class MeasuredPhenomenonSql(
           id
         )): _*).apply()
     }
-  })
+  }
 
   private def measurementFromRs(rs: WrappedResultSet) = Measurement(
     average = aggregationStrategy.singleValue(rs.double("avg")),
