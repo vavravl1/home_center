@@ -43,7 +43,7 @@ case class MeasuredPhenomenonSql(
         .map(measurementFromRs).toList().apply()
     })
 
-  override def lastNMeasurementsDescendant(n:Int): Seq[Measurement] =
+  override def lastNMeasurementsDescendant(n: Int): Seq[Measurement] =
     DB.readOnly(implicit session => {
       sql"""
            SELECT
@@ -60,12 +60,37 @@ case class MeasuredPhenomenonSql(
     })
 
   override def aggregateOldMeasurements(): Unit = DB.localTx(implicit session => {
-    if(aggregationStrategy == SingleValueAggregationStrategy) {
+    deleteOutliers
+    if (aggregationStrategy == SingleValueAggregationStrategy) {
       aggregateSingleValueMeasuredPhenomenon
     } else {
       aggregateNonSingleValueMeasuredPhenomenon
     }
   })
+
+  def deleteOutliers(implicit session: DBSession): Unit = {
+    val averageStdDev =
+      sql"""
+             SELECT AVG(value) AS avg, STDDEV_POP(value) AS stdDev
+             FROM measurement
+             WHERE measuredPhenomenonId = ${id}
+          """
+        .map(rs => (rs.double("avg"), rs.double("stdDev"))).single().apply()
+
+    averageStdDev.map({ case (average, stdDev) =>
+      Logger.info(s"Standard deviation is ${stdDev} and average is ${average} for ${name}")
+      val updated =
+        sql"""
+             DELETE FROM measurement
+             WHERE measuredPhenomenonId = ${id}
+             AND ABS(value - (SELECT AVG(value) FROM measurement WHERE measuredPhenomenonId = ${id})) >
+                  2*(SELECT STDDEV_POP(value) FROM measurement WHERE measuredPhenomenonId = ${id})
+           """
+          .update.apply()
+      Logger.info(s"Deleted ${updated} outliers from ${name}")
+    })
+  }
+
 
   private def aggregateNonSingleValueMeasuredPhenomenon(implicit session: DBSession): Unit = {
     val oneHourAgo = clock.instant().truncatedTo(ChronoUnit.HOURS).minus(1, ChronoUnit.HOURS)
@@ -174,13 +199,13 @@ object MeasuredPhenomenonSql {
     )
   }
 
-    def writesWithMeasurements(timeGranularity: TimeGranularity): Writes[Seq[MeasuredPhenomenonSql]] = new Writes[Seq[MeasuredPhenomenonSql]] {
-      def writes(mps: Seq[MeasuredPhenomenonSql]): JsValue =
-        JsArray(mps.map(mp => Json.obj(
+  def writesWithMeasurements(timeGranularity: TimeGranularity): Writes[Seq[MeasuredPhenomenonSql]] = new Writes[Seq[MeasuredPhenomenonSql]] {
+    def writes(mps: Seq[MeasuredPhenomenonSql]): JsValue =
+      JsArray(mps.map(mp => Json.obj(
         "name" -> mp.name,
         "unit" -> mp.unit,
         "measurements" -> mp.measurements(timeGranularity),
         "aggregationStrategy" -> Json.toJson(mp.aggregationStrategy)
       )))
-    }
+  }
 }

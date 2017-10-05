@@ -25,9 +25,9 @@ class SensorBarView extends React.Component {
             .map(t => t.measureTimestamp)
             .map(t => {
                 if(this.props.timeGranularity === 'ByDay') {
-                    return moment(t).startOf('day').format("DD/MM")
+                    return moment.utc(t).format("DD/MM")
                 } else {
-                    return moment(t).startOf('month').format("MMM YYYY")
+                    return moment.utc(t).format("MMM YYYY")
                 }
             });
     };
