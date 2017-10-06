@@ -32,7 +32,8 @@ trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig wit
     )
   )))
 
-  def initializeIfThens(): Unit = {
+  def initialize(): Unit = {
+    actuatorRepository.initialize
     mqttDispatchingListener.addListener(mqttIfThenExecutor.path)
   }
 }

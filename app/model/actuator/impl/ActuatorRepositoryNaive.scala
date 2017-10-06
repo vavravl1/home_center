@@ -13,14 +13,25 @@ class ActuatorRepositoryNaive(
                                sensorRepository: SensorRepository,
                                jsonSender: JsonSender
                              ) extends ActuatorRepository {
-
-  private val actuators = Seq(
-    new BcRelayActuator(
-      locationRepository = locationRepository,
-      sensorRepository: SensorRepository,
-      jsonSender = jsonSender
-    )
+  private val lightRelay = new BcRelayActuator(
+    location = locationRepository.findOrCreateLocation("836d19833c33"),
+    sensorRepository: SensorRepository,
+    jsonSender = jsonSender
   )
+  private val displayLight = new BcRelayActuator(
+    location = locationRepository.findOrCreateLocation("836d19822676"),
+    sensorRepository: SensorRepository,
+    jsonSender = jsonSender
+  )
+  private val actuators = Seq(
+    lightRelay,
+    displayLight
+  )
+
+  def initialize: Unit = {
+    lightRelay.initialize
+    displayLight.initialize
+  }
 
   override def findOrCreateActuator(location: Location, name: String): Actuator =
     actuators.find(a => a.location == location && a.name == name).get
