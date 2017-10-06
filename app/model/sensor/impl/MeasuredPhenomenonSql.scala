@@ -60,10 +60,10 @@ case class MeasuredPhenomenonSql(
     })
 
   override def aggregateOldMeasurements(): Unit = DB.localTx(implicit session => {
-    deleteOutliers
     if (aggregationStrategy == SingleValueAggregationStrategy) {
       aggregateSingleValueMeasuredPhenomenon
     } else {
+      deleteOutliers
       aggregateNonSingleValueMeasuredPhenomenon
     }
   })
@@ -84,7 +84,7 @@ case class MeasuredPhenomenonSql(
              DELETE FROM measurement
              WHERE measuredPhenomenonId = ${id}
              AND ABS(value - (SELECT AVG(value) FROM measurement WHERE measuredPhenomenonId = ${id})) >
-                  2*(SELECT STDDEV_POP(value) FROM measurement WHERE measuredPhenomenonId = ${id})
+                  4*(SELECT STDDEV_POP(value) FROM measurement WHERE measuredPhenomenonId = ${id})
            """
           .update.apply()
       Logger.info(s"Deleted ${updated} outliers from ${name}")

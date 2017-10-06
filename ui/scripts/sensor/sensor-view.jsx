@@ -35,20 +35,21 @@ class SensorView extends React.Component {
     prepareDatesForChart = () => {
         return this.props.measuredPhenomenons[0].measurements
             .map(t => t.measureTimestamp)
+            .map(t => moment(t))
             .map(t => {
                 if (this.isTimGranularityByDay()) {
-                    return moment.utc(t).format("DD/MM")
+                    return t.startOf('day').format("DD/MM")
                 } else if (this.isTimGranularityBySecond()) {
-                    return moment.utc(t).format("mm:ss")
+                    return t.format("mm:ss")
                 } else {
-                    return moment.utc(t).format("HH:mm")
+                    return t.add(1, 'minute').startOf('minute').format("HH:mm")
                 }
             });
     };
 
     prepareExactTimesForChart = () => {
         return this.props.measuredPhenomenons[0].measurements
-            .map(t => moment.utc(t.measureTimestamp).format("DD.MM.YYYY HH:mm"));
+            .map(t => moment(t).format("DD.MM.YYYY HH:mm"));
     };
 
     chartColors = [
