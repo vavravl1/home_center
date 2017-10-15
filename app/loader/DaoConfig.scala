@@ -2,6 +2,7 @@ package loader
 
 import com.softwaremill.macwire.wire
 import model.location.impl.LocationRepositorySql
+import model.sensor.SensorRepository
 import model.sensor.impl.SensorRepositorySql
 import play.api.BuiltInComponents
 import play.api.libs.concurrent.Execution.Implicits._
@@ -14,7 +15,8 @@ import scala.language.postfixOps
   */
 trait DaoConfig extends BuiltInComponents with ClockConfig with SqlH2Config {
   lazy val locationRepository: LocationRepositorySql = wire[LocationRepositorySql]
-  lazy val sensorRepository: SensorRepositorySql = new SensorRepositorySql(locationRepository, clock)
+//  lazy val sensorRepository: SensorRepositoryCached = new SensorRepositoryCached(new SensorRepositorySql(locationRepository, clock))
+  lazy val sensorRepository: SensorRepository = new SensorRepositorySql(locationRepository, clock)
 
   def initDbAggregation(): Unit = {
     actorSystem.scheduler.schedule(

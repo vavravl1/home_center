@@ -6,8 +6,8 @@ import akka.actor.{ActorSystem, Props}
 import akka.testkit.TestActorRef
 import com.softwaremill.macwire.wire
 import model.location.impl.{LocationRepositorySql, LocationSql}
-import model.sensor.impl.SensorRepositorySql
-import model.sensor.{IdentityMeasurementAggregationStrategy, MeasuredPhenomenon, Measurement, Sensor}
+import model.sensor.impl.{MeasuredPhenomenonSql, SensorRepositorySql, SensorSql}
+import model.sensor.{IdentityMeasurementAggregationStrategy, Measurement}
 import mqtt.MqttListenerMessage.ConsumeMessage
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, WordSpec}
@@ -28,8 +28,8 @@ class BigClownStoringListenerTest extends WordSpec with Matchers with MockFactor
       val sensorRepository = mock[SensorRepositorySqlWithCtor]
       val mqttBigClownParser = wire[MqttBigClownParser]
       val listener:TestActorRef[BigClownStoringListener] = TestActorRef[BigClownStoringListener](Props(wire[BigClownStoringListener]))
-      val sensor = mock[Sensor]
-      val phenomenon = mock[MeasuredPhenomenon]
+      val sensor = mock[SensorSqlWithCtor]
+      val phenomenon = mock[MeasuredPhenomenonSqlWithCtor]
 
       "receive messages from thermometer" in {
         (clock.instant _).expects().returning(instant).anyNumberOfTimes()
@@ -93,4 +93,6 @@ class BigClownStoringListenerTest extends WordSpec with Matchers with MockFactor
   }
 
   class SensorRepositorySqlWithCtor extends SensorRepositorySql(null, null)
+  class SensorSqlWithCtor extends SensorSql(null, null, null, null)
+  class MeasuredPhenomenonSqlWithCtor extends MeasuredPhenomenonSql(null, null, null, null, null, null)
 }
