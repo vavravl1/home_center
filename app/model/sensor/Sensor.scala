@@ -2,7 +2,6 @@ package model.sensor
 
 import _root_.play.api.libs.json._
 import model.location.Location
-import model.sensor.impl.SensorSql
 
 /**
   * Represents single sensor, e.g. Big Clown temperature tag.
@@ -59,10 +58,14 @@ trait Sensor {
 }
 
 object Sensor {
-  implicit val writes: Writes[Sensor] =
-    new Writes[Sensor] {
-      def writes(o: Sensor): JsValue = o match {
-        case s: SensorSql => SensorSql.writes.writes(s)
-      }
+  implicit val writes: Writes[Sensor] = new Writes[Sensor] {
+    def writes(s: Sensor): JsValue = {
+      Json.obj(
+        "name" -> s.name,
+        "location" -> Json.toJson(s.location)(Location.writes),
+        "areAllMeasuredPhenomenonsSingleValue" -> Json.toJson(s.areAllMeasuredPhenomenonsSingleValue),
+        "measuredPhenomenons" -> Json.toJson(s.measuredPhenomenons)(MeasuredPhenomenon.writes)
+      )
     }
+  }
 }

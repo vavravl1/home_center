@@ -14,7 +14,7 @@ class SensorRepositorySql(
                            locationRepository: LocationRepositorySql,
                            val clock: Clock) extends SensorRepository {
 
-  override def findOrCreateSensor(location: Location, name: String): Sensor = {
+  override def findOrCreateSensor(location: Location, name: String): SensorSql = {
 
     DB.localTx(implicit session => {
       val maybeSensorSql: Option[SensorSql] = getSensor(location, name)
@@ -32,7 +32,7 @@ class SensorRepositorySql(
     getSensor(location, name)
   })
 
-  override def findAll(): Seq[Sensor] = DB.autoCommit(implicit session => {
+  override def findAll(): Seq[SensorSql] = DB.autoCommit(implicit session => {
     sql"""
           SELECT S.id, S.name, L.address, L.label
           FROM sensor S

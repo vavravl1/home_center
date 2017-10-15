@@ -2,7 +2,6 @@ package model.sensor.impl
 
 import java.time.Clock
 
-import _root_.play.api.libs.json._
 import model.location.impl.LocationSql
 import model.sensor._
 import scalikejdbc.{WrappedResultSet, _}
@@ -117,15 +116,4 @@ object SensorSql {
       rs.string("id"),
       clock
     )
-
-  implicit val writes = new Writes[SensorSql] {
-    def writes(s: SensorSql): JsValue = {
-      Json.obj(
-        "name" -> s.name,
-        "location" -> Json.toJson(s.location)(LocationSql.writes),
-        "areAllMeasuredPhenomenonsSingleValue" -> Json.toJson(s.areAllMeasuredPhenomenonsSingleValue),
-        "measuredPhenomenons" -> Json.toJson(s.measuredPhenomenons)
-      )
-    }
-  }
 }

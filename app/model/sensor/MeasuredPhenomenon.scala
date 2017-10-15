@@ -1,8 +1,7 @@
 package model.sensor
 
 import dao.TimeGranularity
-import model.sensor.impl.MeasuredPhenomenonSql
-import play.api.libs.json.{JsValue, Writes}
+import play.api.libs.json.{JsArray, JsValue, Json, Writes}
 
 /**
   * Represents one measured phenomenon, e.g. temperature.
@@ -41,7 +40,7 @@ trait MeasuredPhenomenon {
   def aggregateOldMeasurements()
 
   override def equals(obj: scala.Any): Boolean = {
-    if(!obj.isInstanceOf[MeasuredPhenomenon]) {
+    if (!obj.isInstanceOf[MeasuredPhenomenon]) {
       return false
     } else {
       val other = obj.asInstanceOf[MeasuredPhenomenon]
@@ -53,11 +52,22 @@ trait MeasuredPhenomenon {
 }
 
 object MeasuredPhenomenon {
-  def writesWithMeasurements(timeGranularity: TimeGranularity): Writes[Seq[MeasuredPhenomenon]] =
-    new Writes[Seq[MeasuredPhenomenon]] {
-      def writes(mps: Seq[MeasuredPhenomenon]): JsValue = mps match {
-        case sql:Seq[MeasuredPhenomenonSql]  =>
-          MeasuredPhenomenonSql.writesWithMeasurements(timeGranularity).writes(sql)
-      }
-    }
+  def writesWithMeasurements(timeGranularity: TimeGranularity): Writes[Seq[MeasuredPhenomenon]] = new Writes[Seq[MeasuredPhenomenon]] {
+    def writes(mps: Seq[MeasuredPhenomenon]): JsValue =
+      JsArray(mps.map(mp => Json.obj(
+        "name" -> mp.name,
+        "unit" -> mp.unit,
+        "measurements" -> mp.measurements(timeGranularity),
+        "aggregationStrategy" -> Json.toJson(mp.aggregationStrategy)
+      )))
+  }
+
+  def writes: Writes[Seq[MeasuredPhenomenon]] = new Writes[Seq[MeasuredPhenomenon]] {
+    def writes(mp: Seq[MeasuredPhenomenon]): JsValue =
+      JsArray(mp.map(mp => Json.obj(
+        "name" -> mp.name,
+        "unit" -> mp.unit
+      )))
+
+  }
 }
