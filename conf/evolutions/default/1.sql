@@ -15,7 +15,8 @@ CREATE TABLE sensor (
 ALTER TABLE sensor ADD CONSTRAINT unique__sensor UNIQUE(name, locationAddress);
 ALTER TABLE sensor ADD CONSTRAINT fk_locationAddress
   FOREIGN KEY (locationAddress) REFERENCES location(address)
-  ON UPDATE CASCADE;
+  ON UPDATE CASCADE
+  ON DELETE CASCADE;
 
 
 CREATE TABLE measuredPhenomenon (
@@ -37,7 +38,7 @@ CREATE TABLE measurement (
   value DOUBLE,
   measureTimestamp TIMESTAMP NOT NULL,
   measuredPhenomenonId BIGINT,
-  aggregated BOOLEAN DEFAULT FALSE,
+  aggregated VARCHAR(10) DEFAULT 'none', //none, byhour, byday
 );
 ALTER TABLE measurement ADD CONSTRAINT fk_measuredPhenomenonId
   FOREIGN KEY (measuredPhenomenonId) REFERENCES measuredPhenomenon(id)
