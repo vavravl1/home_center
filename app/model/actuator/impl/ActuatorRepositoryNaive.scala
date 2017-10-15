@@ -23,9 +23,15 @@ class ActuatorRepositoryNaive(
     sensorRepository: SensorRepository,
     jsonSender = jsonSender
   )
+  private val displayPublisher = new DisplayPublisher(
+    location = locationRepository.findOrCreateLocation("836d19822676"),
+    jsonSender = jsonSender
+  )
+
   private val actuators = Seq(
     lightRelay,
-    displayLight
+    displayLight,
+    displayPublisher
   )
 
   def initialize: Unit = {
