@@ -27,13 +27,14 @@ case class SensorSql(
           measuredPhenomenon.aggregationStrategy
         ))
 
+      val aggregationLevel = "none"
       sql"""
           INSERT INTO measurement (value, measureTimestamp, measuredPhenomenonId, aggregated)
           VALUES (
             ${measurement.average},
             ${measurement.measureTimestamp},
             ${mp.id},
-            FALSE
+            ${aggregationLevel}
           )
       """
         .update.apply()

@@ -48,7 +48,7 @@ class SensorView extends React.Component {
 
     prepareExactTimesForChart = () => {
         return this.props.measuredPhenomenons[0].measurements
-            .map(t => moment(t).format("DD.MM.YYYY HH:mm"));
+            .map(t => moment(t.measureTimestamp).add(1, 'minute').format("DD.MM.YYYY HH:mm"));
     };
 
     chartColors = [

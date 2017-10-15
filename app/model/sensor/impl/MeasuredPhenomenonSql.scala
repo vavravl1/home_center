@@ -8,6 +8,7 @@ import _root_.play.Logger
 import dao.TimeGranularity
 import model.sensor._
 import scalikejdbc._
+import scalikejdbc.interpolation.SQLSyntax
 
 /**
   *
@@ -95,9 +96,29 @@ case class MeasuredPhenomenonSql(
 
 
   private def aggregateNonSingleValueMeasuredPhenomenon(implicit session: DBSession): Unit = {
-    val aggregationLevel = "none"
-    val oneHourAgo = clock.instant().truncatedTo(ChronoUnit.HOURS).minus(1, ChronoUnit.HOURS)
-    val lastHourTs = new Timestamp(oneHourAgo.toEpochMilli)
+    aggregateNonSingleValueByParams(
+      prevAggregationLevel = "none",
+      nextAggregationLevel = "byhour",
+      aggregateOlderThan = clock.instant().truncatedTo(ChronoUnit.HOURS).minus(1, ChronoUnit.HOURS),
+      sqls"HOUR", sqls"DAY", sqls"DAY"
+    )
+    aggregateNonSingleValueByParams(
+      prevAggregationLevel = "byhour",
+      nextAggregationLevel = "byday",
+      aggregateOlderThan = clock.instant().truncatedTo(ChronoUnit.DAYS).minus(2, ChronoUnit.DAYS),
+      sqls"DAY", sqls"MONTH", sqls"YEAR"
+    )
+  }
+
+  private def aggregateNonSingleValueByParams(
+                                               prevAggregationLevel: String,
+                                               nextAggregationLevel: String,
+                                               aggregateOlderThan: Instant,
+                                               aggregationUnit1: SQLSyntax,
+                                               aggregationUnit2: SQLSyntax,
+                                               aggregationUnit3: SQLSyntax
+                                             )(implicit session: DBSession) = {
+    val lastHourTs = new Timestamp(aggregateOlderThan.toEpochMilli)
     val toAggregate =
       sql"""
              SELECT
@@ -107,17 +128,18 @@ case class MeasuredPhenomenonSql(
               AVG(value) AS max
              FROM measurement
              WHERE measuredPhenomenonId = ${id}
-              AND aggregated = ${aggregationLevel}
+              AND aggregated = ${prevAggregationLevel}
               AND measureTimestamp < ${lastHourTs}
              GROUP BY
-              EXTRACT(HOUR FROM measureTimestamp),
-              EXTRACT(DAY FROM measureTimestamp)
+              EXTRACT(${aggregationUnit1} FROM measureTimestamp),
+              EXTRACT(${aggregationUnit2} FROM measureTimestamp),
+              EXTRACT(${aggregationUnit3} FROM measureTimestamp)
              ORDER BY MAX(measureTimestamp)
           """
         .map(measurementFromRs).toList().apply()
-    Logger.info(s"Loaded ${toAggregate.size} measures of ${name} to aggregate")
-    deleteNonAggregatedValues(lastHourTs)
-    insertAggregatedMeasurementsToDb(toAggregate, "byhour")
+    Logger.info(s"Loaded ${toAggregate.size} measures of ${name} to aggregate by ${prevAggregationLevel}")
+    deleteNonAggregatedValues(lastHourTs, prevAggregationLevel)
+    insertAggregatedMeasurementsToDb(toAggregate, nextAggregationLevel)
   }
 
 
@@ -142,12 +164,11 @@ case class MeasuredPhenomenonSql(
           """
         .map(measurementFromRs).toList().apply()
     Logger.info(s"Loaded ${toAggregate.size} single value measures of ${name} to aggregate")
-    deleteNonAggregatedValues(lastHourTs)
+    deleteNonAggregatedValues(lastHourTs, "none")
     insertAggregatedMeasurementsToDb(toAggregate, "byhour")
   }
 
-  private def deleteNonAggregatedValues(lastHourTs: Timestamp)(implicit session: DBSession) = {
-    val aggregationLevel = "none"
+  private def deleteNonAggregatedValues(lastHourTs: Timestamp, aggregationLevel: String)(implicit session: DBSession) = {
     val updated =
       sql"""
              DELETE FROM measurement
