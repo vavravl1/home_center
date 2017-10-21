@@ -6,7 +6,7 @@ import akka.actor.Props
 import com.softwaremill.macwire.wire
 import model.actuator.impl.ActuatorRepositoryNaive
 import model.actuator.{Command, CommandArgument}
-import model.ifthen.{AverageValueChanged, DelayedCondition, IfThen, MqttIfThenExecutor}
+import model.ifthen._
 import model.sensor.IdentityMeasurementAggregationStrategy
 import play.api.BuiltInComponents
 
@@ -34,7 +34,6 @@ trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig wit
   private lazy val co2Upstairs = sensorRepository.findOrCreateSensor(upstairsLocation, "co2-meter")
 
   lazy val mqttIfThenExecutor = actorSystem.actorOf(Props(new MqttIfThenExecutor(
-    mqttBigClownParser,
     Seq(
       new IfThen(
         objekt = pushButtonSensor,

@@ -1,6 +1,7 @@
 package mqtt
 
 import akka.actor.Actor
+import model.sensor.{MeasuredPhenomenon, Measurement, Sensor}
 import mqtt.MqttListenerMessage.{ConsumeMessage, Ping}
 
 /**
@@ -9,7 +10,15 @@ import mqtt.MqttListenerMessage.{ConsumeMessage, Ping}
 abstract class MqttListener extends Actor {
   override def receive(): Receive = {
     case Ping => ping
-    case ConsumeMessage(receivedTopic: String, message: String) => messageReceived(receivedTopic, message)
+    case ConsumeMessage(
+       receivedTopic: String,
+       message: String,
+       sensor: Sensor,
+       phenomenon: MeasuredPhenomenon,
+       measurement: Measurement
+    ) =>
+      messageReceived(receivedTopic, message)
+      messageReceived(sensor, phenomenon, measurement)
     case _ =>
   }
 
@@ -19,10 +28,16 @@ abstract class MqttListener extends Actor {
   def ping = ()
 
   /**
-    * Called after a message is received
-    *
-    * @param receivedTopic mqtt topic
-    * @param message received message from mqtt without any change
+    * Called after a message is received*
     */
-  def messageReceived(receivedTopic: String, message: String)
+  def messageReceived(receivedTopic: String, message: String):Unit = {}
+
+  /**
+    * Called after a message is received
+    */
+  def messageReceived(
+                       sensor: Sensor,
+                       phenomenon: MeasuredPhenomenon,
+                       measurement: Measurement
+                     ): Unit = {}
 }

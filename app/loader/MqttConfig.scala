@@ -3,8 +3,8 @@ package loader
 import akka.actor.{ActorRef, Props}
 import com.softwaremill.macwire.wire
 import config.HomeControllerConfiguration
-import mqtt.clown.{BigClownStoringListener, MqttBigClownParser}
-import mqtt.repeater.{MqttRepeaterLimiter, MqttRepeaterSender, RepeatingMqttCallback}
+import mqtt.clown.MqttBigClownParser
+import mqtt.repeater.{MqttRepeaterLimiter, MqttRepeaterSender}
 import mqtt.{MqttListenerMessage, _}
 import play.api.BuiltInComponents
 
@@ -23,17 +23,11 @@ trait MqttConfig extends BuiltInComponents with DaoConfig with ClockConfig {
   )
 
   lazy val mqttBigClownParser = wire[MqttBigClownParser]
-  lazy val bcBridgeListenerActor: ActorRef = actorSystem.actorOf(Props(wire[BigClownStoringListener]))
   lazy val mqttRepeater:Option[ActorRef] = prepareMqttRepeater
-
 
   def initializeListeners(): Unit = {
     mqttConnector.reconnect.run()
-
-    bcBridgeListenerActor ! MqttListenerMessage.Ping
     mqttRepeater.map(_ ! MqttListenerMessage.Ping)
-
-    mqttDispatchingListener.addListener(bcBridgeListenerActor.path)
     mqttRepeater.map(a => mqttDispatchingListener.addListener(a.path))
   }
 
@@ -47,7 +41,7 @@ trait MqttConfig extends BuiltInComponents with DaoConfig with ClockConfig {
           remoteMqttUrl.get,
           remoteMqttClientId.get
         ),
-        new RepeatingMqttCallback(null),
+        EmptyMqttCallback,
         actorSystem
       )
 
@@ -72,4 +66,3 @@ trait MqttConfig extends BuiltInComponents with DaoConfig with ClockConfig {
     }
   }
 }
-

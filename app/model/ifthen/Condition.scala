@@ -25,11 +25,8 @@ case class DelayedCondition(clock: Clock, delay: Duration) extends Condition {
 
 object AverageValueChanged extends Condition {
   override def apply(phenomenon: MeasuredPhenomenon, measurement: Measurement): Boolean = {
-    val possiblyLatMeasurement = phenomenon.lastNMeasurementsDescendant(2)
-      .filter(_.measureTimestamp != measurement.measureTimestamp)
-      .take(1)
-      .filter(loaded => loaded.average == measurement.average)
-    return possiblyLatMeasurement.isEmpty
+    val lastTwo = phenomenon.lastNMeasurementsDescendant(2)
+    return lastTwo.size >= 2 && lastTwo(0).average != lastTwo(1).average
   }
 }
 
