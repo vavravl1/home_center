@@ -19,12 +19,12 @@ case class DisplayPublisher(
 
   )
   override def execute(command: Command): Unit = {
-    Logger.debug(s"Updating display state:node/${location.address}/vv-display/-/power/set => ${command.requiredArguments.head.value}")
-    val displayDataType = command.requiredArguments.head.name
-    jsonSender.send(
-      s"node/${location.address}/vv-display/-/$displayDataType/set",
-      command.requiredArguments.head.value
-    )
+    command.requiredArguments.foreach(arg => {
+      Logger.debug(s"Updating display state:node/${location.address}/vv-display/-/${arg.name}/set => ${arg.value}")
+      jsonSender.send(
+        s"node/${location.address}/vv-display/-/${arg.name}/set",
+        arg.value
+      )
+    })
   }
-
 }
