@@ -15,8 +15,10 @@ class MqttBigClownParser(
                         ) {
   //node/836d19833c33/thermometer/0:0/temperature received 24.56
   //node/836d19833c33/hygrometer/0:4/relative-humidity
+  //node/836d19833c33/battery/%s/voltage
   val bcSensorTopic = """node/([\w-]+)/([\w-]+)/(\d):(\d)/([\w-]+)/?\w?""".r
   val bcSensorTopicWithoutI2d = """node/([\w-]+)/([\w-]+)/-/([\w-]+)""".r
+  val bcSensorBattery = """node/([\w-]+)/([\w-]+)/(standard|mini)/([\w-]+)""".r
 
   def parseMqttMessage(receivedTopic: String, message: String):Option[(Sensor, MeasuredPhenomenon, Measurement)] =
     receivedTopic match {
@@ -24,6 +26,8 @@ class MqttBigClownParser(
         Some(evaluateMessage(message, nodeId, sensor, measuredPhenomenon))
       case bcSensorTopicWithoutI2d(nodeId, sensor, measuredPhenomenon) =>
         Some(evaluateMessage(message, nodeId, sensor, measuredPhenomenon))
+      case bcSensorBattery(nodeId, sensor, batteryType, measuredPhenomenon) =>
+        Some(evaluateMessage(message, nodeId, sensor, measuredPhenomenon + "_" + batteryType))
       case _ => None
     }
 

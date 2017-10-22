@@ -14,9 +14,8 @@ import play.api.BuiltInComponents
 trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig with MqttConfig {
   lazy val actuatorRepository: ActuatorRepositoryNaive = wire[ActuatorRepositoryNaive]
 
-  private lazy val livingRoomLocation = locationRepository.findOrCreateLocation("836d19839558")
-  private lazy val pushButtonSensor = sensorRepository.findOrCreateSensor(livingRoomLocation, "push-button")
-  private lazy val livingRoomTemperature = sensorRepository.findOrCreateSensor(livingRoomLocation, "thermometer")
+  private lazy val ibiscusLocation = locationRepository.findOrCreateLocation("836d1983a689")
+  private lazy val livingRoomTemperature = sensorRepository.findOrCreateSensor(ibiscusLocation, "thermometer")
 
   private lazy val lightRelayLocation = locationRepository.findOrCreateLocation("836d19833c33")
 
@@ -28,6 +27,7 @@ trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig wit
 
   private lazy val terraceLocation = locationRepository.findOrCreateLocation("836d1982282c")
   private lazy val terraceTemperature = sensorRepository.findOrCreateSensor(terraceLocation, "thermometer")
+  private lazy val terraceButton = sensorRepository.findOrCreateSensor(terraceLocation, "push-button")
 
   private lazy val upstairsLocation = locationRepository.findOrCreateLocation("836d19833c33")
   private lazy val co2Upstairs = sensorRepository.findOrCreateSensor(upstairsLocation, "co2-meter")
@@ -35,8 +35,8 @@ trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig wit
   lazy val mqttIfThenExecutor = actorSystem.actorOf(Props(new MqttIfThenExecutor(
     Seq(
       new IfThen(
-        objekt = pushButtonSensor,
-        subject = pushButtonSensor.findOrCreatePhenomenon(
+        objekt = terraceButton,
+        subject = terraceButton.findOrCreatePhenomenon(
           "event-count", "event-count", IdentityMeasurementAggregationStrategy),
         condition = AverageValueChanged,
         actuatorRepository.findOrCreateActuator(lightRelayLocation, "Relay"),
