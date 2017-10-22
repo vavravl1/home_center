@@ -29,8 +29,8 @@ trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig wit
   private lazy val terraceTemperature = sensorRepository.findOrCreateSensor(terraceLocation, "thermometer")
   private lazy val terraceButton = sensorRepository.findOrCreateSensor(terraceLocation, "push-button")
 
-  private lazy val upstairsLocation = locationRepository.findOrCreateLocation("836d19833c33")
-  private lazy val co2Upstairs = sensorRepository.findOrCreateSensor(upstairsLocation, "co2-meter")
+  private lazy val bedroomLocation = locationRepository.findOrCreateLocation("836d19839558")
+  private lazy val co2Bedroom = sensorRepository.findOrCreateSensor(bedroomLocation, "co2-meter")
 
   lazy val mqttIfThenExecutor = actorSystem.actorOf(Props(new MqttIfThenExecutor(
     Seq(
@@ -65,7 +65,7 @@ trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig wit
               .lastNMeasurementsDescendant(1).map(_.average).headOption.getOrElse(0)
           )),
           CommandArgument("co2", "ppm", String.valueOf(
-            co2Upstairs
+            co2Bedroom
               .findOrCreatePhenomenon("concentration", "ppm", IdentityMeasurementAggregationStrategy)
               .lastNMeasurementsDescendant(1).map(_.average).headOption.getOrElse(0)
           ))
