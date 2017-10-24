@@ -1,36 +1,25 @@
-package mqtt
+package mqtt.listener
 
 import akka.actor.Actor
 import model.sensor.{MeasuredPhenomenon, Measurement, Sensor}
-import mqtt.MqttListenerMessage.{ConsumeMessage, Ping}
 
 /**
-  * Class for processing mqtt messages using actors
+  * Class for processing measurements messages using actors
   */
-abstract class MqttListener extends Actor {
+abstract class SensorMeasurementsListener extends Actor {
   override def receive(): Receive = {
-    case Ping => ping
-    case ConsumeMessage(
-       receivedTopic: String,
-       message: String,
+    case SensorMeasurementsListenerMessages.Ping => ping
+    case SensorMeasurementsListenerMessages.ConsumeMessage(
        sensor: Sensor,
        phenomenon: MeasuredPhenomenon,
        measurement: Measurement
-    ) =>
-      messageReceived(receivedTopic, message)
-      messageReceived(sensor, phenomenon, measurement)
-    case _ =>
+    ) => messageReceived(sensor, phenomenon, measurement)
   }
 
   /**
     * Initial message when actor is instantiated. Received only once in lifetime
     */
   def ping = ()
-
-  /**
-    * Called after a message is received*
-    */
-  def messageReceived(receivedTopic: String, message: String):Unit = {}
 
   /**
     * Called after a message is received
@@ -40,4 +29,13 @@ abstract class MqttListener extends Actor {
                        phenomenon: MeasuredPhenomenon,
                        measurement: Measurement
                      ): Unit = {}
+}
+
+object SensorMeasurementsListenerMessages {
+  case class Ping()
+  case class ConsumeMessage(
+                             sensor: Sensor,
+                             phenomenon: MeasuredPhenomenon,
+                             measurement: Measurement
+                           )
 }

@@ -53,7 +53,6 @@ trait AppComponents extends BuiltInComponents
   initDbAggregation()
   initializeListeners()
   initWsQuerying()
-  initialize()
 
   applicationLifecycle.addStopHook(() => {
     mqttConnector.disconnect().map(_ =>

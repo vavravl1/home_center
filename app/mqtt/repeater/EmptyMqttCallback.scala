@@ -1,4 +1,4 @@
-package mqtt
+package mqtt.repeater
 
 import org.eclipse.paho.client.mqttv3.{IMqttDeliveryToken, MqttCallback, MqttMessage}
 

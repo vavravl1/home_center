@@ -12,6 +12,8 @@ trait Controllers extends BuiltInComponents with SilhouetteAppModule with MqttCo
   lazy val bigClownController = wire[BigClownController]
   lazy val signinController: SignInController = wire[SignInController]
   lazy val settingsController: SettingsController = wire[SettingsController]
-  lazy val actuatorController: ActuatorController = wire[ActuatorController]
+  lazy val actuatorController: ActuatorController = new ActuatorController(
+    locationRepository, actuatorRepository, silhouette
+  )
 }
 

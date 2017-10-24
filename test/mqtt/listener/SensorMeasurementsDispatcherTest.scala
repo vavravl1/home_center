@@ -1,14 +1,13 @@
-package mqtt.clown
+package mqtt.listener
 
 import java.time.{Clock, Instant}
 
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.TestActorRef
-import com.softwaremill.macwire.wire
 import model.location.impl.{LocationRepositorySql, LocationSql}
 import model.sensor.impl.{MeasuredPhenomenonSql, SensorRepositorySql, SensorSql}
 import model.sensor.{IdentityMeasurementAggregationStrategy, Measurement}
-import mqtt.MqttListenerMessage.ConsumeMessage
+import mqtt.clown.MqttBigClownParser
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, WordSpec}
 
@@ -16,20 +15,29 @@ import org.scalatest.{Matchers, WordSpec}
 /**
   *
   */
-class BigClownStoringListenerTest extends WordSpec with Matchers with MockFactory {
+class SensorMeasurementsDispatcherTest extends WordSpec with Matchers with MockFactory {
   "BigClownStoringListener" when {
 
     implicit val system = ActorSystem()
     val clock = mock[Clock]
     val instant = Instant.ofEpochSecond(22)
 
-    "in default state" should {
-      val locationRepository = mock[LocationRepositorySql]
-      val sensorRepository = mock[SensorRepositorySqlWithCtor]
-      val mqttBigClownParser = wire[MqttBigClownParser]
-      val listener:TestActorRef[BigClownStoringListener] = TestActorRef[BigClownStoringListener](Props(wire[BigClownStoringListener]))
+    val locationRepository = mock[LocationRepositorySql]
+    val sensorRepository = mock[SensorRepositorySqlWithCtor]
+    val mqttBigClownParser = new MqttBigClownParser(
+      sensorRepository, locationRepository, clock
+    )
+
+    "has no listeners" should {
+      val dispatcher:TestActorRef[SensorMeasurementsDispatcher] = TestActorRef[SensorMeasurementsDispatcher](Props(new SensorMeasurementsDispatcher(
+        system, mqttBigClownParser, Seq()
+      )))
       val sensor = mock[SensorSqlWithCtor]
       val phenomenon = mock[MeasuredPhenomenonSqlWithCtor]
+
+      "not throw any exception with empty listeners" in {
+        dispatcher ! SensorMeasurementsDispatcherMessages.MessageReceived("node/garage/pve-inverter/-/power", "42")
+      }
 
       "receive messages from thermometer" in {
         (clock.instant _).expects().returning(instant).anyNumberOfTimes()
@@ -40,7 +48,7 @@ class BigClownStoringListenerTest extends WordSpec with Matchers with MockFactor
         (sensor.findOrCreatePhenomenon _).expects(  "temperature", "\u2103", IdentityMeasurementAggregationStrategy).returning(phenomenon)
         (sensor.addMeasurement _).expects(Measurement(19.19, Instant.ofEpochSecond(22)),phenomenon)
 
-        listener ! ConsumeMessage(
+        dispatcher ! SensorMeasurementsDispatcherMessages.MessageReceived(
           "node/836d19833c33/thermometer/0:0/temperature",
           "19.19"
         )
@@ -55,7 +63,7 @@ class BigClownStoringListenerTest extends WordSpec with Matchers with MockFactor
         (sensor.findOrCreatePhenomenon _).expects("concentration", "ppm", IdentityMeasurementAggregationStrategy).returning(phenomenon)
         (sensor.addMeasurement _).expects(Measurement(1001, Instant.ofEpochSecond(22)),phenomenon)
 
-        listener ! ConsumeMessage(
+        dispatcher ! SensorMeasurementsDispatcherMessages.MessageReceived(
           "node/836d19833c33/co2-meter/-/concentration",
           "1001"
         )
@@ -70,7 +78,7 @@ class BigClownStoringListenerTest extends WordSpec with Matchers with MockFactor
         (sensor.findOrCreatePhenomenon _).expects("relative-humidity", "%", IdentityMeasurementAggregationStrategy).returning(phenomenon)
         (sensor.addMeasurement _).expects(Measurement(56.6, Instant.ofEpochSecond(22)),phenomenon)
 
-        listener ! ConsumeMessage(
+        dispatcher ! SensorMeasurementsDispatcherMessages.MessageReceived(
           "node/836d19833c33/hygrometer/0:4/relative-humidity",
           "56.6"
         )
@@ -84,7 +92,7 @@ class BigClownStoringListenerTest extends WordSpec with Matchers with MockFactor
         (sensor.findOrCreatePhenomenon _).expects("power", "W", IdentityMeasurementAggregationStrategy).returning(phenomenon)
         (sensor.addMeasurement _).expects(Measurement(850, Instant.ofEpochSecond(1200)),phenomenon)
 
-        listener ! ConsumeMessage(
+        dispatcher ! SensorMeasurementsDispatcherMessages.MessageReceived(
           "node/garage/pve-inverter/-/power",
           "850,1200"
         )

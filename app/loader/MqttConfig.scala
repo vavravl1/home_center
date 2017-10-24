@@ -1,18 +1,25 @@
 package loader
 
 import akka.actor.{ActorRef, Props}
-import com.softwaremill.macwire.wire
 import config.HomeControllerConfiguration
+import mqtt.MqttConnector
 import mqtt.clown.MqttBigClownParser
-import mqtt.repeater.{MqttRepeaterLimiter, MqttRepeaterSender}
-import mqtt.{MqttListenerMessage, _}
+import mqtt.listener.{MqttDispatchingListener, SensorMeasurementsDispatcher, SensorMeasurementsDispatcherMessages}
+import mqtt.repeater.{EmptyMqttCallback, MqttRepeater, MqttRepeaterMessage, MqttRepeaterSender}
 import play.api.BuiltInComponents
 
 /**
   * All mqtt related logic
   */
-trait MqttConfig extends BuiltInComponents with DaoConfig with ClockConfig {
-  lazy val mqttDispatchingListener: MqttDispatchingListener = wire[MqttDispatchingListener]
+trait MqttConfig extends BuiltInComponents with DaoConfig with ClockConfig with IfThenConfig {
+  lazy val sensorMeasurementsDispatcher = prepareSensorMeasurementsDispatcher
+  lazy val mqttRepeater = prepareMqttRepeater
+
+  private lazy val mqttDispatchingListener: MqttDispatchingListener = new MqttDispatchingListener(
+    sensorMeasurementsDispatcher,
+    mqttRepeater
+  )
+
   lazy val mqttConnector = new MqttConnector(
     HomeControllerConfiguration(
       mqttBrokerUrl = configuration.getString("home_center.mqtt.url").get,
@@ -22,20 +29,20 @@ trait MqttConfig extends BuiltInComponents with DaoConfig with ClockConfig {
     actorSystem
   )
 
-  lazy val mqttBigClownParser = wire[MqttBigClownParser]
-  lazy val mqttRepeater:Option[ActorRef] = prepareMqttRepeater
+  lazy val actuatorRepository = prepareActuatorRepository(mqttConnector)
+  lazy val mqttIfThenExecutor = prepareIfThenExecutor(actuatorRepository)
 
   def initializeListeners(): Unit = {
     mqttConnector.reconnect.run()
-    mqttRepeater.map(_ ! MqttListenerMessage.Ping)
-    mqttRepeater.map(a => mqttDispatchingListener.addListener(a.path))
+    sensorMeasurementsDispatcher ! SensorMeasurementsDispatcherMessages.Ping
+    mqttRepeater.map(_ ! MqttRepeaterMessage.Ping)
   }
 
-  private def prepareMqttRepeater():Option[ActorRef] = {
+  private def prepareMqttRepeater(): Option[ActorRef] = {
     val remoteMqttUrl = configuration.getString("home_center.mqtt_repeater.url")
     val remoteMqttClientId = configuration.getString("home_center.mqtt_repeater.url")
 
-    if(remoteMqttClientId.isDefined && remoteMqttClientId.isDefined) {
+    if (remoteMqttClientId.isDefined && remoteMqttClientId.isDefined) {
       val remoteMqttConnector = new MqttConnector(
         HomeControllerConfiguration(
           remoteMqttUrl.get,
@@ -55,14 +62,27 @@ trait MqttConfig extends BuiltInComponents with DaoConfig with ClockConfig {
       val senders = (1 to 4).map(_ => actorSystem.actorOf(mqttSenderProps))
 
       Some(actorSystem.actorOf(Props(
-        new MqttRepeaterLimiter(
+        new MqttRepeater(
           clock = clock,
-          remoteMqttConnector  = remoteMqttConnector,
+          remoteMqttConnector = remoteMqttConnector,
           actorSystem = actorSystem,
           senders = senders.map(_.path)
-      ))))
+        ))))
     } else {
       None
     }
   }
+
+  private def prepareSensorMeasurementsDispatcher(): ActorRef =
+    actorSystem.actorOf(Props(
+      new SensorMeasurementsDispatcher(
+        actorSystem = actorSystem,
+        parser = new MqttBigClownParser(
+          sensorRepository = sensorRepository,
+          locationRepository = locationRepository,
+          clock = clock
+        ),
+        listeners = Seq(mqttIfThenExecutor)
+      )
+    ))
 }

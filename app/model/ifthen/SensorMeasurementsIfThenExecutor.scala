@@ -1,12 +1,12 @@
 package model.ifthen
 
 import model.sensor._
-import mqtt.MqttListener
+import mqtt.listener.SensorMeasurementsListener
 
 /**
   * Class responsible for execution of if-thens based on mqtt messages
   */
-class MqttIfThenExecutor(ifThens: Seq[IfThen]) extends MqttListener {
+class SensorMeasurementsIfThenExecutor(ifThens: Seq[IfThen]) extends SensorMeasurementsListener {
   override def messageReceived(
                        sensor: Sensor,
                        phenomenon: MeasuredPhenomenon,
