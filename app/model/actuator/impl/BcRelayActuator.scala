@@ -27,9 +27,17 @@ case class BcRelayActuator(
     state = if(measurements.nonEmpty) measurements.last.average == 0 else false
   }
 
-  override def supportedCommands: Set[Command] = Set(Command("Toggle", Seq.empty))
+  override def supportedCommands: Set[Command] = Set(
+    Command("Toggle", Seq.empty),
+    Command("On", Seq.empty),
+    Command("Off", Seq.empty)
+  )
   override def execute(command: Command): Unit = {
-    state = !state
+    command.name match {
+      case "Toggle" => state = !state
+      case "On" => state = true
+      case "Off" => state = false
+    }
     Logger.info(s"BcRelayActuator called and newState is ${state}")
     jsonSender.send(
       s"node/${location.address}/relay/0:0/state/set",

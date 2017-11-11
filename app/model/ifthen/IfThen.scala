@@ -17,8 +17,9 @@ class IfThen(
   def action(sensor: Sensor, phenomenon: MeasuredPhenomenon, measurement: Measurement): Unit = {
     if (sensor.equals(objekt) && subject.equals(phenomenon)) {
       if (condition(phenomenon, measurement)) {
-        Logger.info(s"IfThen executed: ${sensor} received ${phenomenon} that was ${measurement}")
-        actuator.execute(command())
+        val toExecute = command()
+        Logger.info(s"IfThen executed: ${sensor} received ${phenomenon} that was ${measurement}, executing ${toExecute} on ${actuator}")
+        actuator.execute(toExecute)
       }
     }
   }

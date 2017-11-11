@@ -8,13 +8,14 @@ import model.sensor.{MeasuredPhenomenon, Measurement}
   *
   */
 trait Condition {
-  def apply(measuredPhenomenon: MeasuredPhenomenon, measurement:Measurement): Boolean
+  def apply(measuredPhenomenon: MeasuredPhenomenon, measurement: Measurement): Boolean
 }
 
 case class DelayedCondition(clock: Clock, delay: Duration) extends Condition {
   var lastTimeEvaluated = clock.instant()
+
   override def apply(measuredPhenomenon: MeasuredPhenomenon, measurement: Measurement): Boolean = {
-    if(clock.instant().isAfter(lastTimeEvaluated.plus(delay))) {
+    if (clock.instant().isAfter(lastTimeEvaluated.plus(delay))) {
       lastTimeEvaluated = clock.instant()
       true
     } else {

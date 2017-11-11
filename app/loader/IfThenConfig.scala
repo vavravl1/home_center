@@ -14,7 +14,7 @@ import play.api.BuiltInComponents
 trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig {
 
   lazy val ibiscusLocation = locationRepository.findOrCreateLocation("836d1983a689")
-  lazy val livingRoomTemperature = sensorRepository.findOrCreateSensor(ibiscusLocation, "thermometer")
+  lazy val thermometerLivingRoom = sensorRepository.findOrCreateSensor(ibiscusLocation, "thermometer")
 
   lazy val lightRelayLocation = locationRepository.findOrCreateLocation("836d19833c33")
 
@@ -43,7 +43,10 @@ trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig {
     jsonSender = jsonSender
   )
 
-  def prepareIfThenExecutor(actuatorRepository: ActuatorRepository) = actorSystem.actorOf(Props(
+  def prepareIfThenExecutor(
+                             actuatorRepository: ActuatorRepository,
+                             thermostatIfThen: IfThen
+                           ) = actorSystem.actorOf(Props(
     new SensorMeasurementsIfThenExecutor(
       Seq(
         new IfThen(
@@ -71,7 +74,7 @@ trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig {
                 .lastNMeasurementsDescendant(1).map(_.average).headOption.getOrElse(0)
             )),
             CommandArgument("living-room", "\u2103", String.valueOf(
-              livingRoomTemperature
+              thermometerLivingRoom
                 .findOrCreatePhenomenon("temperature", "\u2103", IdentityMeasurementAggregationStrategy)
                 .lastNMeasurementsDescendant(1).map(_.average).headOption.getOrElse(0)
             )),
@@ -91,7 +94,9 @@ trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig {
                 .lastNMeasurementsDescendant(1).map(_.average).headOption.getOrElse(0)
             ))
           ))
-        ))
+        ),
+        thermostatIfThen
+      )
     )))
 }
 
