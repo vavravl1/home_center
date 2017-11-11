@@ -18,8 +18,10 @@ trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig {
 
   lazy val lightRelayLocation = locationRepository.findOrCreateLocation("836d19833c33")
 
-  lazy val displayLocation = locationRepository.findOrCreateLocation("836d19822676")
-  lazy val displayButton = sensorRepository.findOrCreateSensor(displayLocation, "push-button")
+  lazy val thermostatLocation = locationRepository.findOrCreateLocation("836d19822676")
+  lazy val thermostatSensor = sensorRepository.findOrCreateSensor(thermostatLocation, "push-button")
+  lazy val thermostatButton = thermostatSensor.findOrCreatePhenomenon(
+    "event-count", "event-count", IdentityMeasurementAggregationStrategy)
 
   lazy val mainSwitchboardLocation = locationRepository.findOrCreateLocation("main-switchboard")
   lazy val wattrouterSensor = sensorRepository.findOrCreateSensor(mainSwitchboardLocation, "wattrouter")
@@ -30,17 +32,19 @@ trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig {
 
   lazy val bedroomLocation = locationRepository.findOrCreateLocation("836d19839558")
   lazy val co2Bedroom = sensorRepository.findOrCreateSensor(bedroomLocation, "co2-meter")
+  lazy val thermometerBedroom = sensorRepository.findOrCreateSensor(bedroomLocation, "thermometer")
 
-  def prepareActuatorRepository(jsonSender: JsonSender) = {
-    new ActuatorRepositoryNaive(
-      locationRepository = locationRepository,
-      sensorRepository = sensorRepository,
-      jsonSender = jsonSender
-    )
-  }
+  lazy val garageLocation = locationRepository.findOrCreateLocation("garage")
+  lazy val fve = sensorRepository.findOrCreateSensor(garageLocation, "pve-inverter")
 
-  def prepareIfThenExecutor(actuatorRepository: ActuatorRepository) = {
-    actorSystem.actorOf(Props(new SensorMeasurementsIfThenExecutor(
+  def prepareActuatorRepository(jsonSender: JsonSender) = new ActuatorRepositoryNaive(
+    locationRepository = locationRepository,
+    sensorRepository = sensorRepository,
+    jsonSender = jsonSender
+  )
+
+  def prepareIfThenExecutor(actuatorRepository: ActuatorRepository) = actorSystem.actorOf(Props(
+    new SensorMeasurementsIfThenExecutor(
       Seq(
         new IfThen(
           objekt = terraceButton,
@@ -51,15 +55,19 @@ trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig {
           () => Command("Toggle", Seq.empty)
         ),
         new IfThen(
-          objekt = displayButton,
-          subject = displayButton.findOrCreatePhenomenon(
-            "event-count", "event-count", IdentityMeasurementAggregationStrategy),
+          objekt = thermostatSensor,
+          subject = thermostatButton,
           condition = TrueCondition,
-          actuatorRepository.findOrCreateActuator(displayLocation, "Display"),
+          actuatorRepository.findOrCreateActuator(thermostatLocation, "Display"),
           () => Command("Update", Seq(
             CommandArgument("power", "kW", String.valueOf(
               wattrouterSensor
                 .findOrCreatePhenomenon("L1", "kW", IdentityMeasurementAggregationStrategy)
+                .lastNMeasurementsDescendant(1).map(_.average).headOption.getOrElse(0)
+            )),
+            CommandArgument("fve", "W", String.valueOf(
+              fve
+                .findOrCreatePhenomenon("power", "W", IdentityMeasurementAggregationStrategy)
                 .lastNMeasurementsDescendant(1).map(_.average).headOption.getOrElse(0)
             )),
             CommandArgument("living-room", "\u2103", String.valueOf(
@@ -72,6 +80,11 @@ trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig {
                 .findOrCreatePhenomenon("temperature", "\u2103", IdentityMeasurementAggregationStrategy)
                 .lastNMeasurementsDescendant(1).map(_.average).headOption.getOrElse(0)
             )),
+            CommandArgument("bedroom", "\u2103", String.valueOf(
+              thermometerBedroom
+                .findOrCreatePhenomenon("temperature", "\u2103", IdentityMeasurementAggregationStrategy)
+                .lastNMeasurementsDescendant(1).map(_.average).headOption.getOrElse(0)
+            )),
             CommandArgument("co2", "ppm", String.valueOf(
               co2Bedroom
                 .findOrCreatePhenomenon("concentration", "ppm", IdentityMeasurementAggregationStrategy)
@@ -80,6 +93,5 @@ trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig {
           ))
         ))
     )))
-  }
 }
 
