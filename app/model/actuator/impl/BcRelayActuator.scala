@@ -37,6 +37,7 @@ case class BcRelayActuator(
       case "Toggle" => state = !state
       case "On" => state = true
       case "Off" => state = false
+      case _ => return
     }
     Logger.info(s"BcRelayActuator called and newState is ${state}")
     jsonSender.send(
