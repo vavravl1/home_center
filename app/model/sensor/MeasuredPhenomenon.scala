@@ -1,7 +1,9 @@
 package model.sensor
 
 import dao.TimeGranularity
-import play.api.libs.json.{JsArray, JsValue, Json, Writes}
+import play.api.libs.json.{JsArray, Json, Writes}
+
+import scala.concurrent.Future
 
 /**
   * Represents one measured phenomenon, e.g. temperature.
@@ -26,7 +28,7 @@ trait MeasuredPhenomenon {
   /**
     * Returns all measurements aggregated by the given time granularity
     */
-  def measurements(timeGranularity: TimeGranularity): Seq[Measurement]
+  def measurements(timeGranularity: TimeGranularity): Future[Seq[Measurement]]
 
   /**
     * Returns last n measurements sorted by measured time descendant
@@ -40,10 +42,10 @@ trait MeasuredPhenomenon {
 
   override def equals(obj: scala.Any): Boolean = {
     if (!obj.isInstanceOf[MeasuredPhenomenon]) {
-      return false
+      false
     } else {
       val other = obj.asInstanceOf[MeasuredPhenomenon]
-      return other.name == this.name &&
+      other.name == this.name &&
         other.unit == this.unit &&
         other.aggregationStrategy == this.aggregationStrategy
     }
@@ -51,22 +53,8 @@ trait MeasuredPhenomenon {
 }
 
 object MeasuredPhenomenon {
-  def writesWithMeasurements(timeGranularity: TimeGranularity): Writes[Seq[MeasuredPhenomenon]] = new Writes[Seq[MeasuredPhenomenon]] {
-    def writes(mps: Seq[MeasuredPhenomenon]): JsValue =
-      JsArray(mps.map(mp => Json.obj(
-        "name" -> mp.name,
-        "unit" -> mp.unit,
-        "measurements" -> mp.measurements(timeGranularity),
-        "aggregationStrategy" -> Json.toJson(mp.aggregationStrategy)
-      )))
-  }
-
-  def writes: Writes[Seq[MeasuredPhenomenon]] = new Writes[Seq[MeasuredPhenomenon]] {
-    def writes(mp: Seq[MeasuredPhenomenon]): JsValue =
-      JsArray(mp.map(mp => Json.obj(
-        "name" -> mp.name,
-        "unit" -> mp.unit
-      )))
-
-  }
+  def writes: Writes[Seq[MeasuredPhenomenon]] = (mp: Seq[MeasuredPhenomenon]) => JsArray(mp.map(mp => Json.obj(
+    "name" -> mp.name,
+    "unit" -> mp.unit
+  )))
 }

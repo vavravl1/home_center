@@ -10,8 +10,8 @@ import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits._
 import scalikejdbc.WrappedResultSet
 
-import scala.concurrent.Await
 import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 
 class MeasuredPhenomenonInflux(
                                 override val name: String,
@@ -39,10 +39,10 @@ class MeasuredPhenomenonInflux(
       case result => Logger.debug(s"Stored $measurement with $result")
     }
     f.onFailure {
-      case result => Logger.error(s"Failed to store $measurement with ${result} for sensor $sensor")
+      case result => Logger.error(s"Failed to store $measurement with $result for sensor $sensor")
     }
   }
-  override def measurements(timeGranularity: TimeGranularity): Seq[Measurement] = {
+  override def measurements(timeGranularity: TimeGranularity): Future[Seq[Measurement]] = {
     val (extractTime, lastMeasureTimestamp) = timeGranularity.toExtractAndTimeForInflux
     val query = s"" +
       s"SELECT MAX(value), MEAN(value), MIN(value) " +
@@ -54,13 +54,14 @@ class MeasuredPhenomenonInflux(
 
     Logger.debug(s"Querying influx: $query")
 
-    val series = Await.result(influx.query(query), Duration.Inf).series
-    seriesToMeasurements(series)
+    influx.query(query).map(result => {
+      seriesToMeasurements(result.series, "mean", "min", "max")
+    })
   }
 
   override def lastNMeasurementsDescendant(n: Int): Seq[Measurement] = {
     val query = s"" +
-      s"SELECT MAX(value), MEAN(value), MIN(value) " +
+      s"SELECT value " +
       s"FROM $key " +
       s"WHERE phenomenon = '$name' " +
       s"LIMIT $n"
@@ -68,18 +69,18 @@ class MeasuredPhenomenonInflux(
     Logger.debug(s"Querying influx: $query")
 
     val series = Await.result(influx.query(query), Duration.Inf).series
-    seriesToMeasurements(series)
+    seriesToMeasurements(series, "value", "value", "value")
   }
 
-  private def seriesToMeasurements(series: List[Series]) = {
+  private def seriesToMeasurements(series: List[Series], mean: String, min: String, max:String) = {
     if (series.isEmpty) {
       Seq.empty
     } else {
       series.head.records
         .map(r => Measurement(
-          r("mean").toString.toDouble,
-          r("min").toString.toDouble,
-          r("max").toString.toDouble,
+          r(mean).toString.toDouble,
+          r(min).toString.toDouble,
+          r(max).toString.toDouble,
           Instant.parse(r("time").toString)
         ))
     }

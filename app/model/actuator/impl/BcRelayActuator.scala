@@ -1,9 +1,8 @@
 package model.actuator.impl
 
-import dao.BySecond
 import model.actuator.{Actuator, Command}
 import model.location.Location
-import model.sensor.{BooleanMeasurementAggregationStrategy, SensorRepository}
+import model.sensor.{BooleanMeasurementAggregationStrategy, Measurement, SensorRepository}
 import mqtt.JsonSender
 import play.api.Logger
 
@@ -19,10 +18,10 @@ case class BcRelayActuator(
 
   override val name: String = "Relay"
 
-  def initialize:Unit = {
-    val measurements = sensorRepository.findOrCreateSensor(location, "relay")
+  def initialize():Unit = {
+    val measurements:Seq[Measurement] = sensorRepository.findOrCreateSensor(location, "relay")
       .findOrCreatePhenomenon("state", "state", BooleanMeasurementAggregationStrategy)
-      .measurements(BySecond)
+      .lastNMeasurementsDescendant(1)
 
     state = if(measurements.nonEmpty) measurements.last.average == 0 else false
   }
@@ -39,7 +38,7 @@ case class BcRelayActuator(
       case "Off" => state = false
       case _ => return
     }
-    Logger.info(s"BcRelayActuator called and newState is ${state}")
+    Logger.info(s"BcRelayActuator called and newState is $state")
     jsonSender.send(
       s"node/${location.address}/relay/0:0/state/set",
       if(state) "true" else "false"
