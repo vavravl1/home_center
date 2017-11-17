@@ -30,7 +30,7 @@ case class SensorSql(
             WHERE MP.sensorId = ${id}
             ORDER BY MP.name, MP.unit
             """
-        .map(MeasuredPhenomenonInflux.fromRs(_, clock, influx)).list().apply()
+        .map(MeasuredPhenomenonInflux.fromRs(_, clock, influx, this)).list().apply()
     })
   }
 
@@ -40,7 +40,7 @@ case class SensorSql(
   override def findOrCreatePhenomenon(name: String, unit: String, aggregationStrategy: MeasurementAggregationStrategy): MeasuredPhenomenon = {
     DB.localTx(implicit session => {
       return measuredPhenomenons
-        .find(mp => mp.name == name && mp.sensorId == id)
+        .find(mp => mp.name == name && mp.sensor.id == id)
         .getOrElse(saveMeasuredPhenomenon(name, unit, aggregationStrategy))
     })
   }
@@ -48,7 +48,7 @@ case class SensorSql(
   def findPhenomenon(name: String):Option[MeasuredPhenomenon] = {
     DB.localTx(implicit session => {
       return measuredPhenomenons
-        .find(mp => mp.name == name && mp.sensorId == id)
+        .find(mp => mp.name == name && mp.sensor.id == id)
     })
   }
 
@@ -67,7 +67,7 @@ case class SensorSql(
           FROM measuredPhenomenon MP
           WHERE MP.name = ${name}
           AND MP.sensorId = ${id}
-      """.map(MeasuredPhenomenonInflux.fromRs(_, clock, influx)).single().apply().get
+      """.map(MeasuredPhenomenonInflux.fromRs(_, clock, influx, this)).single().apply().get
   }
 
   override def areAllMeasuredPhenomenonsSingleValue: Boolean =

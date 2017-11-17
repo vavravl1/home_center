@@ -20,6 +20,8 @@ object MeasuredPhenomenonToUnit {
     case "L2-cons" => "kWh"
     case "L3-cons" => "kWh"
     case "power" => "W"
+    case "voltage_standard" => "V"
+    case "voltage_mini" => "V"
     case _ => sensor
   }
 }

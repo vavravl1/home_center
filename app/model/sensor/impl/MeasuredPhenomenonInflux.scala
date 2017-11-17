@@ -21,12 +21,12 @@ class MeasuredPhenomenonInflux(
                                 override val unit: String,
                                 override val aggregationStrategy: MeasurementAggregationStrategy,
                                 val id: String,
-                                val sensorId: String,
+                                val sensor: SensorSql,
                                 val _clock: Clock,
                                 val influx: Database
                               ) extends MeasuredPhenomenon {
   private implicit val clock = _clock
-  private val key = "measurements_" + sensorId
+  private val key = "measurements_" + sensor.id
 
   override def addMeasurement(measurement: Measurement): Unit = {
     val point = Point(key = key, timestamp = measurement.measureTimestamp.getEpochSecond)
@@ -42,7 +42,7 @@ class MeasuredPhenomenonInflux(
       case result => Logger.debug(s"Stored $measurement with $result")
     }
     f.onFailure {
-      case result => Logger.error(s"Failed to store $measurement with ${result}")
+      case result => Logger.error(s"Failed to store $measurement with ${result} for sensor $sensor")
     }
   }
   override def measurements(timeGranularity: TimeGranularity): Seq[Measurement] = {
@@ -65,7 +65,7 @@ class MeasuredPhenomenonInflux(
     val query = s"" +
       s"SELECT MAX(value), MEAN(value), MIN(value) " +
       s"FROM $key " +
-      s"AND phenomenon = '$name' " +
+      s"WHERE phenomenon = '$name' " +
       s"LIMIT $n"
 
     Logger.debug(s"Querying influx: $query")
@@ -90,8 +90,8 @@ class MeasuredPhenomenonInflux(
 }
 
 object MeasuredPhenomenonInflux {
-  val fromRs: ((WrappedResultSet, Clock, Database) => MeasuredPhenomenonInflux) =
-    (rs, clock, influx) => new MeasuredPhenomenonInflux(
+  val fromRs: ((WrappedResultSet, Clock, Database, SensorSql) => MeasuredPhenomenonInflux) =
+    (rs, clock, influx, sensor) => new MeasuredPhenomenonInflux(
       name = rs.string("name"),
       unit = rs.string("unit"),
       aggregationStrategy = rs.string("aggregationStrategy") match {
@@ -100,7 +100,7 @@ object MeasuredPhenomenonInflux {
         case "none" => IdentityMeasurementAggregationStrategy
       },
       id = rs.string("id"),
-      sensorId = rs.string("sensorId"),
+      sensor = sensor,
       _clock = clock,
       influx = influx
     )
