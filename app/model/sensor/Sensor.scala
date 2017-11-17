@@ -36,6 +36,11 @@ trait Sensor {
   def findOrCreatePhenomenon(name: String, unit:String, aggregationStrategy: MeasurementAggregationStrategy):MeasuredPhenomenon
 
   /**
+    * Find measure phenomenon of this sensor
+    */
+  def findPhenomenon(name: String):Option[MeasuredPhenomenon]
+
+  /**
     * Add single measurement that is associated with this sensor
     */
   def addMeasurement(measurement: Measurement, measuredPhenomenon:MeasuredPhenomenon)

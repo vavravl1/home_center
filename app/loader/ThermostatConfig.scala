@@ -28,28 +28,62 @@ trait ThermostatConfig extends BuiltInComponents with DaoConfig with IfThenConfi
     actorSystem.actorOf(Props(
       new Thermostat(
         temperatureSensors = Seq(
-          thermometerBedroom
-//          thermometerLivingRoom
+          thermometerBedroom,
+          thermometerLivingRoom
         ),
-        evaluators = Seq(
-          SingleSensorThermostatEvaluator(
-            timeEvaluator = ThermostatTimeEvaluator(
-              startTime = LocalDateTime.of(2017, 1, 1, 5, 30, 0),
-              endTime = LocalDateTime.of(2017, 1, 1, 6, 30, 0)
+        ThermostatEvaluator(
+          Seq(
+            createSingleSensorThermostatEvaluator(
+              thermometerBedroom,
+              LocalDateTime.of(2017, 1, 1, 0, 0, 0),
+              LocalDateTime.of(2017, 1, 1, 5, 30, 0),
+              17
             ),
-            valueEvaluator = ThermostatValueEvaluator(20.0, 21.0)
+            createSingleSensorThermostatEvaluator(
+              thermometerBedroom,
+              LocalDateTime.of(2017, 1, 1, 5, 30, 0),
+              LocalDateTime.of(2017, 1, 1, 6, 30, 0),
+              20.0
+            ),
+            createSingleSensorThermostatEvaluator(
+              thermometerBedroom,
+              LocalDateTime.of(2017, 1, 1, 6, 30, 0),
+              LocalDateTime.of(2017, 1, 1, 21, 40, 0),
+              17
+            ),
+            createSingleSensorThermostatEvaluator(
+              thermometerBedroom,
+              LocalDateTime.of(2017, 1, 1, 21, 40, 0),
+              LocalDateTime.of(2017, 1, 1, 22, 20, 0),
+              20
+            ),
+            createSingleSensorThermostatEvaluator(
+              thermometerLivingRoom,
+              LocalDateTime.of(2017, 1, 1, 17, 30, 0),
+              LocalDateTime.of(2017, 1, 1, 22, 0, 0),
+              20.0
+            )
           ),
-          SingleSensorThermostatEvaluator(
-            timeEvaluator = ThermostatTimeEvaluator(
-              startTime = LocalDateTime.of(2017, 1, 2, 17, 30, 0),
-              endTime = LocalDateTime.of(2017, 1, 2, 22, 0, 0)
-            ),
-            valueEvaluator = ThermostatValueEvaluator(20.0, 21.0)
-          )
+          defaultCondition = ThermostatValueEvaluator(18.0, 18.5)
         ),
-        defaultCondition = ThermostatValueEvaluator(18.0, 18.5),
         actuatorActivator = actuatorActivator
       )
     ))
+  }
+
+  private def createSingleSensorThermostatEvaluator(
+                                             sensor: Sensor,
+                                             startTime: LocalDateTime,
+                                             endTime: LocalDateTime,
+                                             minimalTemperature: Double
+                                           ): SingleSensorThermostatEvaluator = {
+    SingleSensorThermostatEvaluator(
+      temperatureSensor = sensor,
+      timeEvaluator = ThermostatTimeEvaluator(
+        startTime = startTime,
+        endTime = endTime
+      ),
+      valueEvaluator = ThermostatValueEvaluator(minimalTemperature, minimalTemperature*1.05)
+    )
   }
 }

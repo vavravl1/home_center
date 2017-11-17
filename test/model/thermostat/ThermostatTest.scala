@@ -29,18 +29,18 @@ class ThermostatTest extends WordSpec with Matchers with MockFactory {
         actuator = actuator
       )
       val thermostat: TestActorRef[Thermostat] = TestActorRef[Thermostat](Props(
-        new Thermostat(
-          temperatureSensors = Seq(temperatureSensor),
-          evaluators = Seq(SingleSensorThermostatEvaluator(
-            timeEvaluator = ThermostatTimeEvaluator(
-              startTime = LocalDateTime.of(2017, 1, 1, 5, 30, 0),
-              endTime = LocalDateTime.of(2017, 1, 1, 6, 30, 0)
-            ),
-            valueEvaluator = ThermostatValueEvaluator(20.0, 21.0)
-          )),
-          defaultCondition = ThermostatValueEvaluator(18.0, 18.5),
-          actuatorActivator = actuatorActivator
-        )
+//        new Thermostat(
+//          temperatureSensors = Seq(temperatureSensor),
+//          evaluators = Seq(SingleSensorThermostatEvaluator(
+//            timeEvaluator = ThermostatTimeEvaluator(
+//              startTime = LocalDateTime.of(2017, 1, 1, 5, 30, 0),
+//              endTime = LocalDateTime.of(2017, 1, 1, 6, 30, 0)
+//            ),
+//            valueEvaluator = ThermostatValueEvaluator(20.0, 21.0)
+//          )),
+//          defaultCondition = ThermostatValueEvaluator(18.0, 18.5),
+//          actuatorActivator = actuatorActivator
+//        )
       ))
       "does not react on non temperature sensor" in {
         val nonTemperatureSensor = mock[Sensor]
@@ -95,27 +95,27 @@ class ThermostatTest extends WordSpec with Matchers with MockFactory {
         actuator = actuator
       )
       val thermostat: TestActorRef[Thermostat] = TestActorRef[Thermostat](Props(
-        new Thermostat(
-          temperatureSensors = Seq(temperatureSensor),
-          evaluators = Seq(
-            SingleSensorThermostatEvaluator(
-              timeEvaluator = ThermostatTimeEvaluator(
-                startTime = LocalDateTime.of(2017, 1, 1, 5, 30, 0),
-                endTime = LocalDateTime.of(2017, 1, 1, 6, 30, 0)
-              ),
-              valueEvaluator = ThermostatValueEvaluator(20.0, 21.0)
-            ),
-            SingleSensorThermostatEvaluator(
-              timeEvaluator = ThermostatTimeEvaluator(
-                startTime = LocalDateTime.of(2017, 1, 2, 17, 30, 0),
-                endTime = LocalDateTime.of(2017, 1, 2, 18, 30, 0)
-              ),
-              valueEvaluator = ThermostatValueEvaluator(22.0, 23.0)
-            )
-          ),
-          defaultCondition = ThermostatValueEvaluator(18.0, 18.5),
-          actuatorActivator = actuatorActivator
-        )
+//        new Thermostat(
+//          temperatureSensors = Seq(temperatureSensor),
+//          evaluators = Seq(
+//            SingleSensorThermostatEvaluator(
+//              timeEvaluator = ThermostatTimeEvaluator(
+//                startTime = LocalDateTime.of(2017, 1, 1, 5, 30, 0),
+//                endTime = LocalDateTime.of(2017, 1, 1, 6, 30, 0)
+//              ),
+//              valueEvaluator = ThermostatValueEvaluator(20.0, 21.0)
+//            ),
+//            SingleSensorThermostatEvaluator(
+//              timeEvaluator = ThermostatTimeEvaluator(
+//                startTime = LocalDateTime.of(2017, 1, 2, 17, 30, 0),
+//                endTime = LocalDateTime.of(2017, 1, 2, 18, 30, 0)
+//              ),
+//              valueEvaluator = ThermostatValueEvaluator(22.0, 23.0)
+//            )
+//          ),
+//          defaultCondition = ThermostatValueEvaluator(18.0, 18.5),
+//          actuatorActivator = actuatorActivator
+//        )
       ))
       "use first evaluator in correct time" in {
         thermostat ! ConsumeMessage(

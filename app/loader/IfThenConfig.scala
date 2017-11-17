@@ -45,7 +45,7 @@ trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig {
 
   def prepareIfThenExecutor(
                              actuatorRepository: ActuatorRepository,
-                             thermostatIfThen: IfThen
+                             additionalIfThens:Seq[IfThen]
                            ) = actorSystem.actorOf(Props(
     new SensorMeasurementsIfThenExecutor(
       Seq(
@@ -94,9 +94,8 @@ trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig {
                 .lastNMeasurementsDescendant(1).map(_.average).headOption.getOrElse(0)
             ))
           ))
-        ),
-        thermostatIfThen
-      )
+        )
+      ) ++ additionalIfThens
     )))
 }
 

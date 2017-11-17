@@ -71,6 +71,13 @@ case class SensorSql(
     })
   }
 
+  def findPhenomenon(name: String):Option[MeasuredPhenomenon] = {
+    DB.localTx(implicit session => {
+      return measuredPhenomenons
+        .find(mp => mp.name == name && mp.sensorId == id)
+    })
+  }
+
   private def saveMeasuredPhenomenon(name: String, unit: String, aggregationStrategy: MeasurementAggregationStrategy)(implicit session: DBSession): MeasuredPhenomenonSql = {
     val aggregationStrategyName = aggregationStrategy match {
       case IdentityMeasurementAggregationStrategy => "none"
