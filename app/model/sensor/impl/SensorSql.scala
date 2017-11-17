@@ -2,6 +2,7 @@ package model.sensor.impl
 
 import java.time.Clock
 
+import com.paulgoldbaum.influxdbclient.Database
 import model.location.impl.LocationSql
 import model.sensor._
 import scalikejdbc.{WrappedResultSet, _}
@@ -13,14 +14,15 @@ case class SensorSql(
                  override val name: String,
                  override val location: LocationSql,
                  id: String,
-                 _clock: Clock
+                 _clock: Clock,
+                 influx: Database
                ) extends Sensor {
   private implicit val clock = _clock
 
   /**
     * All measured phenomenons by this sensor
     */
-  override def measuredPhenomenons: Seq[MeasuredPhenomenonSql] = {
+  override def measuredPhenomenons: Seq[MeasuredPhenomenonInflux] = {
     DB.readOnly(implicit session => {
       sql"""
             SELECT MP.name, MP.unit, MP.id, MP.sensorId, MP.aggregationStrategy
@@ -28,7 +30,7 @@ case class SensorSql(
             WHERE MP.sensorId = ${id}
             ORDER BY MP.name, MP.unit
             """
-        .map(MeasuredPhenomenonSql.fromRs(_, clock)).list().apply()
+        .map(MeasuredPhenomenonInflux.fromRs(_, clock, influx)).list().apply()
     })
   }
 
@@ -39,7 +41,7 @@ case class SensorSql(
   /**
     * Create or load measured phenomenon according to the given parameters
     */
-  override def findOrCreatePhenomenon(name: String, unit: String, aggregationStrategy: MeasurementAggregationStrategy): MeasuredPhenomenonSql = {
+  override def findOrCreatePhenomenon(name: String, unit: String, aggregationStrategy: MeasurementAggregationStrategy): MeasuredPhenomenon = {
     DB.localTx(implicit session => {
       return measuredPhenomenons
         .find(mp => mp.name == name && mp.sensorId == id)
@@ -54,7 +56,7 @@ case class SensorSql(
     })
   }
 
-  private def saveMeasuredPhenomenon(name: String, unit: String, aggregationStrategy: MeasurementAggregationStrategy)(implicit session: DBSession): MeasuredPhenomenonSql = {
+  private def saveMeasuredPhenomenon(name: String, unit: String, aggregationStrategy: MeasurementAggregationStrategy)(implicit session: DBSession): MeasuredPhenomenon = {
     val aggregationStrategyName = aggregationStrategy match {
       case IdentityMeasurementAggregationStrategy => "none"
       case SingleValueAggregationStrategy => "singleValue"
@@ -69,7 +71,7 @@ case class SensorSql(
           FROM measuredPhenomenon MP
           WHERE MP.name = ${name}
           AND MP.sensorId = ${id}
-      """.map(MeasuredPhenomenonSql.fromRs(_, clock)).single().apply().get
+      """.map(MeasuredPhenomenonInflux.fromRs(_, clock, influx)).single().apply().get
   }
 
   override def areAllMeasuredPhenomenonsSingleValue: Boolean =
@@ -90,14 +92,15 @@ case class SensorSql(
 }
 
 object SensorSql {
-  val fromRs: ((WrappedResultSet, Clock) => SensorSql) =
-    (rs, clock) => SensorSql(
+  val fromRs: ((WrappedResultSet, Clock, Database) => SensorSql) =
+    (rs, clock, influx) => SensorSql(
       name = rs.string("name"),
       location = LocationSql(
         address = rs.string("address"),
         label = rs.string("label")
       ),
       rs.string("id"),
-      clock
+      clock,
+      influx
     )
 }

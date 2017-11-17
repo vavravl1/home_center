@@ -1,8 +1,8 @@
 package dao
 
 import java.sql.Timestamp
-import java.time.Clock
 import java.time.temporal.ChronoUnit.{DAYS, MINUTES, SECONDS}
+import java.time.{Clock, Instant}
 
 import scalikejdbc._
 import scalikejdbc.interpolation.SQLSyntax
@@ -23,6 +23,21 @@ sealed abstract class TimeGranularity {
       case ByDayBig => (sqls"DAY", sqls"MONTH", new Timestamp(clock.instant().minus(30, DAYS).toEpochMilli))
       case ByMonth => (sqls"MONTH", sqls"YEAR", new Timestamp(clock.instant().minus(365, DAYS).toEpochMilli))
       case ByMonthBig => (sqls"MONTH", sqls"YEAR", new Timestamp(clock.instant().minus(2*365, DAYS).toEpochMilli))
+    }
+  }
+
+  def toExtractAndTimeForInflux()(implicit clock: Clock):(String, Instant) = {
+    this match {
+      case BySecond => ("1s", clock.instant().minus(30, SECONDS))
+      case BySecondBig => ("1s", clock.instant().minus(1, MINUTES))
+      case ByMinute => ("1m", clock.instant().minus(30, MINUTES))
+      case ByMinuteBig => ("1m", clock.instant().minus(120, MINUTES))
+      case ByHour => ("1h", clock.instant().minus(1, DAYS))
+      case ByHourBig => ("1h", clock.instant().minus(2, DAYS))
+      case ByDay => ("1d", clock.instant().minus(14, DAYS))
+      case ByDayBig => ("1d", clock.instant().minus(30, DAYS))
+      case ByMonth => ("30d", clock.instant().minus(365, DAYS))
+      case ByMonthBig => ("30d", clock.instant().minus(2*365, DAYS))
     }
   }
 }

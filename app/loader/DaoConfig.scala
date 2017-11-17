@@ -13,10 +13,9 @@ import scala.language.postfixOps
 /**
   * Defines all repositories plus db maintenance
   */
-trait DaoConfig extends BuiltInComponents with ClockConfig with SqlH2Config {
+trait DaoConfig extends BuiltInComponents with ClockConfig with SqlH2Config with InfluxDbConfig{
   lazy val locationRepository: LocationRepositorySql = wire[LocationRepositorySql]
-//  lazy val sensorRepository: SensorRepositoryCached = new SensorRepositoryCached(new SensorRepositorySql(locationRepository, clock))
-  lazy val sensorRepository: SensorRepository = new SensorRepositorySql(locationRepository, clock)
+  lazy val sensorRepository: SensorRepository = new SensorRepositorySql(locationRepository, clock, influx)
 
   def initDbAggregation(): Unit = {
     actorSystem.scheduler.schedule(

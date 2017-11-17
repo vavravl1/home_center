@@ -2,6 +2,7 @@ package model.sensor.impl
 
 import java.time.Clock
 
+import com.paulgoldbaum.influxdbclient.Database
 import model.location.Location
 import model.location.impl.LocationRepositorySql
 import model.sensor.{Sensor, SensorRepository}
@@ -12,7 +13,9 @@ import scalikejdbc._
   */
 class SensorRepositorySql(
                            locationRepository: LocationRepositorySql,
-                           val clock: Clock) extends SensorRepository {
+                           val clock: Clock,
+                           influx: Database
+                         ) extends SensorRepository {
 
   override def findOrCreateSensor(location: Location, name: String): SensorSql = {
 
@@ -39,7 +42,7 @@ class SensorRepositorySql(
           JOIN location L ON S.locationAddress = L.address
           ORDER BY L.address
         """
-      .map(rs => SensorSql.fromRs(rs, clock)).list().apply()
+      .map(rs => SensorSql.fromRs(rs, clock, influx)).list().apply()
   })
 
   override def delete(sensor: Sensor): Unit =
@@ -57,7 +60,7 @@ class SensorRepositorySql(
            JOIN location L ON S.locationAddress = L.address
            WHERE S.locationAddress = ${location.address} AND S.name = ${name}
         """
-      .map(SensorSql.fromRs(_, clock)).single().apply()
+      .map(SensorSql.fromRs(_, clock, influx)).single().apply()
   }
 
   private def storeSensor(location: Location, name: String)(implicit session: DBSession) = {

@@ -103,8 +103,8 @@ class SensorMeasurementsDispatcherTest extends WordSpec with Matchers with MockF
     }
   }
 
-  class SensorRepositorySqlWithCtor extends SensorRepositorySql(null, null)
-  class SensorSqlWithCtor extends SensorSql(null, null, null, null)
+  class SensorRepositorySqlWithCtor extends SensorRepositorySql(null, null, null)
+  class SensorSqlWithCtor extends SensorSql(null, null, null, null, null)
   class TemperatureMeasuredPhenomenon extends MeasuredPhenomenonSql("temperature", "\u2103", IdentityMeasurementAggregationStrategy, null, null, null)
   class ConcentrationMeasuredPhenomenon extends MeasuredPhenomenonSql("concentration", "ppm", IdentityMeasurementAggregationStrategy, null, null, null)
   class HumidityMeasuredPhenomenon extends MeasuredPhenomenonSql("relative-humidity", "%", IdentityMeasurementAggregationStrategy, null, null, null)

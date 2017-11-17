@@ -218,19 +218,3 @@ case class MeasuredPhenomenonSql(
     measureTimestamp = Instant.ofEpochMilli(rs.timestamp("ts").millis)
   )
 }
-
-object MeasuredPhenomenonSql {
-  val fromRs: ((WrappedResultSet, Clock) => MeasuredPhenomenonSql) =
-    (rs, clock) => new MeasuredPhenomenonSql(
-      name = rs.string("name"),
-      unit = rs.string("unit"),
-      aggregationStrategy = rs.string("aggregationStrategy") match {
-        case "boolean" => BooleanMeasurementAggregationStrategy
-        case "singleValue" => SingleValueAggregationStrategy
-        case "none" => IdentityMeasurementAggregationStrategy
-      },
-      id = rs.string("id"),
-      sensorId = rs.string("sensorId"),
-      _clock = clock
-    )
-}

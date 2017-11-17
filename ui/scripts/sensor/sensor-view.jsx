@@ -78,9 +78,9 @@ class SensorView extends React.Component {
     prepareDataSetForByDayValues = () => {
         return this.props.measuredPhenomenons
             .map(measuredPhenomenon => {
-                const averages = measuredPhenomenon.measurements.map(t => t.average);
-                const maxes = measuredPhenomenon.measurements.map(t => t.max);
-                const mines = measuredPhenomenon.measurements.map(t => t.min);
+                const averages = measuredPhenomenon.measurements.map(t => t.average.toFixed(2));
+                const maxes = measuredPhenomenon.measurements.map(t => t.max.toFixed(2));
+                const mines = measuredPhenomenon.measurements.map(t => t.min.toFixed(2));
                 const index = this.props.measuredPhenomenons.indexOf(measuredPhenomenon);
                 const red = this.chartColors[index % 4][0];
                 const green = this.chartColors[index % 4][1];
@@ -190,7 +190,7 @@ class SensorView extends React.Component {
                 const lastMeasurement = measurements[measurements.length - 1];
                 return <tr key={"lastMeasuredValue-" + measuredPhenomenon.name + "-" + this.props.sensor.name}>
                     <td scope="row">Actual {measuredPhenomenon.name}</td>
-                    <td>{lastMeasurement.average} {measuredPhenomenon.unit}</td>
+                    <td>{lastMeasurement.average.toFixed(2)} {measuredPhenomenon.unit}</td>
                 </tr>
             } else {
                 return <tr/>
