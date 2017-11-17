@@ -13,9 +13,6 @@ import scalikejdbc.WrappedResultSet
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
-/**
-  *
-  */
 class MeasuredPhenomenonInflux(
                                 override val name: String,
                                 override val unit: String,
