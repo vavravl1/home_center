@@ -17,30 +17,6 @@ case class SensorSql(
                ) extends Sensor {
   private implicit val clock = _clock
 
-  override def addMeasurement(measurement: Measurement, measuredPhenomenon: MeasuredPhenomenon): Unit = {
-    DB.localTx(implicit session => {
-      val mp = measuredPhenomenons
-        .find(mp => mp.name == measuredPhenomenon.name && mp.sensorId == id)
-        .getOrElse(saveMeasuredPhenomenon(
-          measuredPhenomenon.name,
-          measuredPhenomenon.unit,
-          measuredPhenomenon.aggregationStrategy
-        ))
-
-      val aggregationLevel = "none"
-      sql"""
-          INSERT INTO measurement (value, measureTimestamp, measuredPhenomenonId, aggregated)
-          VALUES (
-            ${measurement.average},
-            ${measurement.measureTimestamp},
-            ${mp.id},
-            ${aggregationLevel}
-          )
-      """
-        .update.apply()
-    })
-  }
-
   /**
     * All measured phenomenons by this sensor
     */

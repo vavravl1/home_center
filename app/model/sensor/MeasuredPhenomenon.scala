@@ -34,6 +34,11 @@ trait MeasuredPhenomenon {
   def lastNMeasurementsDescendant(n: Int): Seq[Measurement]
 
   /**
+    * Add single measurement
+    */
+  def addMeasurement(measurement: Measurement)
+
+  /**
     * Remove old un-aggregated measurements and replace them by aggregated one.
     * Aggregation is done by hours.
     */

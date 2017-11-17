@@ -17,7 +17,7 @@ class SensorMeasurementsDispatcher(actorSystem: ActorSystem,
     case SensorMeasurementsDispatcherMessages.MessageReceived(topic, message) =>
       Logger.debug(s"Mqtt topic $topic received $message")
       parser.parseMqttMessage(topic, message).map({ case (sensor, phenomenon, measurement) =>
-        sensor.addMeasurement(measurement, phenomenon)
+        phenomenon.addMeasurement(measurement)
         listeners.foreach(_ ! SensorMeasurementsListenerMessages.ConsumeMessage(
           sensor = sensor,
           phenomenon = phenomenon,

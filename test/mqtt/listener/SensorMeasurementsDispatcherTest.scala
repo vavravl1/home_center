@@ -33,20 +33,20 @@ class SensorMeasurementsDispatcherTest extends WordSpec with Matchers with MockF
         system, mqttBigClownParser, Seq()
       )))
       val sensor = mock[SensorSqlWithCtor]
-      val phenomenon = mock[MeasuredPhenomenonSqlWithCtor]
 
       "not throw any exception with empty listeners" in {
         dispatcher ! SensorMeasurementsDispatcherMessages.MessageReceived("node/garage/pve-inverter/-/power", "42")
       }
 
       "receive messages from thermometer" in {
+        val phenomenon = mock[TemperatureMeasuredPhenomenon]
         (clock.instant _).expects().returning(instant).anyNumberOfTimes()
         val location = LocationSql("836d19833c33", "label")
 
         (locationRepository.findOrCreateLocation _).expects("836d19833c33").returning(location)
         (sensorRepository.findOrCreateSensor _).expects(location, "thermometer").returning(sensor)
-        (sensor.findOrCreatePhenomenon _).expects(  "temperature", "\u2103", IdentityMeasurementAggregationStrategy).returning(phenomenon)
-        (sensor.addMeasurement _).expects(Measurement(19.19, Instant.ofEpochSecond(22)),phenomenon)
+        (sensor.findOrCreatePhenomenon _).expects("temperature", "\u2103", IdentityMeasurementAggregationStrategy).returning(phenomenon)
+        (phenomenon.addMeasurement _).expects(Measurement(19.19, Instant.ofEpochSecond(22)))
 
         dispatcher ! SensorMeasurementsDispatcherMessages.MessageReceived(
           "node/836d19833c33/thermometer/0:0/temperature",
@@ -55,13 +55,14 @@ class SensorMeasurementsDispatcherTest extends WordSpec with Matchers with MockF
       }
 
       "receive messages from co2-meter" in {
+        val phenomenon = mock[ConcentrationMeasuredPhenomenon]
         (clock.instant _).expects().returning(instant).anyNumberOfTimes()
         val location = LocationSql("836d19833c33", "label")
 
         (locationRepository.findOrCreateLocation _).expects("836d19833c33").returning(location)
         (sensorRepository.findOrCreateSensor _).expects(location, "co2-meter").returning(sensor)
         (sensor.findOrCreatePhenomenon _).expects("concentration", "ppm", IdentityMeasurementAggregationStrategy).returning(phenomenon)
-        (sensor.addMeasurement _).expects(Measurement(1001, Instant.ofEpochSecond(22)),phenomenon)
+        (phenomenon.addMeasurement _).expects(Measurement(1001, Instant.ofEpochSecond(22)))
 
         dispatcher ! SensorMeasurementsDispatcherMessages.MessageReceived(
           "node/836d19833c33/co2-meter/-/concentration",
@@ -70,13 +71,14 @@ class SensorMeasurementsDispatcherTest extends WordSpec with Matchers with MockF
       }
 
       "receive messages from hygrometer" in {
+        val phenomenon = mock[HumidityMeasuredPhenomenon]
         (clock.instant _).expects().returning(instant).anyNumberOfTimes()
         val location = LocationSql("836d19833c33", "label")
 
         (locationRepository.findOrCreateLocation _).expects("836d19833c33").returning(location)
         (sensorRepository.findOrCreateSensor _).expects(location, "hygrometer").returning(sensor)
         (sensor.findOrCreatePhenomenon _).expects("relative-humidity", "%", IdentityMeasurementAggregationStrategy).returning(phenomenon)
-        (sensor.addMeasurement _).expects(Measurement(56.6, Instant.ofEpochSecond(22)),phenomenon)
+        (phenomenon.addMeasurement _).expects(Measurement(56.6, Instant.ofEpochSecond(22)))
 
         dispatcher ! SensorMeasurementsDispatcherMessages.MessageReceived(
           "node/836d19833c33/hygrometer/0:4/relative-humidity",
@@ -85,12 +87,13 @@ class SensorMeasurementsDispatcherTest extends WordSpec with Matchers with MockF
       }
 
       "receive messages from pve-inverter" in {
+        val phenomenon = mock[PveMeasuredPhenomenon]
         val location = LocationSql("garage", "garage")
 
         (locationRepository.findOrCreateLocation _).expects("garage").returning(location)
         (sensorRepository.findOrCreateSensor _).expects(location, "pve-inverter").returning(sensor)
         (sensor.findOrCreatePhenomenon _).expects("power", "W", IdentityMeasurementAggregationStrategy).returning(phenomenon)
-        (sensor.addMeasurement _).expects(Measurement(850, Instant.ofEpochSecond(1200)),phenomenon)
+        (phenomenon.addMeasurement _).expects(Measurement(850, Instant.ofEpochSecond(1200)))
 
         dispatcher ! SensorMeasurementsDispatcherMessages.MessageReceived(
           "node/garage/pve-inverter/-/power",
@@ -102,5 +105,8 @@ class SensorMeasurementsDispatcherTest extends WordSpec with Matchers with MockF
 
   class SensorRepositorySqlWithCtor extends SensorRepositorySql(null, null)
   class SensorSqlWithCtor extends SensorSql(null, null, null, null)
-  class MeasuredPhenomenonSqlWithCtor extends MeasuredPhenomenonSql(null, null, null, null, null, null)
+  class TemperatureMeasuredPhenomenon extends MeasuredPhenomenonSql("temperature", "\u2103", IdentityMeasurementAggregationStrategy, null, null, null)
+  class ConcentrationMeasuredPhenomenon extends MeasuredPhenomenonSql("concentration", "ppm", IdentityMeasurementAggregationStrategy, null, null, null)
+  class HumidityMeasuredPhenomenon extends MeasuredPhenomenonSql("relative-humidity", "%", IdentityMeasurementAggregationStrategy, null, null, null)
+  class PveMeasuredPhenomenon extends MeasuredPhenomenonSql("power", "W", IdentityMeasurementAggregationStrategy, null, null, null)
 }

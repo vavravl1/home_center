@@ -29,11 +29,11 @@ class SensorSqlTest extends WordSpec with Matchers with DbTest with MockFactory 
     val powerStatsPhenomenon = sensor.findOrCreatePhenomenon("zL1-cons", "kWh", SingleValueAggregationStrategy).asInstanceOf[MeasuredPhenomenonSql]
 
     "given several temperatures" should {
-      sensor.addMeasurement(Measurement(10, i), temperaturePhenomenon)
-      sensor.addMeasurement(Measurement(20, i.plus(30, MINUTES)), temperaturePhenomenon)
-      sensor.addMeasurement(Measurement(30, i.plus(70, MINUTES)), temperaturePhenomenon)
-      sensor.addMeasurement(Measurement(30, i.plus(80, MINUTES)), temperaturePhenomenon)
-      sensor.addMeasurement(Measurement(60, i.plus(90, MINUTES)), temperaturePhenomenon)
+      temperaturePhenomenon.addMeasurement(Measurement(10, i))
+      temperaturePhenomenon.addMeasurement(Measurement(20, i.plus(30, MINUTES)))
+      temperaturePhenomenon.addMeasurement(Measurement(30, i.plus(70, MINUTES)))
+      temperaturePhenomenon.addMeasurement(Measurement(30, i.plus(80, MINUTES)))
+      temperaturePhenomenon.addMeasurement(Measurement(60, i.plus(90, MINUTES)))
 
       "correctly sample the temperatures" in {
         (clock.instant _).expects().returning(i).anyNumberOfTimes
@@ -76,10 +76,10 @@ class SensorSqlTest extends WordSpec with Matchers with DbTest with MockFactory 
     }
     
     "given several singleValueAggregated wattrouter-stats" should {
-      sensor.addMeasurement(Measurement(15, i), powerStatsPhenomenon)
-      sensor.addMeasurement(Measurement(25, i.plus(30, MINUTES)), powerStatsPhenomenon)
-      sensor.addMeasurement(Measurement(30, i.plus(1, DAYS).plus(5, HOURS)), powerStatsPhenomenon)
-      sensor.addMeasurement(Measurement(60, i.plus(1, DAYS).plus(8, HOURS)), powerStatsPhenomenon)
+      powerStatsPhenomenon.addMeasurement(Measurement(15, i))
+      powerStatsPhenomenon.addMeasurement(Measurement(25, i.plus(30, MINUTES)))
+      powerStatsPhenomenon.addMeasurement(Measurement(30, i.plus(1, DAYS).plus(5, HOURS)))
+      powerStatsPhenomenon.addMeasurement(Measurement(60, i.plus(1, DAYS).plus(8, HOURS)))
 
       "correctly group the singleValueAggregated wattrouter-stats" in {
         (clock.instant _).expects().returning(i.plus(4, DAYS)).anyNumberOfTimes
@@ -111,8 +111,8 @@ class SensorSqlTest extends WordSpec with Matchers with DbTest with MockFactory 
       "return true for all measurements of only singleValue only" in {
         val sensor = sensorRepository.findOrCreateSensor(location, "wattmeter-stats")
         val phenomenon = sensor.findOrCreatePhenomenon("l1Cons", "kWh", SingleValueAggregationStrategy)
-        sensor.addMeasurement(Measurement(1.2, i), phenomenon)
-        sensor.addMeasurement(Measurement(1.4, i.plus(30, MINUTES)), phenomenon)
+        phenomenon.addMeasurement(Measurement(1.2, i))
+        phenomenon.addMeasurement(Measurement(1.4, i.plus(30, MINUTES)))
 
         sensor.areAllMeasuredPhenomenonsSingleValue shouldBe true
       }
@@ -120,9 +120,9 @@ class SensorSqlTest extends WordSpec with Matchers with DbTest with MockFactory 
       "return false for several measurement types" in {
         val sensor = sensorRepository.findOrCreateSensor(location, "hybrid-sensor")
         val phenomenonA = sensor.findOrCreatePhenomenon("l1Cons", "kWh", SingleValueAggregationStrategy)
-        sensor.addMeasurement(Measurement(1.2, i), phenomenonA)
+        phenomenonA.addMeasurement(Measurement(1.2, i))
         val phenomenonB = sensor.findOrCreatePhenomenon("temperature", "C", IdentityMeasurementAggregationStrategy)
-        sensor.addMeasurement(Measurement(10, i), phenomenonB)
+        phenomenonB.addMeasurement(Measurement(10, i))
 
         sensor.areAllMeasuredPhenomenonsSingleValue shouldBe false
       }

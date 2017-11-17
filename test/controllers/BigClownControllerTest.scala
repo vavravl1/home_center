@@ -28,10 +28,10 @@ class BigClownControllerTest extends WordSpec with Matchers with IntegrationTest
     val phenomenon = sensor.findOrCreatePhenomenon("temperature", "C", IdentityMeasurementAggregationStrategy)
 
     "when there are old measures" should {
-      sensor.addMeasurement(Measurement(10, now), phenomenon)
-      sensor.addMeasurement(Measurement(20, now.minus(70, MINUTES)), phenomenon)
-      sensor.addMeasurement(Measurement(30, now.minus(119, MINUTES)), phenomenon)
-      sensor.addMeasurement(Measurement(50, now.minus(130, MINUTES)), phenomenon)
+      phenomenon.addMeasurement(Measurement(10, now))
+      phenomenon.addMeasurement(Measurement(20, now.minus(70, MINUTES)))
+      phenomenon.addMeasurement(Measurement(30, now.minus(119, MINUTES)))
+      phenomenon.addMeasurement(Measurement(50, now.minus(130, MINUTES)))
 
       "return correct values for big scale" in {
         val request = FakeRequest(GET, "/bc/remote-0/thermometer?timeGranularity=ByMinute&big=true")

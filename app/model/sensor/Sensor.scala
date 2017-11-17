@@ -41,11 +41,6 @@ trait Sensor {
   def findPhenomenon(name: String):Option[MeasuredPhenomenon]
 
   /**
-    * Add single measurement that is associated with this sensor
-    */
-  def addMeasurement(measurement: Measurement, measuredPhenomenon:MeasuredPhenomenon)
-
-  /**
     * Remove old un-aggregated measurements and replace them by aggregated one.
     * Aggregation is done by hours.
     */

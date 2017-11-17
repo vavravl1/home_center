@@ -27,11 +27,11 @@ class MeasuredPhenomenonSqlTest extends WordSpec with Matchers with DbTest with 
     "given 3 measurements" should {
       val i = Instant.ofEpochSecond(0)
 
-      sensor.addMeasurement(Measurement(10, i), phenomenon)
-      sensor.addMeasurement(Measurement(20, i.plus(20, MINUTES)), phenomenon)
-      sensor.addMeasurement(Measurement(30, i.plus(30, MINUTES)), phenomenon)
-      sensor.addMeasurement(Measurement(40, i.plus(40, MINUTES)), phenomenon)
-      sensor.addMeasurement(Measurement(50, i.plus(50, MINUTES)), phenomenon)
+      phenomenon.addMeasurement(Measurement(10, i))
+      phenomenon.addMeasurement(Measurement(20, i.plus(20, MINUTES)))
+      phenomenon.addMeasurement(Measurement(30, i.plus(30, MINUTES)))
+      phenomenon.addMeasurement(Measurement(40, i.plus(40, MINUTES)))
+      phenomenon.addMeasurement(Measurement(50, i.plus(50, MINUTES)))
 
       "correctly returns measurements by time aggregation" in {
         (clock.instant _).expects().returning(i).once()

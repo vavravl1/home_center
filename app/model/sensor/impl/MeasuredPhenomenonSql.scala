@@ -23,6 +23,22 @@ case class MeasuredPhenomenonSql(
                                 ) extends MeasuredPhenomenon {
   implicit val clock = _clock
 
+  override def addMeasurement(measurement: Measurement): Unit = {
+    DB.localTx(implicit session => {
+      val aggregationLevel = "none"
+      sql"""
+          INSERT INTO measurement (value, measureTimestamp, measuredPhenomenonId, aggregated)
+          VALUES (
+            ${measurement.average},
+            ${measurement.measureTimestamp},
+            ${id},
+            ${aggregationLevel}
+          )
+      """
+        .update.apply()
+    })
+  }
+
   override def measurements(timeGranularity: TimeGranularity): Seq[Measurement] =
     DB.readOnly(implicit session => {
       val (extractTime, secondExtractTime, lastMeasureTimestamp) = timeGranularity.toExtractAndTime

@@ -36,6 +36,9 @@ libraryDependencies += "org.eclipse.paho" % "org.eclipse.paho.client.mqttv3" % "
 libraryDependencies += "com.softwaremill.macwire" %% "macros" % "2.2.0" % "provided"
 libraryDependencies += "com.softwaremill.macwire" %% "util" % "2.2.0"
 
+// InfluxDb client
+libraryDependencies += "com.paulgoldbaum" %% "scala-influxdb-client" % "0.5.2"
+
 // Security
 resolvers += "Atlassian Releases" at "https://maven.atlassian.com/public/"
 libraryDependencies ++= Seq(
