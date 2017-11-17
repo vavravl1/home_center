@@ -45,13 +45,16 @@ class SensorRepositorySql(
       .map(rs => SensorSql.fromRs(rs, clock, influx)).list().apply()
   })
 
-  override def delete(sensor: Sensor): Unit =
-    DB.localTx(implicit session => {
+  override def delete(sensor: Sensor): Unit = DB.localTx(implicit session => {
+    getSensor(sensor.location, sensor.name).map(s => {
+      influx.query(s"DROP SERIES FROM 'measurements_${s.id}'")
+
       sql"""
             DELETE FROM sensor
             WHERE locationAddress = ${sensor.location.address} AND name = ${sensor.name}
         """.update().apply()
     })
+  })
 
   private def getSensor(location: Location, name: String)(implicit session: DBSession): Option[SensorSql] = {
     sql"""

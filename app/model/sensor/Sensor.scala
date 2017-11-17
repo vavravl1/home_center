@@ -40,12 +40,6 @@ trait Sensor {
     */
   def findPhenomenon(name: String):Option[MeasuredPhenomenon]
 
-  /**
-    * Remove old un-aggregated measurements and replace them by aggregated one.
-    * Aggregation is done by hours.
-    */
-  def aggregateOldMeasurements()
-
   override def equals(obj: scala.Any): Boolean = {
     if(!obj.isInstanceOf[Sensor]) {
       return false

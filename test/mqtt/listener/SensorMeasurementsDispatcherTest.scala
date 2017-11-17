@@ -5,7 +5,7 @@ import java.time.{Clock, Instant}
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.TestActorRef
 import model.location.impl.{LocationRepositorySql, LocationSql}
-import model.sensor.impl.{MeasuredPhenomenonSql, SensorRepositorySql, SensorSql}
+import model.sensor.impl.{MeasuredPhenomenonInflux, SensorRepositorySql, SensorSql}
 import model.sensor.{IdentityMeasurementAggregationStrategy, Measurement}
 import mqtt.clown.MqttBigClownParser
 import org.scalamock.scalatest.MockFactory
@@ -105,8 +105,8 @@ class SensorMeasurementsDispatcherTest extends WordSpec with Matchers with MockF
 
   class SensorRepositorySqlWithCtor extends SensorRepositorySql(null, null, null)
   class SensorSqlWithCtor extends SensorSql(null, null, null, null, null)
-  class TemperatureMeasuredPhenomenon extends MeasuredPhenomenonSql("temperature", "\u2103", IdentityMeasurementAggregationStrategy, null, null, null)
-  class ConcentrationMeasuredPhenomenon extends MeasuredPhenomenonSql("concentration", "ppm", IdentityMeasurementAggregationStrategy, null, null, null)
-  class HumidityMeasuredPhenomenon extends MeasuredPhenomenonSql("relative-humidity", "%", IdentityMeasurementAggregationStrategy, null, null, null)
-  class PveMeasuredPhenomenon extends MeasuredPhenomenonSql("power", "W", IdentityMeasurementAggregationStrategy, null, null, null)
+  class TemperatureMeasuredPhenomenon extends MeasuredPhenomenonInflux("temperature", "\u2103", IdentityMeasurementAggregationStrategy, null, null, null, null)
+  class ConcentrationMeasuredPhenomenon extends MeasuredPhenomenonInflux("concentration", "ppm", IdentityMeasurementAggregationStrategy, null, null, null, null)
+  class HumidityMeasuredPhenomenon extends MeasuredPhenomenonInflux("relative-humidity", "%", IdentityMeasurementAggregationStrategy, null, null, null, null)
+  class PveMeasuredPhenomenon extends MeasuredPhenomenonInflux("power", "W", IdentityMeasurementAggregationStrategy, null, null, null, null)
 }

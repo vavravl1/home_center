@@ -50,7 +50,6 @@ trait AppComponents extends BuiltInComponents
 
   Logger.info("The app is about to start")
   initDb
-  initDbAggregation()
   initializeListeners()
   initWsQuerying()
 

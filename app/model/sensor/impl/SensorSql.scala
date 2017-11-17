@@ -34,10 +34,6 @@ case class SensorSql(
     })
   }
 
-  override def aggregateOldMeasurements(): Unit = {
-    measuredPhenomenons.foreach(mp => mp.aggregateOldMeasurements())
-  }
-
   /**
     * Create or load measured phenomenon according to the given parameters
     */

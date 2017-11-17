@@ -34,17 +34,6 @@ ALTER TABLE measuredPhenomenon ADD CONSTRAINT fk_sensorId
   ON UPDATE CASCADE;
 
 
-CREATE TABLE measurement (
-  value DOUBLE,
-  measureTimestamp TIMESTAMP NOT NULL,
-  measuredPhenomenonId BIGINT,
-  aggregated VARCHAR(10) DEFAULT 'none', //none, byhour, byday
-);
-ALTER TABLE measurement ADD CONSTRAINT fk_measuredPhenomenonId
-  FOREIGN KEY (measuredPhenomenonId) REFERENCES measuredPhenomenon(id)
-  ON DELETE CASCADE
-  ON UPDATE CASCADE;
-
 
 
 

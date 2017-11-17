@@ -38,12 +38,6 @@ trait MeasuredPhenomenon {
     */
   def addMeasurement(measurement: Measurement)
 
-  /**
-    * Remove old un-aggregated measurements and replace them by aggregated one.
-    * Aggregation is done by hours.
-    */
-  def aggregateOldMeasurements()
-
   override def equals(obj: scala.Any): Boolean = {
     if (!obj.isInstanceOf[MeasuredPhenomenon]) {
       return false

@@ -4,7 +4,6 @@ import java.time.temporal.ChronoUnit._
 import java.time.{Clock, Instant}
 
 import dao.{ByDay, ByHour, DbTest}
-import model.sensor.impl.MeasuredPhenomenonSql
 import model.sensor.{IdentityMeasurementAggregationStrategy, Measurement, SingleValueAggregationStrategy}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, WordSpec}
@@ -25,8 +24,8 @@ class SensorSqlTest extends WordSpec with Matchers with DbTest with MockFactory 
     sensorRepository.findAll()
       .foreach(s => sensorRepository.delete(s))
     val sensor = sensorRepository.findOrCreateSensor(location, "thermometer")
-    val temperaturePhenomenon = sensor.findOrCreatePhenomenon("temperature", "C", IdentityMeasurementAggregationStrategy).asInstanceOf[MeasuredPhenomenonSql]
-    val powerStatsPhenomenon = sensor.findOrCreatePhenomenon("zL1-cons", "kWh", SingleValueAggregationStrategy).asInstanceOf[MeasuredPhenomenonSql]
+    val temperaturePhenomenon = sensor.findOrCreatePhenomenon("temperature", "C", IdentityMeasurementAggregationStrategy)
+    val powerStatsPhenomenon = sensor.findOrCreatePhenomenon("zL1-cons", "kWh", SingleValueAggregationStrategy)
 
     "given several temperatures" should {
       temperaturePhenomenon.addMeasurement(Measurement(10, i))
@@ -57,7 +56,6 @@ class SensorSqlTest extends WordSpec with Matchers with DbTest with MockFactory 
 
       "correctly group the temperatures" in {
         (clock.instant _).expects().returning(i.plus(3, HOURS)).anyNumberOfTimes
-        sensor.aggregateOldMeasurements()
 
         sensor.measuredPhenomenons.head.measurements(ByHour)(0).min shouldBe 15
         sensor.measuredPhenomenons.head.measurements(ByHour)(0).max shouldBe 15
@@ -68,10 +66,6 @@ class SensorSqlTest extends WordSpec with Matchers with DbTest with MockFactory 
         sensor.measuredPhenomenons.head.measurements(ByHour)(1).max shouldBe 40
         sensor.measuredPhenomenons.head.measurements(ByHour)(1).average shouldBe 40
         sensor.measuredPhenomenons.head.measurements(ByHour)(1).measureTimestamp shouldBe i.plus(90, MINUTES)
-
-//        DB.autoCommit(implicit session => {
-//          sql"""SELECT COUNT(*) FROM measurement WHERE measuredPhenomenonId=${temperaturePhenomenon.sensorId}""".map(rs => rs.int(1)).single.apply() shouldBe Some(2)
-//        })
       }
     }
     
@@ -83,7 +77,6 @@ class SensorSqlTest extends WordSpec with Matchers with DbTest with MockFactory 
 
       "correctly group the singleValueAggregated wattrouter-stats" in {
         (clock.instant _).expects().returning(i.plus(4, DAYS)).anyNumberOfTimes
-        sensor.aggregateOldMeasurements()
 
         sensor.measuredPhenomenons(1).measurements(ByDay)(0).min shouldBe 25
         sensor.measuredPhenomenons(1).measurements(ByDay)(0).max shouldBe 25
@@ -94,10 +87,6 @@ class SensorSqlTest extends WordSpec with Matchers with DbTest with MockFactory 
         sensor.measuredPhenomenons(1).measurements(ByDay)(1).max shouldBe 60
         sensor.measuredPhenomenons(1).measurements(ByDay)(1).average shouldBe 60
         sensor.measuredPhenomenons(1).measurements(ByDay)(1).measureTimestamp shouldBe i.plus(1, DAYS).plus(8, HOURS)
-
-//        DB.autoCommit(implicit session => {
-//          sql"""SELECT COUNT(*) FROM measurement WHERE measuredPhenomenonId=${powerStatsPhenomenon.sensorId}""".map(rs => rs.int(1)).single.apply() shouldBe Some(2)
-//        })
       }
     }
 

@@ -29,8 +29,7 @@ class MeasuredPhenomenonInflux(
   private val key = "measurements_" + sensorId
 
   override def addMeasurement(measurement: Measurement): Unit = {
-//    val point = Point(key = key, timestamp = measurement.measureTimestamp.toEpochMilli)
-    val point = Point(key = key)
+    val point = Point(key = key, timestamp = measurement.measureTimestamp.getEpochSecond)
       .addTag("phenomenon", name)
       .addField("value", measurement.average)
     val f = influx.write(
@@ -74,8 +73,6 @@ class MeasuredPhenomenonInflux(
     val series = Await.result(influx.query(query), Duration.Inf).series
     seriesToMeasurements(series)
   }
-
-  override def aggregateOldMeasurements(): Unit = {}
 
   private def seriesToMeasurements(series: List[Series]) = {
     if (series.isEmpty) {
