@@ -64,6 +64,7 @@ class MeasuredPhenomenonInflux(
       s"SELECT value " +
       s"FROM $key " +
       s"WHERE phenomenon = '$name' " +
+      s"ORDER BY DESC " +
       s"LIMIT $n"
 
     Logger.debug(s"Querying influx: $query")

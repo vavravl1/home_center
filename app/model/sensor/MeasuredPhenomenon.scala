@@ -1,7 +1,7 @@
 package model.sensor
 
 import dao.TimeGranularity
-import play.api.libs.json.{JsArray, Json, Writes}
+import play.api.libs.json.{JsArray, JsValue, Json, Writes}
 
 import scala.concurrent.Future
 
@@ -53,8 +53,11 @@ trait MeasuredPhenomenon {
 }
 
 object MeasuredPhenomenon {
-  def writes: Writes[Seq[MeasuredPhenomenon]] = (mp: Seq[MeasuredPhenomenon]) => JsArray(mp.map(mp => Json.obj(
-    "name" -> mp.name,
-    "unit" -> mp.unit
-  )))
+  def writes: Writes[Seq[MeasuredPhenomenon]] = new Writes[Seq[MeasuredPhenomenon]] {
+    def writes(mp: Seq[MeasuredPhenomenon]): JsValue =
+      JsArray(mp.map(mp => Json.obj(
+        "name" -> mp.name,
+        "unit" -> mp.unit
+      )))
+  }
 }

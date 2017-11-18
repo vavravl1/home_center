@@ -46,7 +46,7 @@ class SensorBarView extends React.Component {
 
         const datasets = this.props.measuredPhenomenons
             .map(measuredPhenomenon => {
-                const maxes = measuredPhenomenon.measurements.map(t => t.max.toFixed(2));
+                const maxes = measuredPhenomenon.measurements.map(t => t.max);
                 const index = this.props.measuredPhenomenons.indexOf(measuredPhenomenon);
                 const red = this.chartColors[index % 4][0];
                 const green = this.chartColors[index % 4][1];
