@@ -70,7 +70,7 @@ class MeasuredPhenomenonInflux(
           s"fill(none)"
       case FourDaysRetentionPolicy | ForeverRetentionPolicy =>
         s"SELECT MAX(max_value), MEAN(mean_value), MIN(min_value) " +
-          s"FROM ${influx.databaseName}.$FourDaysRetentionPolicy.$key " +
+          s"FROM ${influx.databaseName}.$retentionPolicy.$key " +
           s"WHERE time > '$lastMeasureTimestamp' " +
           s"AND phenomenon = '$name' " +
           s"GROUP BY time($extractTime) " +
