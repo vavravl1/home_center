@@ -11,7 +11,7 @@ import play.api.BuiltInComponents
 /**
   * All mqtt related logic
   */
-trait MqttConfig extends BuiltInComponents with DaoConfig with ClockConfig with IfThenConfig /*with ThermostatConfig*/ {
+trait MqttConfig extends BuiltInComponents with DaoConfig with ClockConfig with IfThenConfig with ThermostatConfig {
   lazy val sensorMeasurementsDispatcher = prepareSensorMeasurementsDispatcher
   lazy val mqttRepeater = prepareMqttRepeater
 
@@ -31,10 +31,9 @@ trait MqttConfig extends BuiltInComponents with DaoConfig with ClockConfig with 
 
   lazy val actuatorRepository = prepareActuatorRepository(mqttConnector)
 
-//  lazy val thermostatActivator = prepareThermostatActuatorActivator(thermostatSensor, thermostatButton, actuatorRepository.findOrCreateActuator(thermostatLocation, "Relay"))
-//  lazy val thermostat = prepareThermostat(thermostatActivator)
-//  lazy val mqttIfThenExecutor = prepareIfThenExecutor(actuatorRepository, thermostatActivator.ifThen)
-  lazy val mqttIfThenExecutor = prepareIfThenExecutor(actuatorRepository, Seq())
+  lazy val thermostatActivator = prepareThermostatActuatorActivator(thermostatSensor, thermostatButton, actuatorRepository.findOrCreateActuator(thermostatLocation, "Relay"))
+  lazy val thermostat = prepareThermostat(thermostatActivator)
+  lazy val mqttIfThenExecutor = prepareIfThenExecutor(actuatorRepository, Seq(thermostatActivator.ifThen))
 
   def initializeListeners(): Unit = {
     mqttConnector.reconnect.run()
@@ -87,8 +86,8 @@ trait MqttConfig extends BuiltInComponents with DaoConfig with ClockConfig with 
           clock = clock
         ),
         listeners = Seq(
-          mqttIfThenExecutor
-//          thermostat
+          mqttIfThenExecutor,
+          thermostat
         )
       )
     ))

@@ -3,6 +3,7 @@ package model.sensor.impl
 import java.time.Clock
 
 import com.paulgoldbaum.influxdbclient.Database
+import loader.{ForeverRetentionPolicy, FourDaysRetentionPolicy, OneHourRetentionPolicy}
 import model.location.impl.LocationSql
 import model.sensor._
 import scalikejdbc.{WrappedResultSet, _}
@@ -62,12 +63,33 @@ case class SensorSql(
          INSERT INTO measuredPhenomenon(name, unit, aggregationStrategy, sensorId)
          VALUES (${name}, ${unit}, ${aggregationStrategyName}, ${id})
       """.update().apply()
-    sql"""
+
+    val measuredPhenomenon = sql"""
           SELECT MP.name, MP.unit, MP.sensorId, MP.id, MP.aggregationStrategy
           FROM measuredPhenomenon MP
           WHERE MP.name = ${name}
           AND MP.sensorId = ${id}
       """.map(MeasuredPhenomenonInflux.fromRs(_, clock, influx, this)).single().apply().get
+
+    influx.query(
+      s"CREATE CONTINUOUS QUERY cq_${FourDaysRetentionPolicy}_${measuredPhenomenon.key} ON ${influx.databaseName} " +
+      s"BEGIN " +
+      s"SELECT mean(value) AS mean_value, max(value) AS max_value, min(value) AS min_value " +
+      s"INTO ${influx.databaseName}.$FourDaysRetentionPolicy.${measuredPhenomenon.key} " +
+      s"FROM ${influx.databaseName}.$OneHourRetentionPolicy.${measuredPhenomenon.key} GROUP BY time(${FourDaysRetentionPolicy.downsamplingTime}), phenomenon " +
+      s"END"
+    )
+
+    influx.query(
+      s"CREATE CONTINUOUS QUERY cq_${ForeverRetentionPolicy}_${measuredPhenomenon.key} ON ${influx.databaseName} " +
+        s"BEGIN " +
+        s"SELECT mean(mean_value) AS mean_value, max(max_value) AS max_value, min(min_value) AS min_value " +
+        s"INTO ${influx.databaseName}.$ForeverRetentionPolicy.${measuredPhenomenon.key} " +
+        s"FROM ${influx.databaseName}.$FourDaysRetentionPolicy.${measuredPhenomenon.key} GROUP BY time(${ForeverRetentionPolicy.downsamplingTime}), phenomenon " +
+        s"END"
+    )
+
+    measuredPhenomenon
   }
 
   override def areAllMeasuredPhenomenonsSingleValue: Boolean =

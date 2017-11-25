@@ -5,6 +5,7 @@ import java.time.{Clock, Instant}
 import com.paulgoldbaum.influxdbclient.Parameter.{Consistency, Precision}
 import com.paulgoldbaum.influxdbclient.{Database, Point, Series}
 import dao.TimeGranularity
+import loader.{ForeverRetentionPolicy, FourDaysRetentionPolicy, OneHourRetentionPolicy}
 import model.sensor._
 import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits._
@@ -23,7 +24,7 @@ class MeasuredPhenomenonInflux(
                                 val influx: Database
                               ) extends MeasuredPhenomenon {
   private implicit val clock = _clock
-  private val key = "measurements_" + sensor.id
+  val key:String = "measurements_" + sensor.id
 
   override def addMeasurement(measurement: Measurement): Unit = {
     val point = Point(key = key, timestamp = measurement.measureTimestamp.getEpochSecond)
@@ -32,7 +33,8 @@ class MeasuredPhenomenonInflux(
     val f = influx.write(
       point = point,
       precision = Precision.SECONDS,
-      consistency = Consistency.ONE
+      consistency = Consistency.ONE,
+      retentionPolicy = OneHourRetentionPolicy.toString
     )
 
     f.onSuccess {
@@ -43,14 +45,23 @@ class MeasuredPhenomenonInflux(
     }
   }
   override def measurements(timeGranularity: TimeGranularity): Future[Seq[Measurement]] = {
-    val (extractTime, lastMeasureTimestamp) = timeGranularity.toExtractAndTimeForInflux
-    val query = s"" +
-      s"SELECT MAX(value), MEAN(value), MIN(value) " +
-      s"FROM $key " +
-      s"WHERE time > '$lastMeasureTimestamp' " +
-      s"AND phenomenon = '$name' " +
-      s"GROUP BY time($extractTime) " +
-      s"fill(none)"
+    val (retentionPolicy, extractTime, lastMeasureTimestamp) = timeGranularity.toExtractAndTimeForInflux
+    val query = retentionPolicy match {
+      case OneHourRetentionPolicy =>
+          s"SELECT MAX(value), MEAN(value), MIN(value) " +
+          s"FROM ${influx.databaseName}.$OneHourRetentionPolicy.$key " +
+          s"WHERE time > '$lastMeasureTimestamp' " +
+          s"AND phenomenon = '$name' " +
+          s"GROUP BY time($extractTime) " +
+          s"fill(none)"
+      case FourDaysRetentionPolicy | ForeverRetentionPolicy =>
+        s"SELECT MAX(max_value), MEAN(mean_value), MIN(min_value) " +
+          s"FROM ${influx.databaseName}.$FourDaysRetentionPolicy.$key " +
+          s"WHERE time > '$lastMeasureTimestamp' " +
+          s"AND phenomenon = '$name' " +
+          s"GROUP BY time($extractTime) " +
+          s"fill(none)"
+    }
 
     Logger.debug(s"Querying influx: $query")
 
@@ -62,7 +73,7 @@ class MeasuredPhenomenonInflux(
   override def lastNMeasurementsDescendant(n: Int): Seq[Measurement] = {
     val query = s"" +
       s"SELECT value " +
-      s"FROM $key " +
+      s"FROM $OneHourRetentionPolicy.$key " +
       s"WHERE phenomenon = '$name' " +
       s"ORDER BY DESC " +
       s"LIMIT $n"
@@ -78,6 +89,7 @@ class MeasuredPhenomenonInflux(
       Seq.empty
     } else {
       series.head.records
+        .filter(r => r(mean) != null && r(min) != null && r(max) != null)
         .map(r => Measurement(
           r(mean).toString.toDouble,
           r(min).toString.toDouble,

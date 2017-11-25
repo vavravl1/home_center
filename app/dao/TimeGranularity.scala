@@ -4,6 +4,7 @@ import java.sql.Timestamp
 import java.time.temporal.ChronoUnit.{DAYS, MINUTES, SECONDS}
 import java.time.{Clock, Instant}
 
+import loader._
 import scalikejdbc._
 import scalikejdbc.interpolation.SQLSyntax
 
@@ -26,18 +27,18 @@ sealed abstract class TimeGranularity {
     }
   }
 
-  def toExtractAndTimeForInflux()(implicit clock: Clock):(String, Instant) = {
+  def toExtractAndTimeForInflux()(implicit clock: Clock):(RetentionPolicy, String, Instant) = {
     this match {
-      case BySecond => ("1s", clock.instant().minus(30, SECONDS))
-      case BySecondBig => ("1s", clock.instant().minus(1, MINUTES))
-      case ByMinute => ("1m", clock.instant().minus(30, MINUTES))
-      case ByMinuteBig => ("1m", clock.instant().minus(120, MINUTES))
-      case ByHour => ("1h", clock.instant().minus(1, DAYS))
-      case ByHourBig => ("1h", clock.instant().minus(2, DAYS))
-      case ByDay => ("1d", clock.instant().minus(14, DAYS))
-      case ByDayBig => ("1d", clock.instant().minus(30, DAYS))
-      case ByMonth => ("30d", clock.instant().minus(365, DAYS))
-      case ByMonthBig => ("30d", clock.instant().minus(2*365, DAYS))
+      case BySecond => (OneHourRetentionPolicy, "1s", clock.instant().minus(30, SECONDS))
+      case BySecondBig => (OneHourRetentionPolicy, "1s", clock.instant().minus(3, MINUTES))
+      case ByMinute => (FourDaysRetentionPolicy, "1m", clock.instant().minus(30, MINUTES))
+      case ByMinuteBig => (FourDaysRetentionPolicy, "1m", clock.instant().minus(120, MINUTES))
+      case ByHour => (FourDaysRetentionPolicy, "1h", clock.instant().minus(1, DAYS))
+      case ByHourBig => (FourDaysRetentionPolicy, "1h", clock.instant().minus(2, DAYS))
+      case ByDay => (ForeverRetentionPolicy, "1d", clock.instant().minus(14, DAYS))
+      case ByDayBig => (ForeverRetentionPolicy, "1d", clock.instant().minus(30, DAYS))
+      case ByMonth => (ForeverRetentionPolicy, "30d", clock.instant().minus(365, DAYS))
+      case ByMonthBig => (ForeverRetentionPolicy, "30d", clock.instant().minus(2*365, DAYS))
     }
   }
 }

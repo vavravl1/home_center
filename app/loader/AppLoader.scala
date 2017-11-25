@@ -49,6 +49,7 @@ trait AppComponents extends BuiltInComponents
   with Controllers {
 
   Logger.info("The app is about to start")
+  prepareInfluxDatabase()
   initDb
   initializeListeners()
   initWsQuerying()
