@@ -4,8 +4,8 @@ import java.time.{Clock, Instant}
 
 import com.paulgoldbaum.influxdbclient.Parameter.{Consistency, Precision}
 import com.paulgoldbaum.influxdbclient.{Database, Point, Series}
-import dao.{ByDay, ByDayBig, TimeGranularity}
-import loader.{ForeverRetentionPolicy, FourDaysRetentionPolicy, OneHourRetentionPolicy, RetentionPolicy}
+import dao.TimeGranularity
+import loader.{ForeverRetentionPolicy, FourDaysRetentionPolicy, OneHourRetentionPolicy}
 import model.sensor._
 import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits._
@@ -44,23 +44,10 @@ class MeasuredPhenomenonInflux(
       case result => Logger.error(s"Failed to store $measurement with $result for sensor $sensor")
     }
   }
+
   override def measurements(timeGranularity: TimeGranularity): Future[Seq[Measurement]] = {
     val (retentionPolicy, extractTime, lastMeasureTimestamp) = timeGranularity.toExtractAndTimeForInflux
-    val query = if (aggregationStrategy != SingleValueAggregationStrategy) {
-      queryForNonSingleValuePhenomenon(retentionPolicy, extractTime, lastMeasureTimestamp)
-    } else {
-      queryForSingleValuePhenomenon(timeGranularity, lastMeasureTimestamp)
-    }
-
-    Logger.debug(s"Querying influx: $query")
-
-    influx.query(query).map(result => {
-      seriesToMeasurements(result.series, "mean", "min", "max")
-    })
-  }
-
-  private def queryForNonSingleValuePhenomenon(retentionPolicy: RetentionPolicy, extractTime: String, lastMeasureTimestamp: Instant) = {
-    retentionPolicy match {
+    val query = retentionPolicy match {
       case OneHourRetentionPolicy =>
         s"SELECT MAX(value), MEAN(value), MIN(value) " +
           s"FROM ${influx.databaseName}.$OneHourRetentionPolicy.$key " +
@@ -76,24 +63,12 @@ class MeasuredPhenomenonInflux(
           s"GROUP BY time($extractTime) " +
           s"fill(none)"
     }
-  }
 
-  private def queryForSingleValuePhenomenon(timeGranularity: TimeGranularity, lastMeasureTimestamp: Instant) = {
-    if (timeGranularity == ByDay || timeGranularity == ByDayBig) {
-      s"SELECT MAX(value), MEAN(value), MIN(value) " +
-        s"FROM ${influx.databaseName}.$OneHourRetentionPolicy.$key " +
-        s"WHERE time > '$lastMeasureTimestamp' " +
-        s"AND phenomenon = '$name' " +
-        s"GROUP BY time(1d) " +
-        s"fill(none)"
-    } else {
-      s"SELECT SUM(max_value) as MAX, SUM(max_value) as MIN, SUM(max_value) as MEAN " +
-        s"FROM ${influx.databaseName}.$ForeverRetentionPolicy.$key " +
-        s"WHERE time > '$lastMeasureTimestamp' " +
-        s"AND phenomenon = '$name' " +
-        s"GROUP BY time(1d) " +
-        s"fill(none)"
-    }
+    Logger.debug(s"Querying influx: $query")
+
+    influx.query(query).map(result => {
+      seriesToMeasurements(result.series, "mean", "min", "max")
+    })
   }
 
   override def lastNMeasurementsDescendant(n: Int): Seq[Measurement] = {

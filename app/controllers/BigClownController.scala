@@ -43,7 +43,9 @@ class BigClownController(
   def getAvailableBcSensors: Action[AnyContent] = Action.async {
     Future {
       Ok(Json.toJson(
-        sensorRepository.findAll()
+        sensorRepository
+          .findAll()
+          .filter(_.measuredPhenomenons.exists(_.lastNMeasurementsDescendant(1).nonEmpty))
       ))
     }
   }
