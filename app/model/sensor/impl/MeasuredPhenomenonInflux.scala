@@ -4,8 +4,8 @@ import java.time.{Clock, Instant}
 
 import com.paulgoldbaum.influxdbclient.Parameter.{Consistency, Precision}
 import com.paulgoldbaum.influxdbclient.{Database, Point, Series}
-import dao.TimeGranularity
-import loader.{ForeverRetentionPolicy, FourDaysRetentionPolicy, OneHourRetentionPolicy}
+import dao._
+import loader.{ForeverRetentionPolicy, FourDaysRetentionPolicy, OneHourRetentionPolicy, RetentionPolicy}
 import model.sensor._
 import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits._
@@ -44,10 +44,23 @@ class MeasuredPhenomenonInflux(
       case result => Logger.error(s"Failed to store $measurement with $result for sensor $sensor")
     }
   }
-
   override def measurements(timeGranularity: TimeGranularity): Future[Seq[Measurement]] = {
     val (retentionPolicy, extractTime, lastMeasureTimestamp) = timeGranularity.toExtractAndTimeForInflux
-    val query = retentionPolicy match {
+    val query = if (aggregationStrategy != SingleValueAggregationStrategy) {
+      queryForNonSingleValuePhenomenon(retentionPolicy, extractTime, lastMeasureTimestamp)
+    } else {
+      queryForSingleValuePhenomenon(timeGranularity, lastMeasureTimestamp)
+    }
+
+    Logger.debug(s"Querying influx: $query")
+
+    influx.query(query).map(result => {
+      seriesToMeasurements(result.series, "mean", "min", "max")
+    })
+  }
+
+  private def queryForNonSingleValuePhenomenon(retentionPolicy: RetentionPolicy, extractTime: String, lastMeasureTimestamp: Instant) = {
+    retentionPolicy match {
       case OneHourRetentionPolicy =>
         s"SELECT MAX(value), MEAN(value), MIN(value) " +
           s"FROM ${influx.databaseName}.$OneHourRetentionPolicy.$key " +
@@ -63,12 +76,25 @@ class MeasuredPhenomenonInflux(
           s"GROUP BY time($extractTime) " +
           s"fill(none)"
     }
+  }
 
-    Logger.debug(s"Querying influx: $query")
-
-    influx.query(query).map(result => {
-      seriesToMeasurements(result.series, "mean", "min", "max")
-    })
+  private def queryForSingleValuePhenomenon(timeGranularity: TimeGranularity, lastMeasureTimestamp: Instant) = {
+    timeGranularity match {
+      case ByMonth | ByMonthBig =>
+        s"SELECT SUM(max_value) as MAX, SUM(min_value) as MIN, SUM(mean_value) as MEAN " +
+          s"FROM ${influx.databaseName}.$ForeverRetentionPolicy.$key " +
+          s"WHERE time > '$lastMeasureTimestamp' " +
+          s"AND phenomenon = '$name' " +
+          s"GROUP BY time(1d) " +
+          s"fill(none)"
+      case _ =>
+        s"SELECT MAX(max_value), MEAN(mean_value), MIN(min_value) " +
+          s"FROM ${influx.databaseName}.$ForeverRetentionPolicy.$key " +
+          s"WHERE time > '$lastMeasureTimestamp' " +
+          s"AND phenomenon = '$name' " +
+          s"GROUP BY time(1d) " +
+          s"fill(none)"
+    }
   }
 
   override def lastNMeasurementsDescendant(n: Int): Seq[Measurement] = {
