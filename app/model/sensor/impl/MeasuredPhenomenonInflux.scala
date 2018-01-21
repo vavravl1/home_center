@@ -2,6 +2,7 @@ package model.sensor.impl
 
 import java.time.{Clock, Instant}
 
+import akka.stream.FlowMonitorState.Failed
 import com.paulgoldbaum.influxdbclient.Parameter.{Consistency, Precision}
 import com.paulgoldbaum.influxdbclient.{Database, Point, Series}
 import dao._
@@ -13,6 +14,7 @@ import scalikejdbc.WrappedResultSet
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
+import scala.util.{Failure, Success, Try}
 
 class MeasuredPhenomenonInflux(
                                 override val name: String,
@@ -23,8 +25,8 @@ class MeasuredPhenomenonInflux(
                                 val _clock: Clock,
                                 val influx: Database
                               ) extends MeasuredPhenomenon {
-  private implicit val clock = _clock
-  val key:String = "measurements_" + sensor.id
+  private implicit val clock: Clock = _clock
+  val key: String = "measurements_" + sensor.id
 
   override def addMeasurement(measurement: Measurement): Unit = {
     val point = Point(key = key, timestamp = measurement.measureTimestamp.getEpochSecond)
@@ -44,6 +46,7 @@ class MeasuredPhenomenonInflux(
       case result => Logger.error(s"Failed to store $measurement with $result for sensor $sensor")
     }
   }
+
   override def measurements(timeGranularity: TimeGranularity): Future[Seq[Measurement]] = {
     val (retentionPolicy, extractTime, lastMeasureTimestamp) = timeGranularity.toExtractAndTimeForInflux
     val query = if (aggregationStrategy != SingleValueAggregationStrategy) {
@@ -111,12 +114,17 @@ class MeasuredPhenomenonInflux(
     seriesToMeasurements(series, "value", "value", "value")
   }
 
-  private def seriesToMeasurements(series: List[Series], mean: String, min: String, max:String) = {
+  private def seriesToMeasurements(series: List[Series], mean: String, min: String, max: String) = {
     if (series.isEmpty) {
       Seq.empty
     } else {
       series.head.records
-        .filter(r => r(mean) != null && r(min) != null && r(max) != null)
+        .filter(r => Try {
+            r(mean) != null && r(min) != null && r(max) != null
+          } match {
+            case Success(result) => result
+            case Failure(_) => false
+          })
         .map(r => Measurement(
           r(mean).toString.toDouble,
           r(min).toString.toDouble,

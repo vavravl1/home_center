@@ -62,4 +62,16 @@ class BigClownController(
       }
     }
   }
+
+  def getLastSensorReading(locationAddress:String, sensorName: String, phenomenon: String) = Action.async {
+    Future {
+      Ok(Json.toJson(
+        sensorRepository
+          .find(locationRepository.findOrCreateLocation(locationAddress), sensorName)
+          .flatMap(_.findPhenomenon(phenomenon))
+          .map(_.lastNMeasurementsDescendant(1))
+          .getOrElse(Seq.empty)
+      ))
+    }
+  }
 }

@@ -4,29 +4,31 @@
 # ~~~~
 
 # Versioned Assets
-GET           /assets/*file                                    controllers.Assets.versioned(path="/public", file: Asset)
+GET           /assets/*file                                            controllers.Assets.versioned(path="/public", file: Asset)
 
 # Main page - react router
-GET           /                                                controllers.HomeController.indexReact
-GET           /data                                            controllers.HomeController.indexReact
-GET           /actions                                         controllers.HomeController.indexReact
-GET           /signIn                                          controllers.HomeController.indexReact
-GET           /settings                                        controllers.HomeController.indexReact
+GET           /                                                        controllers.HomeController.indexReact
+GET           /data                                                    controllers.HomeController.indexReact
+GET           /actions                                                 controllers.HomeController.indexReact
+GET           /signIn                                                  controllers.HomeController.indexReact
+GET           /settings                                                controllers.HomeController.indexReact
 
 # Sign in/out
-POST          /signIn                                          controllers.SignInController.submit
-GET           /signOut                                         controllers.SignInController.signOut
+POST          /signIn                                                  controllers.SignInController.submit
+GET           /signOut                                                 controllers.SignInController.signOut
 
 # Sensors
-GET           /bc/:locationAddress/:sensorName                 controllers.BigClownController.getSensorReading(locationAddress, sensorName, timeGranularity:String ?= "Hour", big:String ?= "false")
-DELETE        /bc/:locationAddress/:sensorName                 controllers.BigClownController.cleanSensor(locationAddress, sensorName)
-GET           /bc/                                             controllers.BigClownController.getAvailableBcSensors
+GET           /bc/:locationAddress/:sensorName                         controllers.BigClownController.getSensorReading(locationAddress, sensorName, timeGranularity:String ?= "Hour", big:String ?= "false")
+DELETE        /bc/:locationAddress/:sensorName                         controllers.BigClownController.cleanSensor(locationAddress, sensorName)
+GET           /bc/                                                     controllers.BigClownController.getAvailableBcSensors
+GET           /bc/:locationAddress/:sensorName/:phenomenon/last        controllers.BigClownController.getLastSensorReading(locationAddress, sensorName, phenomenon)
+
 
 # Locations
-GET           /settings/bc/sensorLocation                      controllers.SettingsController.getBcSensorLocation()
-POST          /settings/bc/sensorLocation                      controllers.SettingsController.updateBcSensorLocation
-DELETE        /settings/bc/:locationAddress                    controllers.SettingsController.deleteLocation(locationAddress)
+GET           /settings/bc/sensorLocation                              controllers.SettingsController.getBcSensorLocation()
+POST          /settings/bc/sensorLocation                              controllers.SettingsController.updateBcSensorLocation
+DELETE        /settings/bc/:locationAddress                            controllers.SettingsController.deleteLocation(locationAddress)
 
 # Actuator
-GET           /actuators/                                      controllers.ActuatorController.getAvailableActuators
-POST          /actuators/:locationAddress/:actuatorName        controllers.ActuatorController.execute(locationAddress, actuatorName)
+GET           /actuators/                                              controllers.ActuatorController.getAvailableActuators
+POST          /actuators/:locationAddress/:actuatorName                controllers.ActuatorController.execute(locationAddress, actuatorName)

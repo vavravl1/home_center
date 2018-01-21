@@ -27,11 +27,17 @@ class ActuatorRepositoryNaive(
     location = locationRepository.findOrCreateLocation("836d19822676"),
     jsonSender = jsonSender
   )
+  private val vvBlindsActuator = new VVBlindsActuator(
+    location = locationRepository.findOrCreateLocation("836d19822676"),
+    jsonSender = jsonSender
+  )
+
 
   private val actuators = Seq(
     lightRelay,
     thermostatRelay,
-    displayPublisher
+    displayPublisher,
+    vvBlindsActuator
   )
 
   def initialize: Unit = {
