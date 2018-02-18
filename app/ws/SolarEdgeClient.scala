@@ -39,14 +39,17 @@ class SolarEdgeClient(
       return
     }
     request.get().map(response => {
-      Logger.debug(s"SolarEdge response with status ${response.status}")
-      val actualPower = (response.json \ "overview" \ "currentPower" \ "power").as[Double]
-      val lastMeasurement = (response.json \ "overview" \ "lastUpdateTime").as[Instant](CommonJsonReadWrite.instantInIso)
+      if(response.status == 200) {
+        val actualPower = (response.json \ "overview" \ "currentPower" \ "power").as[Double]
+        val lastMeasurement = clock.instant
 
-      Logger.debug(s"Received response from SolarEdge actualPower: ${actualPower} W; lastMeasurement: ${lastMeasurement}")
-      jsonSender.send("node/garage/pve-inverter/-/power", s"${actualPower},${lastMeasurement.getEpochSecond}")
+        Logger.debug(s"Received response from SolarEdge actualPower: ${actualPower} W; lastMeasurement: ${lastMeasurement}")
+        jsonSender.send("node/garage/pve-inverter/-/power", s"${actualPower},${lastMeasurement.getEpochSecond}")
+      } else {
+        Logger.error(s"Invalid response from SolarEdge: ${response.body}")
+      }
     }).onFailure {
-      case t => Logger.warn(s"An error has occured during querying SolarEdge", t)
+      case t => Logger.warn(s"An error has occurred during querying SolarEdge. ", t)
     }
 
 //    Logger.info("url => " + requestStats.url)
