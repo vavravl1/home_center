@@ -18,11 +18,11 @@ class ActuatorRepositoryNaive(
     sensorRepository: SensorRepository,
     jsonSender = jsonSender
   )
-  private val thermostatRelay = new BcRelayActuator(
-    location = locationRepository.findOrCreateLocation("836d19822676"),
-    sensorRepository: SensorRepository,
-    jsonSender = jsonSender
-  )
+//  private val thermostatRelay = new BcRelayActuator(
+//    location = locationRepository.findOrCreateLocation("836d19822676"),
+//    sensorRepository: SensorRepository,
+//    jsonSender = jsonSender
+//  )
   private val displayPublisher = new DisplayPublisher(
     location = locationRepository.findOrCreateLocation("836d19822676"),
     jsonSender = jsonSender
@@ -35,14 +35,14 @@ class ActuatorRepositoryNaive(
 
   private val actuators = Seq(
     lightRelay,
-    thermostatRelay,
+//    thermostatRelay,
     displayPublisher,
     vvBlindsActuator
   )
 
   def initialize: Unit = {
     lightRelay.initialize
-    thermostatRelay.initialize
+//    thermostatRelay.initialize
   }
 
   override def findOrCreateActuator(location: Location, name: String): Actuator =

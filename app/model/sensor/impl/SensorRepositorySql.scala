@@ -3,6 +3,7 @@ package model.sensor.impl
 import java.time.Clock
 
 import com.paulgoldbaum.influxdbclient.Database
+import loader.OneHourRetentionPolicy
 import model.location.Location
 import model.location.impl.LocationRepositorySql
 import model.sensor.{Sensor, SensorRepository}
@@ -47,7 +48,7 @@ class SensorRepositorySql(
 
   override def delete(sensor: Sensor): Unit = DB.localTx(implicit session => {
     getSensor(sensor.location, sensor.name).map(s => {
-      influx.query(s"DROP SERIES FROM 'measurements_${s.id}'")
+      influx.query(s"DROP SERIES FROM '$OneHourRetentionPolicy.measurements_${s.id}'")
 
       sql"""
             DELETE FROM sensor

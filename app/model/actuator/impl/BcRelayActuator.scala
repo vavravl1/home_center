@@ -40,7 +40,8 @@ case class BcRelayActuator(
     }
     Logger.info(s"BcRelayActuator called and newState is $state")
     jsonSender.send(
-      s"node/${location.address}/relay/0:0/state/set",
+//      s"node/${location.address}/relay/0:0/state/set",
+      s"node/836d19833c33/relay/0:0/state/set",
       if(state) "true" else "false"
     )
   }

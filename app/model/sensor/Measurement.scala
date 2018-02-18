@@ -3,16 +3,18 @@ package model.sensor
 import java.time.Instant
 
 import play.api.libs.json._
+import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
 
 /**
   * Represents single measured value of the associated sensor in the given period of time
   *
   */
 case class Measurement(
-                        val average: Double,
-                        val min: Double,
-                        val max: Double,
-                        val measureTimestamp: Instant
+                        average: Double,
+                        min: Double,
+                        max: Double,
+                        measureTimestamp: Instant
                       )
 
 object Measurement {
@@ -25,6 +27,22 @@ object Measurement {
     )
   }
 
+  implicit val reads: Reads[Measurement] = (
+    (JsPath \ "average").read[Double] and
+      (JsPath \ "min").read[Double] and
+      (JsPath \ "max").read[Double] and
+      (JsPath \ "measureTimestamp").read[Instant]
+    ) (Measurement.createMeasurement _)
+
   def apply(value: Double, measureTimestamp: Instant): Measurement =
     Measurement(value, value, value, measureTimestamp)
+
+  def createMeasurement(
+                         average: Double,
+                         min: Double,
+                         max: Double,
+                         measureTimestamp: Instant
+                       ): Measurement =
+    Measurement(average, min, max, measureTimestamp)
+
 }

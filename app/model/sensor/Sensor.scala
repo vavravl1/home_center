@@ -5,7 +5,7 @@ import model.location.Location
 
 /**
   * Represents single sensor, e.g. Big Clown temperature tag.
-  * Name and location values must be unique for each sensor, in other words they represents primary key
+  * Name and location values must be unique for each sensor, in other words they represent primary key
   */
 trait Sensor {
   /**
