@@ -17,12 +17,38 @@ import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success, Try}
 
 abstract class MeasuredPhenomenonInflux(
-                                override val name: String,
-                                override val unit: String,
-                                override val aggregationStrategy: MeasurementAggregationStrategy,
-                                val sensor: SensorSql
-                              ) extends MeasuredPhenomenon {
+                                         override val name: String,
+                                         override val unit: String,
+                                         override val aggregationStrategy: MeasurementAggregationStrategy,
+                                         val sensor: SensorSql
+                                       ) extends MeasuredPhenomenon {
   val key: String = "measurements_" + sensor.id
+
+  protected def seriesToMeasurements(
+                                      series: List[Series],
+                                      mean: String,
+                                      min: String,
+                                      max: String,
+                                      mapper: (String => Any)
+                                    ):Seq[Measurement] = {
+    if (series.isEmpty) {
+      Seq.empty
+    } else {
+      series.head.records
+        .filter(r => Try {
+          r(mean) != null && r(min) != null && r(max) != null
+        } match {
+          case Success(result) => result
+          case Failure(_) => false
+        })
+        .map(r => Measurement(
+          mapper(r(mean).toString),
+          mapper(r(min).toString),
+          mapper(r(max).toString),
+          Instant.parse(r("time").toString)
+        ))
+    }
+  }
 }
 
 object MeasuredPhenomenonInflux {

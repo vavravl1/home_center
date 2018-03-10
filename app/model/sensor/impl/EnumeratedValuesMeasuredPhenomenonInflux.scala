@@ -51,7 +51,7 @@ class EnumeratedValuesMeasuredPhenomenonInflux(
     Logger.debug(s"Querying influx: $query")
 
     influx.query(query).map(result => {
-      seriesToMeasurements(result.series, "value", "value", "value")
+      seriesToMeasurements(result.series, "value", "value", "value", _)
     })
   }
 
@@ -66,7 +66,7 @@ class EnumeratedValuesMeasuredPhenomenonInflux(
     Logger.debug(s"Querying influx: $query")
 
     val series = Await.result(influx.query(query), Duration.Inf).series
-    seriesToMeasurements(series, "value", "value", "value")
+    seriesToMeasurements(series, "value", "value", "value", _.toString)
   }
 
   private def queryInflux(lastMeasureTimestamp: Instant) = {
@@ -74,31 +74,6 @@ class EnumeratedValuesMeasuredPhenomenonInflux(
       s"FROM ${influx.databaseName}.$ForeverRetentionPolicy.$key " +
       s"WHERE time > '$lastMeasureTimestamp' " +
       s"AND phenomenon = '$name' "
-  }
-
-  private def seriesToMeasurements(
-                                    series: List[Series],
-                                    mean: String,
-                                    min: String,
-                                    max: String
-                                  ) = {
-    if (series.isEmpty) {
-      Seq.empty
-    } else {
-      series.head.records
-        .filter(r => Try {
-          r(mean) != null && r(min) != null && r(max) != null
-        } match {
-          case Success(result) => result
-          case Failure(_) => false
-        })
-        .map(r => Measurement(
-          r(mean).toString,
-          r(min).toString,
-          r(max).toString,
-          Instant.parse(r("time").toString)
-        ))
-    }
   }
 }
 

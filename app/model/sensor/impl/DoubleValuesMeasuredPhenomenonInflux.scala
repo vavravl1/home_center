@@ -67,7 +67,7 @@ class DoubleValuesMeasuredPhenomenonInflux(
     Logger.debug(s"Querying influx: $query")
 
     val series = Await.result(influx.query(query), Duration.Inf).series
-    seriesToMeasurements(series, "value", "value", "value")
+    seriesToMeasurements(series, "value", "value", "value", _.toDouble)
   }
 
   private def queryForNonSingleValuePhenomenon(retentionPolicy: RetentionPolicy, extractTime: String, lastMeasureTimestamp: Instant) = {
@@ -86,31 +86,6 @@ class DoubleValuesMeasuredPhenomenonInflux(
           s"AND phenomenon = '$name' " +
           s"GROUP BY time($extractTime) " +
           s"fill(none)"
-    }
-  }
-
-  private def seriesToMeasurements(
-                                      series: List[Series],
-                                      mean: String,
-                                      min: String,
-                                      max: String
-                                    ) = {
-    if (series.isEmpty) {
-      Seq.empty
-    } else {
-      series.head.records
-        .filter(r => Try {
-          r(mean) != null && r(min) != null && r(max) != null
-        } match {
-          case Success(result) => result
-          case Failure(_) => false
-        })
-        .map(r => Measurement(
-          r(mean).toString.toDouble,
-          r(min).toString.toDouble,
-          r(max).toString.toDouble,
-          Instant.parse(r("time").toString)
-        ))
     }
   }
 }
