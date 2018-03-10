@@ -62,7 +62,19 @@ class SensorView extends React.Component {
         return this.props.measuredPhenomenons
             .map(measuredPhenomenon => {
                 const averages = measuredPhenomenon.measurements.map(t => t.average);
-                const maxes = measuredPhenomenon.measurements.map(t => t.max);
+                const maxes = measuredPhenomenon.measurements
+                    .map(t => t.max)
+                    .map(t => {
+                        switch(t) {
+                            case '"up"': return 20;
+                            case '"up-stop"': return 30;
+                            case '"down"': return 10;
+                            case '"down-stop"': return 0;
+                            case 'true': return 30;
+                            case 'false': return 0;
+                            default: return t;
+                        }
+                    });
                 const index = this.props.measuredPhenomenons.indexOf(measuredPhenomenon);
                 const red = this.chartColors[index % 4][0];
                 const green = this.chartColors[index % 4][1];
