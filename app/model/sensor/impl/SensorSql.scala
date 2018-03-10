@@ -57,7 +57,7 @@ case class SensorSql(
     val aggregationStrategyName = aggregationStrategy match {
       case DoubleValuesMeasurementAggregationStrategy => "none"
       case SingleValueAggregationStrategy => "singleValue"
-      case BooleanMeasurementAggregationStrategy => "boolean"
+      case EnumeratedMeasurementAggregationStrategy => "boolean"
     }
     sql"""
          INSERT INTO measuredPhenomenon(name, unit, aggregationStrategy, sensorId)

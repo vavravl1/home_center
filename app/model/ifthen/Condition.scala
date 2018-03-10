@@ -47,13 +47,21 @@ case class AndCondition(left: Condition, right: Condition) extends Condition {
 
 case class LowerThan(value: Double) extends Condition {
   override def apply(phenomenon: MeasuredPhenomenon, measurement: Measurement): Boolean = {
-    measurement.average < value
+    if(measurement.average.isInstanceOf[Double]) {
+      measurement.average.asInstanceOf[Double] < value
+    } else {
+      false
+    }
   }
 }
 
 case class GreaterThan(value: Double) extends Condition {
   override def apply(phenomenon: MeasuredPhenomenon, measurement: Measurement): Boolean = {
-    measurement.average > value
+    if(measurement.average.isInstanceOf[Double]) {
+      measurement.average.asInstanceOf[Double] > value
+    } else {
+      false
+    }
   }
 }
 

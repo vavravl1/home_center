@@ -27,7 +27,7 @@ sealed abstract class TimeGranularity {
     }
   }
 
-  def toExtractAndTimeForInflux()(implicit clock: Clock):(RetentionPolicy, String, Instant) = {
+  def toExtractAndTimeForInflux(clock: Clock):(RetentionPolicy, String, Instant) = {
     this match {
       case BySecond => (OneHourRetentionPolicy, "1s", clock.instant().minus(30, SECONDS))
       case BySecondBig => (OneHourRetentionPolicy, "1s", clock.instant().minus(3, MINUTES))

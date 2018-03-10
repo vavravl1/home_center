@@ -11,20 +11,36 @@ import play.api.libs.json.Reads._
   *
   */
 case class Measurement(
-                        average: Double,
-                        min: Double,
-                        max: Double,
+                        average: Any,
+                        min: Any,
+                        max: Any,
                         measureTimestamp: Instant
                       )
-
 object Measurement {
-  implicit def writes: Writes[Measurement] = new Writes[Measurement] {
-    override def writes(o: Measurement): JsValue = Json.obj(
-      "average" -> JsNumber(math.floor(o.average * 100) / 100),
-      "min" -> JsNumber(math.floor(o.min * 100) / 100),
-      "max" -> JsNumber(math.floor(o.max * 100) / 100),
-      "measureTimestamp" -> Json.toJson(o.measureTimestamp)
-    )
+  implicit val writes: Writes[Measurement] = new Writes[Measurement] {
+    override def writes(o: Measurement): JsValue = o.average match {
+        case num: Double =>
+          Json.obj(
+            "average" -> JsNumber(math.floor(num * 100) / 100),
+            "min" -> JsNumber(math.floor(o.min.asInstanceOf[Double] * 100) / 100),
+            "max" -> JsNumber(math.floor(o.max.asInstanceOf[Double] * 100) / 100),
+            "measureTimestamp" -> Json.toJson(o.measureTimestamp)
+          )
+        case bool: Boolean =>
+          Json.obj(
+            "average" -> JsBoolean(bool),
+            "min" -> JsBoolean(o.min.asInstanceOf[Boolean]),
+            "max" -> JsBoolean(o.max.asInstanceOf[Boolean]),
+            "measureTimestamp" -> Json.toJson(o.measureTimestamp)
+          )
+        case _ =>
+          Json.obj(
+            "average" -> JsString(o.average.toString),
+            "min" -> JsString(o.min.toString),
+            "max" -> JsString(o.max.toString),
+            "measureTimestamp" -> Json.toJson(o.measureTimestamp)
+          )
+      }
   }
 
   implicit val reads: Reads[Measurement] = (
@@ -34,7 +50,7 @@ object Measurement {
       (JsPath \ "measureTimestamp").read[Instant]
     ) (Measurement.createMeasurement _)
 
-  def apply(value: Double, measureTimestamp: Instant): Measurement =
+  def apply(value: Any, measureTimestamp: Instant): Measurement =
     Measurement(value, value, value, measureTimestamp)
 
   def createMeasurement(

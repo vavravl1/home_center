@@ -21,7 +21,7 @@ object DoubleValuesMeasurementAggregationStrategy extends MeasurementAggregation
   override def singleValue(value: Double): Double = value
 }
 
-object BooleanMeasurementAggregationStrategy extends MeasurementAggregationStrategy {
+object EnumeratedMeasurementAggregationStrategy extends MeasurementAggregationStrategy {
   override def singleValue(value: Double): Double = if(value > 0) 10 else 0
 }
 
@@ -31,7 +31,7 @@ object MeasurementAggregationStrategy {
       def writes(o: MeasurementAggregationStrategy): JsValue = o match {
         case DoubleValuesMeasurementAggregationStrategy => JsString("none")
         case SingleValueAggregationStrategy => JsString("singleValue")
-        case BooleanMeasurementAggregationStrategy => JsString("boolean")
+        case EnumeratedMeasurementAggregationStrategy => JsString("boolean")
       }
     }
 }

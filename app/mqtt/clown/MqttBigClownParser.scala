@@ -44,8 +44,12 @@ class MqttBigClownParser(
       name = measuredPhenomenon,
       unit = unit,
       aggregationStrategy = value match {
-        case "true" => BooleanMeasurementAggregationStrategy
-        case "false" => BooleanMeasurementAggregationStrategy
+        case "true" => EnumeratedMeasurementAggregationStrategy
+        case "false" => EnumeratedMeasurementAggregationStrategy
+        case """"up-stop"""" => EnumeratedMeasurementAggregationStrategy
+        case """"up"""" => EnumeratedMeasurementAggregationStrategy
+        case """"down"""" => EnumeratedMeasurementAggregationStrategy
+        case """"down-stop"""" => EnumeratedMeasurementAggregationStrategy
         case _ => unit match {
           case "kWh" => SingleValueAggregationStrategy
           case _ => DoubleValuesMeasurementAggregationStrategy
@@ -54,18 +58,16 @@ class MqttBigClownParser(
     )
     val measurement = Measurement(
       measureTimestamp = measureTimestamp,
-      value = MeasuredPhenomenonScale(measuredPhenomenon) * (value match {
-        case "true" => 10
-        case "false" => 0
-        case """"up-stop"""" => 20
-        case """"up"""" => 15
-        case """"down"""" => 10
-        case """"down-stop"""" => 0
-        case _ => value.toDouble
-      })
+      value = if(isDouble(value)) {
+        value.toDouble * MeasuredPhenomenonScale(measuredPhenomenon)
+      } else if (isBoolean(value)) {
+        value.toBoolean
+      } else {
+        value
+      }
     )
 
-    return (sensor, phenomenon, measurement)
+    (sensor, phenomenon, measurement)
   }
 
   private def parseMessage(message: String):(String, Instant) = {
@@ -75,5 +77,18 @@ class MqttBigClownParser(
       Instant.ofEpochSecond(splicedMessage(1).toLong)
     else clock.instant()
     (value, measureTimestamp)
+  }
+
+  private def isDouble(value: String):Boolean = {
+    try {
+      value.toDouble
+      true
+    } catch {
+      case _: Throwable => false
+    }
+  }
+
+  private def isBoolean(value: String):Boolean = {
+    value == "true" || value == "false"
   }
 }

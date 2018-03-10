@@ -2,7 +2,7 @@ package model.actuator.impl
 
 import model.actuator.{Actuator, Command}
 import model.location.Location
-import model.sensor.{BooleanMeasurementAggregationStrategy, Measurement, SensorRepository}
+import model.sensor.{EnumeratedMeasurementAggregationStrategy, Measurement, SensorRepository}
 import mqtt.JsonSender
 import play.api.Logger
 
@@ -20,7 +20,7 @@ case class BcRelayActuator(
 
   def initialize():Unit = {
     val measurements:Seq[Measurement] = sensorRepository.findOrCreateSensor(location, "relay")
-      .findOrCreatePhenomenon("state", "state", BooleanMeasurementAggregationStrategy)
+      .findOrCreatePhenomenon("state", "state", EnumeratedMeasurementAggregationStrategy)
       .lastNMeasurementsDescendant(1)
 
     state = if(measurements.nonEmpty) measurements.last.average == 0 else false
