@@ -16,7 +16,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success, Try}
 
-class MeasuredPhenomenonInflux(
+abstract class MeasuredPhenomenonInflux(
                                 override val name: String,
                                 override val unit: String,
                                 override val aggregationStrategy: MeasurementAggregationStrategy,
@@ -47,59 +47,6 @@ class MeasuredPhenomenonInflux(
     }
   }
 
-  override def measurements(timeGranularity: TimeGranularity): Future[Seq[Measurement]] = {
-    val (retentionPolicy, extractTime, lastMeasureTimestamp) = timeGranularity.toExtractAndTimeForInflux
-    val query = if (aggregationStrategy != SingleValueAggregationStrategy) {
-      queryForNonSingleValuePhenomenon(retentionPolicy, extractTime, lastMeasureTimestamp)
-    } else {
-      queryForSingleValuePhenomenon(timeGranularity, lastMeasureTimestamp)
-    }
-
-    Logger.debug(s"Querying influx: $query")
-
-    influx.query(query).map(result => {
-      seriesToMeasurements(result.series, "mean", "min", "max")
-    })
-  }
-
-  private def queryForNonSingleValuePhenomenon(retentionPolicy: RetentionPolicy, extractTime: String, lastMeasureTimestamp: Instant) = {
-    retentionPolicy match {
-      case OneHourRetentionPolicy =>
-        s"SELECT MAX(value), MEAN(value), MIN(value) " +
-          s"FROM ${influx.databaseName}.$OneHourRetentionPolicy.$key " +
-          s"WHERE time > '$lastMeasureTimestamp' " +
-          s"AND phenomenon = '$name' " +
-          s"GROUP BY time($extractTime) " +
-          s"fill(none)"
-      case FourDaysRetentionPolicy | ForeverRetentionPolicy =>
-        s"SELECT MAX(max_value), MEAN(mean_value), MIN(min_value) " +
-          s"FROM ${influx.databaseName}.$retentionPolicy.$key " +
-          s"WHERE time > '$lastMeasureTimestamp' " +
-          s"AND phenomenon = '$name' " +
-          s"GROUP BY time($extractTime) " +
-          s"fill(none)"
-    }
-  }
-
-  private def queryForSingleValuePhenomenon(timeGranularity: TimeGranularity, lastMeasureTimestamp: Instant) = {
-    timeGranularity match {
-      case ByMonth | ByMonthBig =>
-        s"SELECT SUM(max_value) as MAX, SUM(min_value) as MIN, SUM(mean_value) as MEAN " +
-          s"FROM ${influx.databaseName}.$ForeverRetentionPolicy.$key " +
-          s"WHERE time > '$lastMeasureTimestamp' " +
-          s"AND phenomenon = '$name' " +
-          s"GROUP BY time(1d) " +
-          s"fill(none)"
-      case _ =>
-        s"SELECT MAX(max_value), MEAN(mean_value), MIN(min_value) " +
-          s"FROM ${influx.databaseName}.$ForeverRetentionPolicy.$key " +
-          s"WHERE time > '$lastMeasureTimestamp' " +
-          s"AND phenomenon = '$name' " +
-          s"GROUP BY time(1d) " +
-          s"fill(none)"
-    }
-  }
-
   override def lastNMeasurementsDescendant(n: Int): Seq[Measurement] = {
     val query = s"" +
       s"SELECT value " +
@@ -114,17 +61,17 @@ class MeasuredPhenomenonInflux(
     seriesToMeasurements(series, "value", "value", "value")
   }
 
-  private def seriesToMeasurements(series: List[Series], mean: String, min: String, max: String) = {
+  protected def seriesToMeasurements(series: List[Series], mean: String, min: String, max: String) = {
     if (series.isEmpty) {
       Seq.empty
     } else {
       series.head.records
         .filter(r => Try {
-            r(mean) != null && r(min) != null && r(max) != null
-          } match {
-            case Success(result) => result
-            case Failure(_) => false
-          })
+          r(mean) != null && r(min) != null && r(max) != null
+        } match {
+          case Success(result) => result
+          case Failure(_) => false
+        })
         .map(r => Measurement(
           r(mean).toString.toDouble,
           r(min).toString.toDouble,
@@ -137,17 +84,32 @@ class MeasuredPhenomenonInflux(
 
 object MeasuredPhenomenonInflux {
   val fromRs: ((WrappedResultSet, Clock, Database, SensorSql) => MeasuredPhenomenonInflux) =
-    (rs, clock, influx, sensor) => new MeasuredPhenomenonInflux(
-      name = rs.string("name"),
-      unit = rs.string("unit"),
-      aggregationStrategy = rs.string("aggregationStrategy") match {
-        case "boolean" => BooleanMeasurementAggregationStrategy
-        case "singleValue" => SingleValueAggregationStrategy
-        case "none" => IdentityMeasurementAggregationStrategy
-      },
-      id = rs.string("id"),
-      sensor = sensor,
-      _clock = clock,
-      influx = influx
-    )
+    (rs, clock, influx, sensor) => rs.string("aggregationStrategy") match {
+      case "singleValue" => new SingleValuePerDayMeasuredPhenomenonInflux(
+        name = rs.string("name"),
+        unit = rs.string("unit"),
+        aggregationStrategy = rs.string("aggregationStrategy") match {
+          case "boolean" => BooleanMeasurementAggregationStrategy
+          case "singleValue" => SingleValueAggregationStrategy
+          case "none" => IdentityMeasurementAggregationStrategy
+        },
+        id = rs.string("id"),
+        sensor = sensor,
+        _clock = clock,
+        influx = influx
+      )
+      case _ => new ManyValuesMeasuredPhenomenonInflux(
+        name = rs.string("name"),
+        unit = rs.string("unit"),
+        aggregationStrategy = rs.string("aggregationStrategy") match {
+          case "boolean" => BooleanMeasurementAggregationStrategy
+          case "singleValue" => SingleValueAggregationStrategy
+          case "none" => IdentityMeasurementAggregationStrategy
+        },
+        id = rs.string("id"),
+        sensor = sensor,
+        _clock = clock,
+        influx = influx
+      )
+    }
 }
