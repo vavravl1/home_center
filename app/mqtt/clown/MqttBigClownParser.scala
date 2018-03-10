@@ -57,6 +57,10 @@ class MqttBigClownParser(
       value = MeasuredPhenomenonScale(measuredPhenomenon) * (value match {
         case "true" => 10
         case "false" => 0
+        case """"up-stop"""" => 20
+        case """"up"""" => 15
+        case """"down"""" => 10
+        case """"down-stop"""" => 0
         case _ => value.toDouble
       })
     )

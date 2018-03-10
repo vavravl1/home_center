@@ -18,10 +18,12 @@ trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig {
 
   lazy val lightRelayLocation = locationRepository.findOrCreateLocation("836d19833c33")
 
-  lazy val thermostatLocation = locationRepository.findOrCreateLocation("836d19822676")
-  lazy val thermostatSensor = sensorRepository.findOrCreateSensor(thermostatLocation, "push-button")
-  lazy val thermostatButton = thermostatSensor.findOrCreatePhenomenon(
+  lazy val blindsLocation = locationRepository.findOrCreateLocation("836d19822676")
+  lazy val blindsPushButtonSensor = sensorRepository.findOrCreateSensor(blindsLocation, "push-button")
+  lazy val blindsButton = blindsPushButtonSensor.findOrCreatePhenomenon(
     "event-count", "event-count", IdentityMeasurementAggregationStrategy)
+  lazy val blindsBlinds = sensorRepository.findOrCreateSensor(blindsLocation, "generic")
+  lazy val blindsBlindsMove = blindsBlinds.findOrCreatePhenomenon("move", "move", IdentityMeasurementAggregationStrategy)
 
   lazy val mainSwitchboardLocation = locationRepository.findOrCreateLocation("main-switchboard")
   lazy val wattrouterSensor = sensorRepository.findOrCreateSensor(mainSwitchboardLocation, "wattrouter")
@@ -29,6 +31,8 @@ trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig {
   lazy val terraceLocation = locationRepository.findOrCreateLocation("836d1982282c")
   lazy val terraceTemperature = sensorRepository.findOrCreateSensor(terraceLocation, "thermometer")
   lazy val terraceButton = sensorRepository.findOrCreateSensor(terraceLocation, "push-button")
+  lazy val terraceLuxmeter = sensorRepository.findOrCreateSensor(terraceLocation, "lux-meter")
+  lazy val terraceIlluminance = terraceLuxmeter.findOrCreatePhenomenon("illuminance", unit = "lux", aggregationStrategy = IdentityMeasurementAggregationStrategy)
 
   lazy val bedroomLocation = locationRepository.findOrCreateLocation("836d19839558")
   lazy val co2Bedroom = sensorRepository.findOrCreateSensor(bedroomLocation, "co2-meter")
@@ -57,10 +61,10 @@ trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig {
           () => Command("Toggle", Seq.empty)
         ),
         new IfThen(
-          objekt = thermostatSensor,
-          subject = thermostatButton,
+          objekt = blindsPushButtonSensor,
+          subject = blindsButton,
           condition = TrueCondition,
-          actuatorRepository.findOrCreateActuator(thermostatLocation, "Display"),
+          actuatorRepository.findOrCreateActuator(blindsLocation, "Display"),
           () => Command("Update", Seq(
             CommandArgument("power", "kW", String.valueOf(
               wattrouterSensor
@@ -93,6 +97,32 @@ trait IfThenConfig extends BuiltInComponents with DaoConfig with ClockConfig {
                 .lastNMeasurementsDescendant(1).map(_.average).headOption.getOrElse(0)
             ))
           ))
+        ),
+        new IfThen(
+          objekt = terraceLuxmeter,
+          subject = terraceIlluminance,
+          condition = AndCondition(
+            GreaterThan(300),
+            NoMeasurementsInLast4Hours(
+              blindsBlindsMove,
+              clock
+            )
+          ),
+          actuator = actuatorRepository.findOrCreateActuator(blindsLocation, "Blinds"),
+          command = () => Command("Up", Seq.empty)
+        ),
+        new IfThen(
+          objekt = terraceLuxmeter,
+          subject = terraceIlluminance,
+          condition = AndCondition(
+            LowerThan(80),
+            NoMeasurementsInLast4Hours(
+              blindsBlindsMove,
+              clock
+            )
+          ),
+          actuator = actuatorRepository.findOrCreateActuator(blindsLocation, "Blinds"),
+          command = () => Command("Down", Seq.empty)
         )
       ))))
 }

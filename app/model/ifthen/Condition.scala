@@ -1,8 +1,12 @@
 package model.ifthen
 
-import java.time.{Clock, Duration}
+import java.time.temporal.ChronoUnit
+import java.time.{Clock, Duration, Instant}
 
+import dao.ByHour
 import model.sensor.{MeasuredPhenomenon, Measurement}
+
+import scala.concurrent.Await
 
 /**
   *
@@ -33,4 +37,38 @@ object AverageValueChanged extends Condition {
 
 object TrueCondition extends Condition {
   override def apply(phenomenon: MeasuredPhenomenon, measurement: Measurement): Boolean = true
+}
+
+case class AndCondition(left: Condition, right: Condition) extends Condition {
+  override def apply(phenomenon: MeasuredPhenomenon, measurement: Measurement): Boolean = {
+    left(phenomenon, measurement) && right(phenomenon, measurement)
+  }
+}
+
+case class LowerThan(value: Double) extends Condition {
+  override def apply(phenomenon: MeasuredPhenomenon, measurement: Measurement): Boolean = {
+    measurement.average < value
+  }
+}
+
+case class GreaterThan(value: Double) extends Condition {
+  override def apply(phenomenon: MeasuredPhenomenon, measurement: Measurement): Boolean = {
+    measurement.average > value
+  }
+}
+
+case class NoMeasurementsInLast4Hours(watched: MeasuredPhenomenon, clock: Clock) extends Condition {
+  override def apply(phenomenon: MeasuredPhenomenon, measurement: Measurement): Boolean = {
+    val now = clock.instant()
+    val measurements:Seq[Measurement] = Await.result(
+      watched.measurements(ByHour),
+      scala.concurrent.duration.Duration.Inf
+    )
+    !isThereEarlyOne(measurements, now)
+  }
+
+  private def isThereEarlyOne(measurements:Seq[Measurement], now: Instant) = {
+    measurements.exists(_.measureTimestamp.plus(4, ChronoUnit.HOURS).isAfter(now))
+  }
+
 }
