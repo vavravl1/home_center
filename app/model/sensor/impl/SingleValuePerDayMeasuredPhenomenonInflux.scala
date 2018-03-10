@@ -2,17 +2,15 @@ package model.sensor.impl
 
 import java.time.{Clock, Instant}
 
-import com.paulgoldbaum.influxdbclient.Parameter.{Consistency, Precision}
-import com.paulgoldbaum.influxdbclient.{Database, Point, Series}
+import com.paulgoldbaum.influxdbclient.{Database, Point}
 import dao._
-import loader.{ForeverRetentionPolicy, FourDaysRetentionPolicy, OneHourRetentionPolicy, RetentionPolicy}
+import loader.{ForeverRetentionPolicy, OneHourRetentionPolicy}
 import model.sensor._
 import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits._
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
-import scala.util.{Failure, Success, Try}
 
 class SingleValuePerDayMeasuredPhenomenonInflux(
                                                  override val name: String,
@@ -20,29 +18,13 @@ class SingleValuePerDayMeasuredPhenomenonInflux(
                                                  override val aggregationStrategy: MeasurementAggregationStrategy,
                                                  override val sensor: SensorSql,
                                                  val clock: Clock,
-                                                 val influx: Database
-                                               ) extends MeasuredPhenomenonInflux(name, unit, aggregationStrategy, sensor) {
+                                                 override val influx: Database
+                                               ) extends MeasuredPhenomenonInflux(name, unit, aggregationStrategy, sensor, influx) {
   override def addMeasurement(measurement: Measurement): Unit = {
     val point = Point(key = key, timestamp = measurement.measureTimestamp.getEpochSecond)
       .addTag("phenomenon", name)
       .addField("value", measurement.average.asInstanceOf[Double])
-
-    val f = influx.write(
-      point = point,
-      precision = Precision.SECONDS,
-      consistency = Consistency.ONE,
-      retentionPolicy = OneHourRetentionPolicy.toString
-    )
-
-    f.onSuccess {
-      case result => Logger.debug(s"Stored $measurement with $result")
-    }
-    f.onFailure {
-      case result => Logger.error(
-        s"Failed to store $measurement with $result for sensor $sensor, point is $point",
-        result.getCause
-      )
-    }
+    storePoint(point, measurement, OneHourRetentionPolicy)
   }
 
   override def measurements(timeGranularity: TimeGranularity): Future[Seq[Measurement]] = {
@@ -52,7 +34,7 @@ class SingleValuePerDayMeasuredPhenomenonInflux(
     Logger.debug(s"Querying influx: $query")
 
     influx.query(query).map(result => {
-      seriesToMeasurements(result.series, "mean", "min", "max")
+      seriesToMeasurements(result.series, "mean", "min", "max", _.toDouble)
     })
   }
 
