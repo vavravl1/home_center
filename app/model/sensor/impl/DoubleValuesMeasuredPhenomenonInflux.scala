@@ -14,7 +14,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success, Try}
 
-class ManyValuesMeasuredPhenomenonInflux(
+class DoubleValuesMeasuredPhenomenonInflux(
                                           override val name: String,
                                           override val unit: String,
                                           override val aggregationStrategy: MeasurementAggregationStrategy,

@@ -25,8 +25,10 @@ abstract class MeasuredPhenomenonInflux(
                                 val _clock: Clock,
                                 val influx: Database
                               ) extends MeasuredPhenomenon {
-  private implicit val clock: Clock = _clock
+  implicit val clock: Clock = _clock
   val key: String = "measurements_" + sensor.id
+
+  val insertRetentionPolicy:RetentionPolicy = OneHourRetentionPolicy
 
   override def addMeasurement(measurement: Measurement): Unit = {
     val point = Point(key = key, timestamp = measurement.measureTimestamp.getEpochSecond)
@@ -36,7 +38,7 @@ abstract class MeasuredPhenomenonInflux(
       point = point,
       precision = Precision.SECONDS,
       consistency = Consistency.ONE,
-      retentionPolicy = OneHourRetentionPolicy.toString
+      retentionPolicy = insertRetentionPolicy.toString
     )
 
     f.onSuccess {
@@ -88,24 +90,25 @@ object MeasuredPhenomenonInflux {
       case "singleValue" => new SingleValuePerDayMeasuredPhenomenonInflux(
         name = rs.string("name"),
         unit = rs.string("unit"),
-        aggregationStrategy = rs.string("aggregationStrategy") match {
-          case "boolean" => BooleanMeasurementAggregationStrategy
-          case "singleValue" => SingleValueAggregationStrategy
-          case "none" => IdentityMeasurementAggregationStrategy
-        },
+        aggregationStrategy = SingleValueAggregationStrategy,
         id = rs.string("id"),
         sensor = sensor,
         _clock = clock,
         influx = influx
       )
-      case _ => new ManyValuesMeasuredPhenomenonInflux(
+      case "boolean" => new EnumeratedValuesMeasuredPhenomenonInflux(
         name = rs.string("name"),
         unit = rs.string("unit"),
-        aggregationStrategy = rs.string("aggregationStrategy") match {
-          case "boolean" => BooleanMeasurementAggregationStrategy
-          case "singleValue" => SingleValueAggregationStrategy
-          case "none" => IdentityMeasurementAggregationStrategy
-        },
+        aggregationStrategy = BooleanMeasurementAggregationStrategy,
+        id = rs.string("id"),
+        sensor = sensor,
+        _clock = clock,
+        influx = influx
+      )
+      case "none" => new DoubleValuesMeasuredPhenomenonInflux(
+        name = rs.string("name"),
+        unit = rs.string("unit"),
+        aggregationStrategy = DoubleValuesMeasurementAggregationStrategy,
         id = rs.string("id"),
         sensor = sensor,
         _clock = clock,

@@ -5,8 +5,8 @@ import java.time.{Clock, Instant}
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.TestActorRef
 import model.location.impl.{LocationRepositorySql, LocationSql}
-import model.sensor.impl.{MeasuredPhenomenonInflux, SensorRepositorySql, SensorSql}
-import model.sensor.{IdentityMeasurementAggregationStrategy, Measurement}
+import model.sensor.impl.{DoubleValuesMeasuredPhenomenonInflux, MeasuredPhenomenonInflux, SensorRepositorySql, SensorSql}
+import model.sensor.{DoubleValuesMeasurementAggregationStrategy, Measurement}
 import mqtt.clown.MqttBigClownParser
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, WordSpec}
@@ -41,7 +41,7 @@ class SensorMeasurementsDispatcherTest extends WordSpec with Matchers with MockF
 
         (locationRepository.findOrCreateLocation _).expects("836d19833c33").returning(location)
         (sensorRepository.findOrCreateSensor _).expects(location, "thermometer").returning(sensor)
-        (sensor.findOrCreatePhenomenon _).expects("temperature", "\u2103", IdentityMeasurementAggregationStrategy).returning(phenomenon)
+        (sensor.findOrCreatePhenomenon _).expects("temperature", "\u2103", DoubleValuesMeasurementAggregationStrategy).returning(phenomenon)
         (phenomenon.addMeasurement _).expects(Measurement(19.19, Instant.ofEpochSecond(22)))
 
         dispatcher ! SensorMeasurementsDispatcherMessages.MessageReceived(
@@ -57,7 +57,7 @@ class SensorMeasurementsDispatcherTest extends WordSpec with Matchers with MockF
 
         (locationRepository.findOrCreateLocation _).expects("836d19833c33").returning(location)
         (sensorRepository.findOrCreateSensor _).expects(location, "co2-meter").returning(sensor)
-        (sensor.findOrCreatePhenomenon _).expects("concentration", "ppm", IdentityMeasurementAggregationStrategy).returning(phenomenon)
+        (sensor.findOrCreatePhenomenon _).expects("concentration", "ppm", DoubleValuesMeasurementAggregationStrategy).returning(phenomenon)
         (phenomenon.addMeasurement _).expects(Measurement(1001, Instant.ofEpochSecond(22)))
 
         dispatcher ! SensorMeasurementsDispatcherMessages.MessageReceived(
@@ -73,7 +73,7 @@ class SensorMeasurementsDispatcherTest extends WordSpec with Matchers with MockF
 
         (locationRepository.findOrCreateLocation _).expects("836d19833c33").returning(location)
         (sensorRepository.findOrCreateSensor _).expects(location, "hygrometer").returning(sensor)
-        (sensor.findOrCreatePhenomenon _).expects("relative-humidity", "%", IdentityMeasurementAggregationStrategy).returning(phenomenon)
+        (sensor.findOrCreatePhenomenon _).expects("relative-humidity", "%", DoubleValuesMeasurementAggregationStrategy).returning(phenomenon)
         (phenomenon.addMeasurement _).expects(Measurement(56.6, Instant.ofEpochSecond(22)))
 
         dispatcher ! SensorMeasurementsDispatcherMessages.MessageReceived(
@@ -88,7 +88,7 @@ class SensorMeasurementsDispatcherTest extends WordSpec with Matchers with MockF
 
         (locationRepository.findOrCreateLocation _).expects("garage").returning(location)
         (sensorRepository.findOrCreateSensor _).expects(location, "pve-inverter").returning(sensor)
-        (sensor.findOrCreatePhenomenon _).expects("power", "W", IdentityMeasurementAggregationStrategy).returning(phenomenon)
+        (sensor.findOrCreatePhenomenon _).expects("power", "W", DoubleValuesMeasurementAggregationStrategy).returning(phenomenon)
         (phenomenon.addMeasurement _).expects(Measurement(850, Instant.ofEpochSecond(1200)))
 
         dispatcher ! SensorMeasurementsDispatcherMessages.MessageReceived(
@@ -101,8 +101,8 @@ class SensorMeasurementsDispatcherTest extends WordSpec with Matchers with MockF
 
   class SensorRepositorySqlWithCtor extends SensorRepositorySql(null, null, null)
   class SensorSqlWithCtor extends SensorSql(null, null, null, null, null)
-  class TemperatureMeasuredPhenomenon extends MeasuredPhenomenonInflux("temperature", "\u2103", IdentityMeasurementAggregationStrategy, null, SensorSql(null, null, null,null,null) ,null, null)
-  class ConcentrationMeasuredPhenomenon extends MeasuredPhenomenonInflux("concentration", "ppm", IdentityMeasurementAggregationStrategy, null, SensorSql(null, null, null,null,null), null, null)
-  class HumidityMeasuredPhenomenon extends MeasuredPhenomenonInflux("relative-humidity", "%", IdentityMeasurementAggregationStrategy, null, SensorSql(null, null, null,null,null), null, null)
-  class PveMeasuredPhenomenon extends MeasuredPhenomenonInflux("power", "W", IdentityMeasurementAggregationStrategy, null, SensorSql(null, null, null,null,null), null, null)
+  class TemperatureMeasuredPhenomenon extends DoubleValuesMeasuredPhenomenonInflux("temperature", "\u2103", DoubleValuesMeasurementAggregationStrategy, null, SensorSql(null, null, null,null,null) ,null, null)
+  class ConcentrationMeasuredPhenomenon extends DoubleValuesMeasuredPhenomenonInflux("concentration", "ppm", DoubleValuesMeasurementAggregationStrategy, null, SensorSql(null, null, null,null,null), null, null)
+  class HumidityMeasuredPhenomenon extends DoubleValuesMeasuredPhenomenonInflux("relative-humidity", "%", DoubleValuesMeasurementAggregationStrategy, null, SensorSql(null, null, null,null,null), null, null)
+  class PveMeasuredPhenomenon extends DoubleValuesMeasuredPhenomenonInflux("power", "W", DoubleValuesMeasurementAggregationStrategy, null, SensorSql(null, null, null,null,null), null, null)
 }

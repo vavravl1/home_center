@@ -48,7 +48,7 @@ class MqttBigClownParser(
         case "false" => BooleanMeasurementAggregationStrategy
         case _ => unit match {
           case "kWh" => SingleValueAggregationStrategy
-          case _ => IdentityMeasurementAggregationStrategy
+          case _ => DoubleValuesMeasurementAggregationStrategy
         }
       }
     )

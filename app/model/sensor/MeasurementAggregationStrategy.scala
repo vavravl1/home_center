@@ -17,7 +17,7 @@ object SingleValueAggregationStrategy extends MeasurementAggregationStrategy {
   override def singleValue(value: Double): Double = value
 }
 
-object IdentityMeasurementAggregationStrategy extends MeasurementAggregationStrategy {
+object DoubleValuesMeasurementAggregationStrategy extends MeasurementAggregationStrategy {
   override def singleValue(value: Double): Double = value
 }
 
@@ -29,7 +29,7 @@ object MeasurementAggregationStrategy {
   implicit val writes: Writes[MeasurementAggregationStrategy] =
     new Writes[MeasurementAggregationStrategy] {
       def writes(o: MeasurementAggregationStrategy): JsValue = o match {
-        case IdentityMeasurementAggregationStrategy => JsString("none")
+        case DoubleValuesMeasurementAggregationStrategy => JsString("none")
         case SingleValueAggregationStrategy => JsString("singleValue")
         case BooleanMeasurementAggregationStrategy => JsString("boolean")
       }

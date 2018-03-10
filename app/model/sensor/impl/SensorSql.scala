@@ -12,12 +12,12 @@ import scalikejdbc.{WrappedResultSet, _}
   * Sql implementation of Sensor
   */
 case class SensorSql(
-                 override val name: String,
-                 override val location: LocationSql,
-                 id: String,
-                 _clock: Clock,
-                 influx: Database
-               ) extends Sensor {
+                      override val name: String,
+                      override val location: LocationSql,
+                      id: String,
+                      _clock: Clock,
+                      influx: Database
+                    ) extends Sensor {
   private implicit val clock = _clock
 
   /**
@@ -46,7 +46,7 @@ case class SensorSql(
     })
   }
 
-  def findPhenomenon(name: String):Option[MeasuredPhenomenon] = {
+  def findPhenomenon(name: String): Option[MeasuredPhenomenon] = {
     DB.localTx(implicit session => {
       return measuredPhenomenons
         .find(mp => mp.name == name && mp.sensor.id == id)
@@ -55,7 +55,7 @@ case class SensorSql(
 
   private def saveMeasuredPhenomenon(name: String, unit: String, aggregationStrategy: MeasurementAggregationStrategy)(implicit session: DBSession): MeasuredPhenomenon = {
     val aggregationStrategyName = aggregationStrategy match {
-      case IdentityMeasurementAggregationStrategy => "none"
+      case DoubleValuesMeasurementAggregationStrategy => "none"
       case SingleValueAggregationStrategy => "singleValue"
       case BooleanMeasurementAggregationStrategy => "boolean"
     }
@@ -64,31 +64,19 @@ case class SensorSql(
          VALUES (${name}, ${unit}, ${aggregationStrategyName}, ${id})
       """.update().apply()
 
-    val measuredPhenomenon = sql"""
+    val measuredPhenomenon =
+      sql"""
           SELECT MP.name, MP.unit, MP.sensorId, MP.id, MP.aggregationStrategy
           FROM measuredPhenomenon MP
           WHERE MP.name = ${name}
           AND MP.sensorId = ${id}
       """.map(MeasuredPhenomenonInflux.fromRs(_, clock, influx, this)).single().apply().get
 
-    influx.query(
-      s"CREATE CONTINUOUS QUERY cq_${FourDaysRetentionPolicy}_${measuredPhenomenon.key} ON ${influx.databaseName} " +
-      s"BEGIN " +
-      s"SELECT mean(value) AS mean_value, max(value) AS max_value, min(value) AS min_value " +
-      s"INTO ${influx.databaseName}.$FourDaysRetentionPolicy.${measuredPhenomenon.key} " +
-      s"FROM ${influx.databaseName}.$OneHourRetentionPolicy.${measuredPhenomenon.key} GROUP BY time(${FourDaysRetentionPolicy.downsamplingTime}), phenomenon " +
-      s"END"
-    )
-
-    influx.query(
-      s"CREATE CONTINUOUS QUERY cq_${ForeverRetentionPolicy}_${measuredPhenomenon.key} ON ${influx.databaseName} " +
-        s"BEGIN " +
-        s"SELECT mean(mean_value) AS mean_value, max(max_value) AS max_value, min(min_value) AS min_value " +
-        s"INTO ${influx.databaseName}.$ForeverRetentionPolicy.${measuredPhenomenon.key} " +
-        s"FROM ${influx.databaseName}.$FourDaysRetentionPolicy.${measuredPhenomenon.key} GROUP BY time(${ForeverRetentionPolicy.downsamplingTime}), phenomenon " +
-        s"END"
-    )
-
+    if (aggregationStrategy == DoubleValuesMeasurementAggregationStrategy ||
+      aggregationStrategy == SingleValueAggregationStrategy
+    ) {
+      createRetentionQueries(measuredPhenomenon)
+    }
     measuredPhenomenon
   }
 
@@ -107,6 +95,27 @@ case class SensorSql(
 
         """.map(rs => rs.boolean("allMeasuredPhenomenonsSingleValue")).single().apply().get
     })
+
+  private def createRetentionQueries(measuredPhenomenon: MeasuredPhenomenonInflux) = {
+    influx.query(
+      s"CREATE CONTINUOUS QUERY cq_${FourDaysRetentionPolicy}_${measuredPhenomenon.key} ON ${influx.databaseName} " +
+        s"BEGIN " +
+        s"SELECT mean(value) AS mean_value, max(value) AS max_value, min(value) AS min_value " +
+        s"INTO ${influx.databaseName}.$FourDaysRetentionPolicy.${measuredPhenomenon.key} " +
+        s"FROM ${influx.databaseName}.$OneHourRetentionPolicy.${measuredPhenomenon.key} GROUP BY time(${FourDaysRetentionPolicy.downsamplingTime}), phenomenon " +
+        s"END"
+    )
+
+    influx.query(
+      s"CREATE CONTINUOUS QUERY cq_${ForeverRetentionPolicy}_${measuredPhenomenon.key} ON ${influx.databaseName} " +
+        s"BEGIN " +
+        s"SELECT mean(mean_value) AS mean_value, max(max_value) AS max_value, min(min_value) AS min_value " +
+        s"INTO ${influx.databaseName}.$ForeverRetentionPolicy.${measuredPhenomenon.key} " +
+        s"FROM ${influx.databaseName}.$FourDaysRetentionPolicy.${measuredPhenomenon.key} GROUP BY time(${ForeverRetentionPolicy.downsamplingTime}), phenomenon " +
+        s"END"
+    )
+
+  }
 }
 
 object SensorSql {
