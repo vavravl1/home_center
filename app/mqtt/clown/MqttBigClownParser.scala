@@ -43,34 +43,38 @@ class MqttBigClownParser(
     val phenomenon = sensor.findOrCreatePhenomenon(
       name = measuredPhenomenon,
       unit = unit,
-      aggregationStrategy = value match {
-        case "true" => EnumeratedMeasurementAggregationStrategy
-        case "false" => EnumeratedMeasurementAggregationStrategy
-        case """"up-stop"""" => EnumeratedMeasurementAggregationStrategy
-        case """"up"""" => EnumeratedMeasurementAggregationStrategy
-        case """"down"""" => EnumeratedMeasurementAggregationStrategy
-        case """"down-stop"""" => EnumeratedMeasurementAggregationStrategy
-        case _ => unit match {
-          case "kWh" => SingleValueAggregationStrategy
-          case _ => DoubleValuesMeasurementAggregationStrategy
-        }
-      }
+      aggregationStrategy = getAggregationStrategy(value, unit)
     )
     val measurement = Measurement(
       measureTimestamp = measureTimestamp,
-      value = if(isDouble(value)) {
-        value.toDouble * MeasuredPhenomenonScale(measuredPhenomenon)
-      } else if (isBoolean(value)) {
-        value.toBoolean
-      } else {
-        value
-      }
+      value = getTypedValue(measuredPhenomenon, value)
     )
 
     (sensor, phenomenon, measurement)
   }
 
-  private def parseMessage(message: String):(String, Instant) = {
+  private def getTypedValue(measuredPhenomenon: String, value: String) = {
+    if (isDouble(value)) {
+      value.toDouble * MeasuredPhenomenonScale(measuredPhenomenon)
+    } else if (isBoolean(value)) {
+      value.toBoolean
+    } else {
+      value
+    }
+  }
+
+  private def getAggregationStrategy(value: String, unit: String) = {
+    if (isDouble(value)) {
+      unit match {
+        case "kWh" => SingleValueAggregationStrategy
+        case _ => DoubleValuesMeasurementAggregationStrategy
+      }
+    } else {
+      EnumeratedMeasurementAggregationStrategy
+    }
+  }
+
+  private def parseMessage(message: String): (String, Instant) = {
     val splicedMessage = message.split(",")
     val value = splicedMessage(0)
     val measureTimestamp = if (splicedMessage.length == 2)
@@ -79,7 +83,7 @@ class MqttBigClownParser(
     (value, measureTimestamp)
   }
 
-  private def isDouble(value: String):Boolean = {
+  private def isDouble(value: String): Boolean = {
     try {
       value.toDouble
       true
@@ -88,7 +92,7 @@ class MqttBigClownParser(
     }
   }
 
-  private def isBoolean(value: String):Boolean = {
+  private def isBoolean(value: String): Boolean = {
     value == "true" || value == "false"
   }
 }
